@@ -25,6 +25,9 @@
 // meters, min distance between location updates
 #define kMinDistance 1.0
 
+// number of stats updates without location updates until current speed is assumed to be 0
+#define kStatsUpdatesUntilCurrentSpeedReset 5
+
 // seconds, time between accelerometer updates while stopped
 #define kAccelerometerUpdateIntervalStopped 0.5
 // number of magnitude of acceleration samples from which to calculate standard deviation
@@ -65,7 +68,7 @@
     BOOL isFollowing;
     BOOL isDriving;
     BOOL shouldUpdateStatsLabels;
-    BOOL locationUpdated;
+    int numStatsUpdatesWithoutLocationUpdate;
     int numStandardDeviationSamplesAboveThreshold;
     
     NSDictionary *settings;
@@ -277,7 +280,7 @@
                 }
             }
         }
-        locationUpdated = YES;
+        numStatsUpdatesWithoutLocationUpdate = 0;
     }
 }
 
@@ -481,10 +484,9 @@
 #pragma mark stats
 
 - (void)updateStats {
-    // set current speed to 0 if no location update since last stats update
-    if (!locationUpdated)
+    // set current speed to 0 if threshold passed
+    if (++numStatsUpdatesWithoutLocationUpdate >= kStatsUpdatesUntilCurrentSpeedReset)
         currentSpeed = 0.0f;
-    else locationUpdated = NO;
     
     // calculate times
     NSTimeInterval timeSinceLastUpdate = [NSDate timeIntervalSinceReferenceDate] - lastUpdateTime;
@@ -606,8 +608,7 @@
     numAverageSpeedSamples =
     currentSpeed =
     carbonEmissions = 0;
-    isDriving =
-    locationUpdated = NO;
+    isDriving = NO;
     
     // clear crumbs and crumb view, remove overlay
     [self.mapView removeOverlay:crumbs];
