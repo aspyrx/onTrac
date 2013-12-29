@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>dataSuffix</key>
+	<string>gas</string>
+	<key>fuelEfficiency</key>
+	<real>9.484</real>
+	<key>useMetric</key>
+	<true/>
+	<key>mapMode</key>
+	<integer>0</integer>
+	<key>followLocation</key>
+	<true/>
+</dict>
+</plist>

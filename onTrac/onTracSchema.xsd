@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xsd:annotation>
+        <xsd:documentation xml:lang="en">
+         onTrac data recording schema.
+         (c) 2013 caekboard.
+        </xsd:documentation>
+    </xsd:annotation>
+    
+    <xsd:attribute name="timeMoving" type="xsd:time"/>
+    <xsd:attribute name="timeStopped" type="xsd:time"/>
+    <xsd:attribute name="totalTime" type="xsd:time"/>
+    <xsd:attribute name="totalDistance" type="xsd:double"/>
+    <xsd:attribute name="averageSpeed" type="xsd:double"/>
+</xs:schema>
