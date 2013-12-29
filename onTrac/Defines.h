@@ -15,54 +15,57 @@
 #define GALLONS_PER_LITER 0.2642
 #define RADIUS_EARTH_METERS 6371000
 #define RADIANS_PER_DEGREE 0.01745329
+#define MPG_PER_100KMPL 235.2
 
 // file paths
-#define kTracksDirectory "Documents/Tracks/"
-#define kSettingsDirectory "Documents/Settings/"
-#define kSettingsFileName "settings.plist"
-#define kSelectedTracksFileName "selectedTracks.plist"
+static NSString * const kTracksDirectory = @"Documents/Tracks/";
+static NSString * const kSettingsDirectory = @"Documents/Settings/";
+static NSString * const kSettingsFileName = @"settings.plist";
+static NSString * const kSelectedTracksFileName = @"selectedTracks.plist";
 
 // notification names
-#define kNotificationUpdateSelectedTracks "updateSelectedTracks"
-#define kNotificationSetRecordingStatus "setRecordingStatus"
-#define kNotificationRecordingStateChanged "recordingStateChanged"
+static NSString * const kNotificationUpdateSelectedTracks = @"updateSelectedTracks";
+static NSString * const kNotificationSetRecordingStatus = @"setRecordingStatus";
+static NSString * const kNotificationRecordingStateChanged = @"recordingStateChanged";
 
 // userinfo dictionary keys
-#define kUserInfoKeyTrackName "trackName"
-#define kUserInfoKeyTrackDescription "trackDescription"
-#define kUserInfoKeyRecordingState "recordingState"
+static NSString * const kUserInfoKeyTrackName = @"trackName";
+static NSString * const kUserInfoKeyTrackDescription = @"trackDescription";
+static NSString * const kUserInfoKeyRecordingState = @"recordingState";
 
 // settings dictionary keys
-#define kSettingsKeyDataSuffix "dataSuffix"
-#define kSettingsKeyUseMetric "useMetric"
-#define kSettingsKeyMapMode "mapMode"
-#define kSettingsKeyFollowLocation "followLocation"
-#define kSettingsKeyFuelEfficiency "fuelEfficiency"
+static NSString * const kSettingsKeyDataSuffix = @"dataSuffix";
+static NSString * const kSettingsKeyUseMetric = @"useMetric";
+static NSString * const kSettingsKeyMapMode = @"mapMode";
+static NSString * const kSettingsKeyFollowLocation = @"followLocation";
+static NSString * const kSettingsKeyFuelEfficiency = @"fuelEfficiency";
 
 // recording states
-#define kRecordingRunning 2
-#define kRecordingPaused 1
-#define kRecordingOff 0
+static NSUInteger const kRecordingRunning = 2;
+static NSUInteger const kRecordingPaused = 1;
+static NSUInteger const kRecordingOff = 0;
 
 // text for units
-#define kUnitTextKilometer "km"
-#define kUnitTextMile "mi"
-#define kUnitTextKPH "km/h"
-#define kUnitTextMPH "mph"
-#define kUnitTextKG "kg"
-#define kUnitTextLBS "lbs"
-#define kUnitTextLiter "L"
-#define kUnitTextGallon "gal"
+static NSString * const kUnitTextKilometer = @"km";
+static NSString * const kUnitTextMile = @"mi";
+static NSString * const kUnitTextKPH = @"km/h";
+static NSString * const kUnitTextMPH = @"mph";
+static NSString * const kUnitTextKG = @"kg";
+static NSString * const kUnitTextLBS = @"lbs";
+static NSString * const kUnitTextLiter = @"L";
+static NSString * const kUnitTextGallon = @"gal";
 
 // text for data suffixes
-#define kDataSuffixCO2 "CO2"
-#define kDataSuffixGas "gas"
+static NSString * const kDataSuffixCO2 = @"CO2";
+static NSString * const kDataSuffixGas = @"gas";
 
 // kg CO_2 / L, emissions from 1 L gasoline
-#define kEmissionsMassPerLiterGas 2.3477
+static CGFloat const kEmissionsMassPerLiterGas = 2.3477;
 // kg CO_2 / kWh, emissions per generated kWh
-#define kEmissionsMassPerKWH 0.5534
+static CGFloat const kEmissionsMassPerKWH = 0.5534;
 // kg CO_2 / hour, emissions for powering a home for 1 hour
-#define kEmissionsPerHomeHour 0.54282
+static CGFloat const kEmissionsPerHomeHour = 0.54282;
+
+// calories burned / m at given speeds
 
 #endif

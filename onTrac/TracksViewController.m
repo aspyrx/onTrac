@@ -39,7 +39,7 @@
         self.navigationItem.rightBarButtonItem = [self editButtonItem];
         
         // register for notifications
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(recordingStateChanged:) name:@(kNotificationRecordingStateChanged) object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(recordingStateChanged:) name:kNotificationRecordingStateChanged object:nil];
         
         // update units
         [self updateUnits];
@@ -53,16 +53,16 @@
     // load saved GPX file paths
     NSError *error;
     NSFileManager *fileManager = [NSFileManager defaultManager];
-    gpxFilePaths = [NSMutableArray arrayWithArray:[[fileManager contentsOfDirectoryAtPath:[NSHomeDirectory() stringByAppendingPathComponent:@(kTracksDirectory)] error:&error] filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"self ENDSWITH '.gpx'"]]];
+    gpxFilePaths = [NSMutableArray arrayWithArray:[[fileManager contentsOfDirectoryAtPath:[NSHomeDirectory() stringByAppendingPathComponent:kTracksDirectory] error:&error] filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"self ENDSWITH '.gpx'"]]];
     for (int i = 0; i < [gpxFilePaths count]; i++) {
-        gpxFilePaths[i] = [[NSHomeDirectory() stringByAppendingPathComponent:@(kTracksDirectory)] stringByAppendingPathComponent:gpxFilePaths[i]];
+        gpxFilePaths[i] = [[NSHomeDirectory() stringByAppendingPathComponent:kTracksDirectory] stringByAppendingPathComponent:gpxFilePaths[i]];
     }
     gpxRoots = [NSMutableArray new];
     for (NSString *path in gpxFilePaths)
         [gpxRoots addObject:[GPXParser parseGPXAtPath:path]];
     
     // create Settings directory if necessary
-    NSString *settingsDirectory = [NSHomeDirectory() stringByAppendingPathComponent:@(kSettingsDirectory)];
+    NSString *settingsDirectory = [NSHomeDirectory() stringByAppendingPathComponent:kSettingsDirectory];
     if (![fileManager fileExistsAtPath:settingsDirectory]) {
         [fileManager createDirectoryAtPath:settingsDirectory withIntermediateDirectories:YES attributes:nil error:&error];
         if (error)
@@ -70,7 +70,7 @@
     }
     
     // load selected track paths
-    selectedTrackPaths = [NSMutableDictionary dictionaryWithContentsOfFile:[settingsDirectory stringByAppendingPathComponent:@(kSelectedTracksFileName)]];
+    selectedTrackPaths = [NSMutableDictionary dictionaryWithContentsOfFile:[settingsDirectory stringByAppendingPathComponent:kSelectedTracksFileName]];
     
     // update units
     [self updateUnits];
@@ -252,7 +252,7 @@
     [self saveSelectedTracks];
     
     // post notification
-    [[NSNotificationCenter defaultCenter] postNotificationName:@(kNotificationUpdateSelectedTracks) object:self];
+    [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationUpdateSelectedTracks object:self];
     
     // pop back to map view controller
     [self.navigationController popViewControllerAnimated:YES];
@@ -270,7 +270,7 @@
     // create Settings directory if necessary
     NSError *error;
     NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSString *settingsDirectory = [NSHomeDirectory() stringByAppendingPathComponent:@(kSettingsDirectory)];
+    NSString *settingsDirectory = [NSHomeDirectory() stringByAppendingPathComponent:kSettingsDirectory];
     if (![fileManager fileExistsAtPath:settingsDirectory]) {
         [fileManager createDirectoryAtPath:settingsDirectory withIntermediateDirectories:YES attributes:nil error:&error];
         if (error)
@@ -278,15 +278,15 @@
     }
     
     // write selected tracks to file
-    [selectedTrackPaths writeToFile:[settingsDirectory stringByAppendingPathComponent:@(kSelectedTracksFileName)] atomically:NO];
+    [selectedTrackPaths writeToFile:[settingsDirectory stringByAppendingPathComponent:kSelectedTracksFileName] atomically:NO];
 }
 
 - (void)postSetRecordingStatusNotification:(int)state {
-    [[NSNotificationCenter defaultCenter] postNotificationName:@(kNotificationSetRecordingStatus) object:self userInfo:@{@(kUserInfoKeyRecordingState): [NSNumber numberWithInt:state]}];
+    [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationSetRecordingStatus object:self userInfo:@{kUserInfoKeyRecordingState: [NSNumber numberWithInt:state]}];
 }
 
 - (void)recordingStateChanged:(NSNotification *)notification {
-    recordingState = [[[notification userInfo] valueForKey:@(kUserInfoKeyRecordingState)] intValue];
+    recordingState = [[[notification userInfo] valueForKey:kUserInfoKeyRecordingState] intValue];
     // update tableview
     [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationNone];
 }
@@ -294,11 +294,11 @@
 - (void)updateUnits {
     NSDictionary *settings = [Utils loadSettings];
     // change unit labels depending on setting
-    dataSuffix = [settings objectForKey:@(kSettingsKeyDataSuffix)];
-    BOOL useMetric = [[settings objectForKey:@(kSettingsKeyUseMetric)] boolValue];
-    dataUnitText = (useMetric ? @(kUnitTextKG) : @(kUnitTextLBS));
-    if ([dataSuffix isEqualToString:@(kDataSuffixGas)])
-        dataUnitText = (useMetric ? @(kUnitTextLiter) : @(kUnitTextGallon));
+    dataSuffix = [settings objectForKey:kSettingsKeyDataSuffix];
+    BOOL useMetric = [[settings objectForKey:kSettingsKeyUseMetric] boolValue];
+    dataUnitText = (useMetric ? kUnitTextKG : kUnitTextLBS);
+    if ([dataSuffix isEqualToString:kDataSuffixGas])
+        dataUnitText = (useMetric ? kUnitTextLiter : kUnitTextGallon);
 }
 
 @end

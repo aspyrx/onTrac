@@ -37,16 +37,16 @@
         gpx = [GPXParser parseGPXAtPath:self.filePath];
         NSDictionary *settings = [Utils loadSettings];
         // change unit labels depending on setting
-        if ([[settings objectForKey:@(kSettingsKeyUseMetric)] boolValue]) {
-            distanceUnitText = @(kUnitTextKilometer);
-            speedUnitText = @(kUnitTextKPH);
-            massUnitText = @(kUnitTextKG);
-            volumeUnitText = @(kUnitTextLiter);
+        if ([[settings objectForKey:kSettingsKeyUseMetric] boolValue]) {
+            distanceUnitText = kUnitTextKilometer;
+            speedUnitText = kUnitTextKPH;
+            massUnitText = kUnitTextKG;
+            volumeUnitText = kUnitTextLiter;
         } else {
-            distanceUnitText = @(kUnitTextMile);
-            speedUnitText = @(kUnitTextMPH);
-            massUnitText = @(kUnitTextLBS);
-            volumeUnitText = @(kUnitTextGallon);
+            distanceUnitText = kUnitTextMile;
+            speedUnitText = kUnitTextMPH;
+            massUnitText = kUnitTextLBS;
+            volumeUnitText = kUnitTextGallon;
         }
         
         nameFont = [UIFont systemFontOfSize:16.0];
@@ -111,14 +111,14 @@
                 cell.selectionStyle = UITableViewCellSelectionStyleNone;
                 cell.textLabel.text = @"Emissions";
                 cell.textLabel.textColor = [UIColor darkGrayColor];
-                cell.detailTextLabel.attributedText = [Utils attributedStringFromMass:emissions baseFontSize:18.0f dataSuffix:@(kDataSuffixCO2) unitText:massUnitText];
+                cell.detailTextLabel.attributedText = [Utils attributedStringFromMass:emissions baseFontSize:18.0f dataSuffix:kDataSuffixCO2 unitText:massUnitText];
                 return cell;
             } case 2: {
                 UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:nil];
                 cell.selectionStyle = UITableViewCellSelectionStyleNone;
                 cell.textLabel.text = @"Fuel Used";
                 cell.textLabel.textColor = [UIColor darkGrayColor];
-                cell.detailTextLabel.attributedText = [Utils attributedStringFromMass:emissions baseFontSize:18.0f dataSuffix:@(kDataSuffixGas) unitText:volumeUnitText];
+                cell.detailTextLabel.attributedText = [Utils attributedStringFromMass:emissions baseFontSize:18.0f dataSuffix:kDataSuffixGas unitText:volumeUnitText];
                 return cell;
             }
         }

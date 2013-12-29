@@ -12,7 +12,6 @@
 #import "Utils.h"
 #import "AboutViewController.h"
 
-#define MPG_PER_100KMPL 235.2
 @interface SettingsViewController ()
 
 @end
@@ -87,7 +86,7 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section == 0) {
         // Unit cells
-        BOOL useMetric = [[settings objectForKey:@(kSettingsKeyUseMetric)] boolValue];
+        BOOL useMetric = [[settings objectForKey:kSettingsKeyUseMetric] boolValue];
         UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
         if (indexPath.row == 0) {
             cell.textLabel.text = @"Imperial";
@@ -100,7 +99,7 @@
     } else if (indexPath.section == 1) {
         // Fuel Efficiency cell
         if (indexPath.row == 0) {
-            BOOL useMetric = [[settings objectForKey:@(kSettingsKeyUseMetric)] boolValue];
+            BOOL useMetric = [[settings objectForKey:kSettingsKeyUseMetric] boolValue];
             UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
             cell.selectionStyle = UITableViewCellSelectionStyleNone;
             cell.textLabel.text = [@"Fuel Efficiency (" stringByAppendingString:(useMetric ? @"L/100km)" : @"mpg)")];
@@ -110,7 +109,7 @@
             UITextField *fuelEfficiencyField = [[UITextField alloc] initWithFrame:CGRectMake(cell.contentView.frame.size.width - ([self respondsToSelector:@selector(topLayoutGuide)] ? 96 : 110), 0, 80, cell.contentView.frame.size.height)];
             fuelEfficiencyField.adjustsFontSizeToFitWidth = YES;
             fuelEfficiencyField.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
-            CGFloat efficiency = [[settings objectForKey:@(kSettingsKeyFuelEfficiency)] floatValue];
+            CGFloat efficiency = [[settings objectForKey:kSettingsKeyFuelEfficiency] floatValue];
             fuelEfficiencyField.text = [NSString stringWithFormat:@"%.1f", (useMetric ? efficiency : 1 / efficiency * MPG_PER_100KMPL)];
             fuelEfficiencyField.textColor = [UIColor colorWithRed:0.0f green:0.478f blue:1.0f alpha:1.0f];
             fuelEfficiencyField.textAlignment = NSTextAlignmentRight;
@@ -125,19 +124,19 @@
         }
     } else if (indexPath.section == 2) {
         // Displayed Data cells
-        NSString *dataSuffix = [settings objectForKey:@(kSettingsKeyDataSuffix)];
+        NSString *dataSuffix = [settings objectForKey:kSettingsKeyDataSuffix];
         UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
         if (indexPath.row == 0) {
             cell.textLabel.text = @"Carbon emissions";
-            cell.accessoryType = ([dataSuffix isEqualToString:@(kDataSuffixCO2)] ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone);
+            cell.accessoryType = ([dataSuffix isEqualToString:kDataSuffixCO2] ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone);
         } else if (indexPath.row == 1) {
             cell.textLabel.text = @"Gasoline usage";
-            cell.accessoryType = ([dataSuffix isEqualToString:@(kDataSuffixGas)] ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone);
+            cell.accessoryType = ([dataSuffix isEqualToString:kDataSuffixGas] ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone);
         }
         return cell;
     } else if (indexPath.section == 3) {
         // Map Mode cells
-        MKMapType mapMode = [[settings objectForKey:@(kSettingsKeyMapMode)] unsignedIntegerValue];
+        MKMapType mapMode = [[settings objectForKey:kSettingsKeyMapMode] unsignedIntegerValue];
         UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
         if (indexPath.row == 0) {
             cell.textLabel.text = @"Standard";
@@ -162,7 +161,7 @@
             cell.accessoryView = switchView;
             
             // depending on saved value, set switch position
-            if ([[settings objectForKey:@(kSettingsKeyFollowLocation)]boolValue])
+            if ([[settings objectForKey:kSettingsKeyFollowLocation]boolValue])
                 [switchView setOn:YES animated:NO];
             else [switchView setOn:NO animated:NO];
             
@@ -188,38 +187,38 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section == 0) {
         if (indexPath.row == 0) {
-            [settings setObject:[NSNumber numberWithBool:NO] forKey:@(kSettingsKeyUseMetric)];
+            [settings setObject:[NSNumber numberWithBool:NO] forKey:kSettingsKeyUseMetric];
             [tableView cellForRowAtIndexPath:indexPath].accessoryType = UITableViewCellAccessoryCheckmark;
             [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:0]].accessoryType = UITableViewCellAccessoryNone;
         } else if (indexPath.row == 1) {
-            [settings setObject:[NSNumber numberWithBool:YES] forKey:@(kSettingsKeyUseMetric)];
+            [settings setObject:[NSNumber numberWithBool:YES] forKey:kSettingsKeyUseMetric];
             [tableView cellForRowAtIndexPath:indexPath].accessoryType = UITableViewCellAccessoryCheckmark;
             [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]].accessoryType = UITableViewCellAccessoryNone;
         }
         [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:UITableViewRowAnimationNone];
     } else if (indexPath.section == 2) {
         if (indexPath.row == 0) {
-            [settings setObject:@(kDataSuffixCO2) forKey:@(kSettingsKeyDataSuffix)];
+            [settings setObject:kDataSuffixCO2 forKey:kSettingsKeyDataSuffix];
             [tableView cellForRowAtIndexPath:indexPath].accessoryType = UITableViewCellAccessoryCheckmark;
             [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:2]].accessoryType = UITableViewCellAccessoryNone;
         } else if (indexPath.row == 1) {
-            [settings setObject:@(kDataSuffixGas) forKey:@(kSettingsKeyDataSuffix)];
+            [settings setObject:kDataSuffixGas forKey:kSettingsKeyDataSuffix];
             [tableView cellForRowAtIndexPath:indexPath].accessoryType = UITableViewCellAccessoryCheckmark;
             [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:2]].accessoryType = UITableViewCellAccessoryNone;
         }
     } else if (indexPath.section == 3) {
         if (indexPath.row == 0) {
-            [settings setObject:[NSNumber numberWithUnsignedInteger:MKMapTypeStandard] forKey:@(kSettingsKeyMapMode)];
+            [settings setObject:[NSNumber numberWithUnsignedInteger:MKMapTypeStandard] forKey:kSettingsKeyMapMode];
             [tableView cellForRowAtIndexPath:indexPath].accessoryType = UITableViewCellAccessoryCheckmark;
             [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:3]].accessoryType = UITableViewCellAccessoryNone;
             [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:2 inSection:3]].accessoryType = UITableViewCellAccessoryNone;
         } else if (indexPath.row == 1) {
-            [settings setObject:[NSNumber numberWithUnsignedInteger:MKMapTypeSatellite] forKey:@(kSettingsKeyMapMode)];
+            [settings setObject:[NSNumber numberWithUnsignedInteger:MKMapTypeSatellite] forKey:kSettingsKeyMapMode];
             [tableView cellForRowAtIndexPath:indexPath].accessoryType = UITableViewCellAccessoryCheckmark;
             [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:3]].accessoryType = UITableViewCellAccessoryNone;
             [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:2 inSection:3]].accessoryType = UITableViewCellAccessoryNone;
         } else if (indexPath.row == 2) {
-            [settings setObject:[NSNumber numberWithUnsignedInteger:MKMapTypeHybrid] forKey:@(kSettingsKeyMapMode)];
+            [settings setObject:[NSNumber numberWithUnsignedInteger:MKMapTypeHybrid] forKey:kSettingsKeyMapMode];
             [tableView cellForRowAtIndexPath:indexPath].accessoryType = UITableViewCellAccessoryCheckmark;
             [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:3]].accessoryType = UITableViewCellAccessoryNone;
             [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:3]].accessoryType = UITableViewCellAccessoryNone;
@@ -255,15 +254,15 @@
     self.activeField = nil;
     UITextField *field = sender;
     if (field.text) {
-        BOOL useMetric = [[settings objectForKey:@(kSettingsKeyUseMetric)] boolValue];
+        BOOL useMetric = [[settings objectForKey:kSettingsKeyUseMetric] boolValue];
         CGFloat efficiency = [[[NSNumberFormatter new] numberFromString:field.text] floatValue];
-        [settings setObject:[NSNumber numberWithFloat:(useMetric ? efficiency : 1 / (efficiency / MPG_PER_100KMPL))] forKey:@(kSettingsKeyFuelEfficiency)];
-    } else [settings setObject:[NSNumber numberWithFloat:9.484f] forKey:@(kSettingsKeyFuelEfficiency)];
+        [settings setObject:[NSNumber numberWithFloat:(useMetric ? efficiency : 1 / (efficiency / MPG_PER_100KMPL))] forKey:kSettingsKeyFuelEfficiency];
+    } else [settings setObject:[NSNumber numberWithFloat:9.484f] forKey:kSettingsKeyFuelEfficiency];
 }
 
 - (void)followLocationSwitchChanged:(id)sender {
     UISwitch *followLocationControl = sender;
-    [settings setObject:[NSNumber numberWithBool:[followLocationControl isOn]] forKey:@(kSettingsKeyFollowLocation)];
+    [settings setObject:[NSNumber numberWithBool:[followLocationControl isOn]] forKey:kSettingsKeyFollowLocation];
 }
 
 - (void)cancelButtonPressed:(id)sender {
@@ -275,7 +274,7 @@
     // create Settings directory if necessary
     NSError *error;
     NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSString *settingsDirectory = [NSHomeDirectory() stringByAppendingPathComponent:@(kSettingsDirectory)];
+    NSString *settingsDirectory = [NSHomeDirectory() stringByAppendingPathComponent:kSettingsDirectory];
     if (![fileManager fileExistsAtPath:settingsDirectory]) {
         [fileManager createDirectoryAtPath:settingsDirectory withIntermediateDirectories:YES attributes:nil error:&error];
         if (error)
@@ -283,7 +282,7 @@
     }
     
     // save settings to plist file, dismiss options view
-    [settings writeToFile:[settingsDirectory stringByAppendingPathComponent:@(kSettingsFileName)] atomically:NO];
+    [settings writeToFile:[settingsDirectory stringByAppendingPathComponent:kSettingsFileName] atomically:NO];
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 

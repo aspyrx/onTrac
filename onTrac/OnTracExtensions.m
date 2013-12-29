@@ -16,6 +16,7 @@
     NSString *totalDistanceValue;
     NSString *averageSpeedValue;
     NSString *carbonEmissionsValue;
+    NSString *caloriesBurnedValue;
 }
 
 - (id)initWithXMLElement:(GPXXMLElement *)element parent:(GPXElement *)parent {
@@ -27,6 +28,7 @@
         totalDistanceValue = [self textForSingleChildElementNamed:@"totalDistance" xmlElement:element required:YES];
         averageSpeedValue = [self textForSingleChildElementNamed:@"averageSpeed" xmlElement:element required:YES];
         carbonEmissionsValue = [self textForSingleChildElementNamed:@"carbonEmissions" xmlElement:element required:YES];
+        caloriesBurnedValue = [self textForSingleChildElementNamed:@"caloriesBurned" xmlElement:element required:YES];
     }
     return self;
 }
@@ -83,6 +85,14 @@
     carbonEmissionsValue = [GPXType valueForDecimal:carbonEmissions];
 }
 
+- (CGFloat)caloriesBurned {
+    return [GPXType decimal:caloriesBurnedValue];
+}
+
+- (void)setCaloriesBurned:(CGFloat)caloriesBurned {
+    caloriesBurnedValue = [GPXType valueForDecimal:caloriesBurned];
+}
+
 - (void)addChildTagToGpx:(NSMutableString *)gpx indentationLevel:(NSInteger)indentationLevel {
     [super addChildTagToGpx:gpx indentationLevel:indentationLevel];
     
@@ -92,6 +102,7 @@
     [self gpx:gpx addPropertyForValue:totalDistanceValue tagName:@"totalDistance" indentationLevel:indentationLevel];
     [self gpx:gpx addPropertyForValue:averageSpeedValue tagName:@"averageSpeed" indentationLevel:indentationLevel];
     [self gpx:gpx addPropertyForValue:carbonEmissionsValue tagName:@"carbonEmissions" indentationLevel:indentationLevel];
+    [self gpx:gpx addPropertyForValue:caloriesBurnedValue tagName:@"caloriesBurned" indentationLevel:indentationLevel];
 }
 
 @end

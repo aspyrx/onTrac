@@ -20,48 +20,48 @@
 #import "TrackDetailViewController.h"
 
 // seconds, length of page curl animation
-#define kCurlAnimationDuration 0.5
+static CGFloat const kCurlAnimationDuration = 0.5;
 
 // meters, min distance between location updates
-#define kMinDistance 1.0
+static CGFloat const kMinDistance = 1.0;
 
 // number of stats updates without location updates until current speed is assumed to be 0
-#define kStatsUpdatesUntilCurrentSpeedReset 5
+static NSUInteger const kStatsUpdatesUntilCurrentSpeedReset = 5;
 
 // seconds, time between accelerometer updates while stopped
-#define kAccelerometerUpdateIntervalStopped 0.2
+static NSTimeInterval const kAccelerometerUpdateIntervalStopped = 0.2;
 // number of samples from which to calculate standard deviation while stopped
-#define kAccelMagnitudeSamplesStopped 50
+static NSUInteger const kAccelMagnitudeSamplesStopped = 50;
 // threshold which the standard deviation must pass to start recording
-#define kStandardDeviationStartThreshold 0.1
+static CGFloat const kStandardDeviationStartThreshold = 0.1;
 // number of samples which must remain above this threshold to start recording
-#define kStandardDeviationSamplesAboveStartThreshold 30
+static NSUInteger const kStandardDeviationSamplesAboveStartThreshold = 30;
 
 // seconds, time between accelerometer updates while moving
-#define kAccelerometerUpdateIntervalMoving 0.5
+static NSTimeInterval const kAccelerometerUpdateIntervalMoving = 0.5;
 // number of samples from which to calculate standard deviation while moving
-#define kAccelMagnitudeSamplesMoving 600
+static NSUInteger const kAccelMagnitudeSamplesMoving = 600;
 // number of samples from which to calculate standard deviation for checking whether walking
-#define kAccelMagnitudeSamplesWalking 20
+static NSUInteger const kAccelMagnitudeSamplesWalking = 20;
 // threshold below which the standard deviation must fall to stop recording
-#define kStandardDeviationStopThreshold 0.2
+static CGFloat const kStandardDeviationStopThreshold = 0.2;
 // thershold which the standard deviation must pass to be considered walking
-#define kStandardDeviationWalkingThreshold 0.25
+static CGFloat const kStandardDeviationWalkingThreshold = 0.25;
 // number of samples which must remain above this threshold to be considered walking
-#define kStandardDeviationSamplesAboveWalkingThreshold 40
+static NSUInteger const kStandardDeviationSamplesAboveWalkingThreshold = 40;
 // m/s, threshold below which the speed must fall to stop recording
-#define kCurrentSpeedStopThreshold 0.05
+static CGFloat const kCurrentSpeedStopThreshold = 0.05;
 
 // seconds, stats update interval
-#define kStatsUpdateInterval 1.0
+static NSTimeInterval const kStatsUpdateInterval = 1.0;
 
 // m/s, maximum not driving speed
-#define kSpeedMaxNotDriving 5.0
+static CGFloat const kSpeedMaxNotDriving = 5.0;
 
 // accelerometer states
-#define kAccelerometerMoving 2
-#define kAccelerometerStopped 1
-#define kAccelerometerOff 0
+static NSUInteger const kAccelerometerMoving = 2;
+static NSUInteger const kAccelerometerStopped = 1;
+static NSUInteger const kAccelerometerOff = 0;
 
 @interface MapViewController ()
 
@@ -91,6 +91,7 @@
     int numAverageSpeedSamples;
     CGFloat currentSpeed; // m/s
     CGFloat carbonEmissions; // kg
+    CGFloat caloriesBurned; // calories
     CGFloat fuelEfficiency; // L/100 km
     
     NSString *distanceUnitText;
@@ -134,8 +135,8 @@
         self.settingsNavigationController = [[UINavigationController alloc] initWithRootViewController:[[SettingsViewController alloc] initWithStyle:UITableViewStyleGrouped]];
         
         // register for notifications
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateSelectedTracks:) name:@(kNotificationUpdateSelectedTracks) object:nil];
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(setRecordingStatus:) name:@(kNotificationSetRecordingStatus) object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateSelectedTracks:) name:kNotificationUpdateSelectedTracks object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(setRecordingStatus:) name:kNotificationSetRecordingStatus object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidEnterBackground:) name:UIApplicationDidEnterBackgroundNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationWillEnterForeground:) name:UIApplicationWillEnterForegroundNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationWillTerminate:) name:UIApplicationWillTerminateNotification object:nil];
@@ -165,28 +166,28 @@
     shouldUpdateStatsLabels = YES;
     
     settings = [Utils loadSettings];
-    BOOL useMetricSetting = [[settings objectForKey:@(kSettingsKeyUseMetric)] boolValue];
-    MKMapType mapModeSetting = [[settings objectForKey:@(kSettingsKeyMapMode)] unsignedIntegerValue];
-    BOOL followLocationSetting = [[settings objectForKey:@(kSettingsKeyFollowLocation)] boolValue];
-    NSString *newSuffix = [settings objectForKey:@(kSettingsKeyDataSuffix)];
+    BOOL useMetricSetting = [[settings objectForKey:kSettingsKeyUseMetric] boolValue];
+    MKMapType mapModeSetting = [[settings objectForKey:kSettingsKeyMapMode] unsignedIntegerValue];
+    BOOL followLocationSetting = [[settings objectForKey:kSettingsKeyFollowLocation] boolValue];
+    NSString *newSuffix = [settings objectForKey:kSettingsKeyDataSuffix];
     
     // change unit labels depending on setting
     if (![dataSuffix isEqualToString:newSuffix]
-        || ![distanceUnitText isEqualToString:(useMetricSetting ? @(kUnitTextKilometer) : @(kUnitTextMile))]) {
+        || ![distanceUnitText isEqualToString:(useMetricSetting ? kUnitTextKilometer : kUnitTextMile)]) {
         dataSuffix = newSuffix;
-        if ([dataSuffix isEqualToString:@(kDataSuffixCO2)]) {
+        if ([dataSuffix isEqualToString:kDataSuffixCO2]) {
             self.displayedDataName.text = @"Emissions";
-            dataUnitText = (useMetricSetting ? @(kUnitTextKG) : @(kUnitTextLBS));
-        } else if ([dataSuffix isEqualToString:@(kDataSuffixGas)]) {
+            dataUnitText = (useMetricSetting ? kUnitTextKG : kUnitTextLBS);
+        } else if ([dataSuffix isEqualToString:kDataSuffixGas]) {
             self.displayedDataName.text = @"Gas used";
-            dataUnitText = (useMetricSetting ? @(kUnitTextLiter) : @(kUnitTextGallon));
+            dataUnitText = (useMetricSetting ? kUnitTextLiter : kUnitTextGallon);
         }
         if (useMetricSetting) {
-            distanceUnitText = @(kUnitTextKilometer);
-            speedUnitText = @(kUnitTextKPH);
+            distanceUnitText = kUnitTextKilometer;
+            speedUnitText = kUnitTextKPH;
         } else {
-            distanceUnitText = @(kUnitTextMile);
-            speedUnitText = @(kUnitTextMPH);
+            distanceUnitText = kUnitTextMile;
+            speedUnitText = kUnitTextMPH;
         }
         [self updateSelectedTracks:nil];
     }
@@ -205,7 +206,7 @@
     }
     
     // get fuel efficiency depending on setting
-    fuelEfficiency = [[settings objectForKey:@(kSettingsKeyFuelEfficiency)] floatValue];
+    fuelEfficiency = [[settings objectForKey:kSettingsKeyFuelEfficiency] floatValue];
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
@@ -245,9 +246,10 @@
                 isDriving = YES;
             }
             
-            // calculate carbon emissions
+            // calculate carbon emissions or calories burned
             if (isDriving)
                 carbonEmissions += distance / 100000 * fuelEfficiency * kEmissionsMassPerLiterGas;
+            else caloriesBurned += [Utils caloriesBurnedForDistance:distance speed:currentSpeed];
             
             // record location information in GPX format
             // add newLocation as GPXTrackPoint
@@ -399,7 +401,7 @@
 
 - (void)updateSelectedTracks:(NSNotification *)notification {
     // load currently selected track paths
-    NSArray *selectedTrackFilePaths = [[NSDictionary dictionaryWithContentsOfFile:[[NSHomeDirectory() stringByAppendingPathComponent:@(kSettingsDirectory)]stringByAppendingPathComponent:@(kSelectedTracksFileName)]] allValues];
+    NSArray *selectedTrackFilePaths = [[NSDictionary dictionaryWithContentsOfFile:[[NSHomeDirectory() stringByAppendingPathComponent:kSettingsDirectory]stringByAppendingPathComponent:kSelectedTracksFileName]] allValues];
     
     // clear existing track annotations
     for (TrackAnnotation *removeMe in self.mapView.annotations)
@@ -488,11 +490,11 @@
     if (recordingState > kRecordingOff) {
         NSDateFormatter *dateFormatter = [NSDateFormatter new];
         [dateFormatter setDateFormat:@"EEE, MMM d h:mm a"];
-        [self saveTrack:[NSNotification notificationWithName:@(kNotificationSetRecordingStatus)
+        [self saveTrack:[NSNotification notificationWithName:kNotificationSetRecordingStatus
                                                       object:nil
-                                                    userInfo:@{@(kUserInfoKeyRecordingState): [NSNumber numberWithInt:kRecordingOff],
-                                                               @(kUserInfoKeyTrackName): [dateFormatter stringFromDate:[NSDate date]],
-                                                               @(kUserInfoKeyTrackDescription): @"The app was stopped while a recording was in progress."}]];
+                                                    userInfo:@{kUserInfoKeyRecordingState: [NSNumber numberWithInt:kRecordingOff],
+                                                               kUserInfoKeyTrackName: [dateFormatter stringFromDate:[NSDate date]],
+                                                               kUserInfoKeyTrackDescription: @"The app was stopped while a recording was in progress."}]];
         NSLog(@"Application terminating, saving current track.");
     }
 }
@@ -601,7 +603,7 @@
 #pragma mark recording
 
 - (void)setRecordingStatus:(NSNotification *)notification {
-    int state = [[[notification userInfo] valueForKey:@(kUserInfoKeyRecordingState)] intValue];
+    int state = [[[notification userInfo] valueForKey:kUserInfoKeyRecordingState] intValue];
     if (state == kRecordingOff) [self saveTrack:notification];
     else if (state == kRecordingPaused) [self pauseRecording];
     else if (state == kRecordingRunning && recordingState == kRecordingOff) [self startRecording];
@@ -609,7 +611,7 @@
 }
 
 - (void)postRecordingStateChangedNotification:(int)state {
-    [[NSNotificationCenter defaultCenter] postNotificationName:@(kNotificationRecordingStateChanged) object:self userInfo:@{@(kUserInfoKeyRecordingState): [NSNumber numberWithInt:state]}];
+    [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationRecordingStateChanged object:self userInfo:@{kUserInfoKeyRecordingState: [NSNumber numberWithInt:state]}];
 }
 
 - (void)startRecording {
@@ -627,7 +629,8 @@
     averageSpeed =
     numAverageSpeedSamples =
     currentSpeed =
-    carbonEmissions = 0;
+    carbonEmissions =
+    caloriesBurned = 0;
     isDriving = NO;
     
     // clear crumbs and crumb view, remove overlay
@@ -691,7 +694,7 @@
     // create Tracks directory if necessary
     NSError *error;
     NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSString *tracksDirectory = [NSHomeDirectory() stringByAppendingPathComponent:@(kTracksDirectory)];
+    NSString *tracksDirectory = [NSHomeDirectory() stringByAppendingPathComponent:kTracksDirectory];
     if (![fileManager fileExistsAtPath:tracksDirectory]) {
         [fileManager createDirectoryAtPath:tracksDirectory withIntermediateDirectories:YES attributes:nil error:&error];
         if (error)
@@ -714,6 +717,7 @@
     extensions.totalDistance = totalDistance;
     extensions.averageSpeed = averageSpeed;
     extensions.carbonEmissions = carbonEmissions;
+    extensions.caloriesBurned = caloriesBurned;
     
     // create and set metadata
     GPXMetadata *metadata = [GPXMetadata new];
@@ -721,8 +725,8 @@
     metadata.time = [NSDate date];
     metadata.bounds = currentGPXBounds;
     metadata.extensions = extensions;
-    metadata.name = [[notification userInfo] objectForKey:@(kUserInfoKeyTrackName)];
-    metadata.desc = [[notification userInfo] objectForKey:@(kUserInfoKeyTrackDescription)];
+    metadata.name = [[notification userInfo] objectForKey:kUserInfoKeyTrackName];
+    metadata.desc = [[notification userInfo] objectForKey:kUserInfoKeyTrackDescription];
     currentGPXRoot.metadata = metadata;
     
     // set additional GPX track info

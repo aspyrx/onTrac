@@ -104,11 +104,11 @@
 
 - (void)saveButtonPressed:(id)sender {
     // stop recording and save track
-    [[NSNotificationCenter defaultCenter] postNotificationName:@(kNotificationSetRecordingStatus)
+    [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationSetRecordingStatus
                                                         object:nil
-                                                      userInfo:@{@(kUserInfoKeyRecordingState): [NSNumber numberWithInt:kRecordingOff],
-                                                                 @(kUserInfoKeyTrackName): self.trackNameTextField.text,
-                                                                 @(kUserInfoKeyTrackDescription): self.textView.text}];
+                                                      userInfo:@{kUserInfoKeyRecordingState: [NSNumber numberWithInt:kRecordingOff],
+                                                                 kUserInfoKeyTrackName: self.trackNameTextField.text,
+                                                                 kUserInfoKeyTrackDescription: self.textView.text}];
     
     // dismiss save view controller
     [self dismissViewControllerAnimated:YES completion:nil];
