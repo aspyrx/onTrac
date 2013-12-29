@@ -30,6 +30,9 @@ profile
  
 *~.nib
  
+####
+# Xcode 5 checkout data
+*.xccheckout
  
 ####
 # Xcode build files -
