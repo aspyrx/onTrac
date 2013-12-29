@@ -29,28 +29,32 @@
 #define kStatsUpdatesUntilCurrentSpeedReset 5
 
 // seconds, time between accelerometer updates while stopped
-#define kAccelerometerUpdateIntervalStopped 0.5
-// number of magnitude of acceleration samples from which to calculate standard deviation
-#define kAccelMagnitudeSamplesStopped 20
+#define kAccelerometerUpdateIntervalStopped 0.2
+// number of samples from which to calculate standard deviation while stopped
+#define kAccelMagnitudeSamplesStopped 50
 // threshold which the standard deviation must pass to start recording
-#define kStartStandardDeviationThreshold 0.1
-// number of samples which must remain above this threshold
-#define kStartStandardDeviationAboveThresholdSamples 30
+#define kStandardDeviationStartThreshold 0.1
+// number of samples which must remain above this threshold to start recording
+#define kStandardDeviationSamplesAboveStartThreshold 30
 
 // seconds, time between accelerometer updates while moving
-#define kAccelerometerUpdateIntervalMoving 2.0
-// number of magnitude of acceleration samples from which to calculate standard deviation
-#define kAccelMagnitudeSamplesMoving 120
+#define kAccelerometerUpdateIntervalMoving 0.5
+// number of samples from which to calculate standard deviation while moving
+#define kAccelMagnitudeSamplesMoving 600
+// number of samples from which to calculate standard deviation for checking whether walking
+#define kAccelMagnitudeSamplesWalking 20
 // threshold below which the standard deviation must fall to stop recording
-#define kStopStandardDeviationThreshold 0.2
+#define kStandardDeviationStopThreshold 0.2
+// thershold which the standard deviation must pass to be considered walking
+#define kStandardDeviationWalkingThreshold 0.25
+// number of samples which must remain above this threshold to be considered walking
+#define kStandardDeviationSamplesAboveWalkingThreshold 40
 // m/s, threshold below which the speed must fall to stop recording
-#define kStopCurrentSpeedThreshold 0.05
+#define kCurrentSpeedStopThreshold 0.05
 
 // seconds, stats update interval
 #define kStatsUpdateInterval 1.0
 
-// m/s^2, minimum acceleration required to be considered driving
-#define kAccelDriving 2.0
 // m/s, maximum not driving speed
 #define kSpeedMaxNotDriving 5.0
 
@@ -70,6 +74,8 @@
     BOOL shouldUpdateStatsLabels;
     int numStatsUpdatesWithoutLocationUpdate;
     int numStandardDeviationSamplesAboveThreshold;
+    double accelMagStdDev;
+    double walkingStdDev;
     
     NSDictionary *settings;
     NSMutableArray *accelMagnitudes;
@@ -221,6 +227,9 @@
                 currentGPXTrackSegment = [currentGPXTrack newTrackSegment];
             }
         } else {
+            // successful location update, reset counter
+            numStatsUpdatesWithoutLocationUpdate = 0;
+            
             // calculate total distance
             CGFloat distance = [Utils metersBetweenCoordinate:oldLocation.coordinate coordinate:newLocation.coordinate];
             if (oldLocation != nil)
@@ -230,6 +239,11 @@
             // get current speed, calculate average speed
             currentSpeed = (newLocation.speed < 0 ? 0 : newLocation.speed);
             averageSpeed = (averageSpeed * numAverageSpeedSamples + currentSpeed) / (numAverageSpeedSamples++ + 1);
+            
+            // check if speed has passed threshold
+            if (currentSpeed > kSpeedMaxNotDriving) {
+                isDriving = YES;
+            }
             
             // calculate carbon emissions
             if (isDriving)
@@ -280,7 +294,6 @@
                 }
             }
         }
-        numStatsUpdatesWithoutLocationUpdate = 0;
     }
 }
 
@@ -302,7 +315,7 @@
         MKPolyline *polyline = overlay;
         // create and customize polyline view
         MKPolylineView *polylineView = [[MKPolylineView alloc] initWithPolyline:polyline];
-//        polylineView.strokeColor = [UIColor colorWithRed:1.0 green:0.1 blue:0.1 alpha:0.9];
+        //        polylineView.strokeColor = [UIColor colorWithRed:1.0 green:0.1 blue:0.1 alpha:0.9];
         CGFloat emissions = [[[NSNumberFormatter new] numberFromString:polyline.title] floatValue];
         polylineView.strokeColor = [Utils colorForEmissions:emissions];
         polylineView.lineWidth = 8.0;
@@ -364,6 +377,9 @@
      }
      testAccel = a;
      */
+    
+    // DEBUG: toggle driving mode
+    isDriving = !isDriving;
 }
 
 - (void)optionsButtonPressed:(id)sender {
@@ -490,7 +506,7 @@
     
     // calculate times
     NSTimeInterval timeSinceLastUpdate = [NSDate timeIntervalSinceReferenceDate] - lastUpdateTime;
-    if (currentSpeed < kStopCurrentSpeedThreshold || recordingState < kRecordingRunning)
+    if (currentSpeed < kCurrentSpeedStopThreshold || recordingState < kRecordingRunning)
         timeStopped += timeSinceLastUpdate;
     else timeMoving += timeSinceLastUpdate;
     totalTime += timeSinceLastUpdate;
@@ -513,7 +529,7 @@
     self.currentSpeedLabel.text = [NSString stringWithFormat:@"%.2f %@", [Utils speedFromMetersSec:currentSpeed units:speedUnitText], speedUnitText];
     self.displayedDataLabel.attributedText = [Utils attributedStringFromMass:carbonEmissions baseFontSize:21.0f dataSuffix:dataSuffix unitText:dataUnitText];
     // testing: statistics button text
-    self.statisticsButton.titleLabel.text = [NSString stringWithFormat:@"%.3f %@", [[accelMagnitudes lastObject] doubleValue], (isDriving ? @"Yes" : @"No")];
+    self.statisticsButton.titleLabel.text = [NSString stringWithFormat:@"%.4f %.4f %@", accelMagStdDev, walkingStdDev, (isDriving ? @"Yes" : @"No")];
 }
 
 #pragma mark accelerometer
@@ -521,46 +537,50 @@
 - (void)outputAccelerationData:(CMAcceleration)acceleration {
     // add current acceleration magnitude to array
     [accelMagnitudes addObject:[NSNumber numberWithDouble:sqrt((acceleration.x * acceleration.x) + (acceleration.y * acceleration.y) + (acceleration.z * acceleration.z))]];
-    NSTimeInterval updateInterval = self.motionManager.accelerometerUpdateInterval;
-    if (updateInterval == kAccelerometerUpdateIntervalStopped) {
+    if (recordingState < 2) {
         // currently stopped, check if array has too many objects and remove if necessary
         while ([accelMagnitudes count] > kAccelMagnitudeSamplesStopped)
             [accelMagnitudes removeObjectAtIndex:0];
+        
         if ([accelMagnitudes count] >= kAccelMagnitudeSamplesStopped) {
             // there are enough magnitude of acceleration samples, take standard deviation
-            if ([Utils standardDeviationOf:accelMagnitudes] > kStartStandardDeviationThreshold) {
-                // the standard deviation passed the threshold, increment number of samples
-                numStandardDeviationSamplesAboveThreshold++;
-            } else {
-                // the standard deviation is not above the threshold, reset number of samples
-                numStandardDeviationSamplesAboveThreshold = 0;
-            }
-            // DEBUG: display standard deviation in total time label
-            // self.totalTimeLabel.text = [NSString stringWithFormat:@"%.2f", stdDev];
+            accelMagStdDev = [Utils standardDeviationOf:accelMagnitudes];
+            if (accelMagStdDev > kStandardDeviationStartThreshold) {
+                if (++numStandardDeviationSamplesAboveThreshold > kStandardDeviationSamplesAboveStartThreshold) {
+                    // there are enough samples consecutively above the threshold, start recording
+                    numStandardDeviationSamplesAboveThreshold = 0;
+                    [self resumeRecording];
+                    NSLog(@"GPS turned on due to movement");
+                }
+            } else numStandardDeviationSamplesAboveThreshold = 0;
         }
-        if (numStandardDeviationSamplesAboveThreshold > kStartStandardDeviationAboveThresholdSamples) {
-            // there are enough samples consecutively above the threshold, start recording
-            [self resumeRecording];
-            NSLog(@"GPS turned on due to movement");
-        }
-    } else if (updateInterval == kAccelerometerUpdateIntervalMoving) {
+    } else {
         // currently moving, check if array has too many objects and remove if necessary
         while ([accelMagnitudes count] > kAccelMagnitudeSamplesMoving)
             [accelMagnitudes removeObjectAtIndex:0];
-        if ([accelMagnitudes count] >= kAccelMagnitudeSamplesMoving) {
-            // there are enough magnitude of acceleration samples, take standard deviation
-            if (([Utils standardDeviationOf:accelMagnitudes] < kStopStandardDeviationThreshold) && (currentSpeed < kStopCurrentSpeedThreshold)) {
-                // the standard deviation and average speed fell below the thresholds, stop recording
+        
+        NSUInteger count = [accelMagnitudes count];
+        if (count >= kAccelMagnitudeSamplesWalking) {
+            // there are enough samples, take standard deviation
+            walkingStdDev = [Utils standardDeviationOf:[accelMagnitudes subarrayWithRange:NSMakeRange(count - kAccelMagnitudeSamplesWalking, kAccelMagnitudeSamplesWalking)]];
+            if (walkingStdDev > kStandardDeviationWalkingThreshold) {
+                // standard deviation is above threshold for walking
+                if (++numStandardDeviationSamplesAboveThreshold > kStandardDeviationSamplesAboveWalkingThreshold) {
+                    // there are enough samples consecutively above the threshold for walking
+                    isDriving = NO;
+                }
+            } else numStandardDeviationSamplesAboveThreshold = 0;
+        }
+        
+        if (count >= kAccelMagnitudeSamplesMoving) {
+            // there are enough samples, take standard deviation
+            accelMagStdDev = [Utils standardDeviationOf:accelMagnitudes];
+            if ((accelMagStdDev < kStandardDeviationStopThreshold) && (currentSpeed < kCurrentSpeedStopThreshold)) {
+                // standard deviation and speed fell below the thresholds, stop recording
                 [self pauseRecording];
                 NSLog(@"GPS turned off due to inactivity");
             }
         }
-        
-        // check if accel magnitudes are greater than the threshold and set driving mode accordingly
-        if (currentSpeed > kSpeedMaxNotDriving || [Utils meanOf:accelMagnitudes] > kAccelDriving)
-            isDriving = YES;
-        else if (currentSpeed < kSpeedMaxNotDriving)
-            isDriving = NO;
     }
 }
 
@@ -638,6 +658,9 @@
 }
 
 - (void)pauseRecording {
+    // no longer driving
+    isDriving = NO;
+    
     // stop updating location
     [self.locationManager stopUpdatingLocation];
     self.mapView.showsUserLocation = NO;

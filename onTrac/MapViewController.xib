@@ -42,12 +42,12 @@
                                 <outletCollection property="gestureRecognizers" destination="cx3-be-Y9I" appends="YES" id="B91-OV-MYS"/>
                             </connections>
                         </view>
-                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="01h-jv-2me" userLabel="Button - Statistics">
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="01h-jv-2me" userLabel="Button - Statistics">
                             <rect key="frame" x="20" y="513" width="280" height="35"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <fontDescription key="fontDescription" type="system" pointSize="19"/>
                             <size key="titleShadowOffset" width="0.0" height="1"/>
-                            <state key="normal" title="Statistics"/>
+                            <state key="normal" title="Debug Information"/>
                             <connections>
                                 <action selector="statisticsButtonPressed:" destination="-1" eventType="touchUpInside" id="KYI-I4-Bt1"/>
                             </connections>
