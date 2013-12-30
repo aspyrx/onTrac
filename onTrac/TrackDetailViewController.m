@@ -125,7 +125,7 @@
             }
         }
         return cell;
-    } else if (indexPath.section == 1) {
+    } else if (indexPath.section == 2) {
         static NSString *cellIdentifier = @"equivalenceCell";
         UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
         if (!cell)
@@ -167,7 +167,7 @@
                 return cell;
             }
         }
-    } else if (hasDesc && indexPath.section == 2) {
+    } else if (hasDesc && indexPath.section == 3) {
         UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
         cell.textLabel.lineBreakMode = NSLineBreakByWordWrapping;
@@ -175,7 +175,7 @@
         cell.textLabel.text = gpx.metadata.desc;
         cell.textLabel.font = descFont;
         return cell;
-    } else if ((!hasDesc && indexPath.section == 2) || indexPath.section == 3) {
+    } else if ((!hasDesc && indexPath.section == 3) || indexPath.section == 4) {
         static NSString *cellIdentifier = @"detailsCell";
         UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
         if (!cell)
