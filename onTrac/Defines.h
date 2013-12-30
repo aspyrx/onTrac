@@ -18,27 +18,27 @@
 #define MPG_PER_100KMPL 235.2
 
 // file paths
-static NSString * const kTracksDirectory = @"Documents/Tracks/";
-static NSString * const kSettingsDirectory = @"Documents/Settings/";
-static NSString * const kSettingsFileName = @"settings.plist";
-static NSString * const kSelectedTracksFileName = @"selectedTracks.plist";
+static NSString *kTracksDirectory = @"Documents/Tracks/";
+static NSString *kSettingsDirectory = @"Documents/Settings/";
+static NSString *kSettingsFileName = @"settings.plist";
+static NSString *kSelectedTracksFileName = @"selectedTracks.plist";
 
 // notification names
-static NSString * const kNotificationUpdateSelectedTracks = @"updateSelectedTracks";
-static NSString * const kNotificationSetRecordingStatus = @"setRecordingStatus";
-static NSString * const kNotificationRecordingStateChanged = @"recordingStateChanged";
+static NSString *kNotificationUpdateSelectedTracks = @"updateSelectedTracks";
+static NSString *kNotificationSetRecordingStatus = @"setRecordingStatus";
+static NSString *kNotificationRecordingStateChanged = @"recordingStateChanged";
 
 // userinfo dictionary keys
-static NSString * const kUserInfoKeyTrackName = @"trackName";
-static NSString * const kUserInfoKeyTrackDescription = @"trackDescription";
-static NSString * const kUserInfoKeyRecordingState = @"recordingState";
+static NSString *kUserInfoKeyTrackName = @"trackName";
+static NSString *kUserInfoKeyTrackDescription = @"trackDescription";
+static NSString *kUserInfoKeyRecordingState = @"recordingState";
 
 // settings dictionary keys
-static NSString * const kSettingsKeyDataSuffix = @"dataSuffix";
-static NSString * const kSettingsKeyUseMetric = @"useMetric";
-static NSString * const kSettingsKeyMapMode = @"mapMode";
-static NSString * const kSettingsKeyFollowLocation = @"followLocation";
-static NSString * const kSettingsKeyFuelEfficiency = @"fuelEfficiency";
+static NSString *kSettingsKeyDataSuffix = @"dataSuffix";
+static NSString *kSettingsKeyUseMetric = @"useMetric";
+static NSString *kSettingsKeyMapMode = @"mapMode";
+static NSString *kSettingsKeyFollowLocation = @"followLocation";
+static NSString *kSettingsKeyFuelEfficiency = @"fuelEfficiency";
 
 // recording states
 static NSUInteger const kRecordingRunning = 2;
@@ -46,18 +46,20 @@ static NSUInteger const kRecordingPaused = 1;
 static NSUInteger const kRecordingOff = 0;
 
 // text for units
-static NSString * const kUnitTextKilometer = @"km";
-static NSString * const kUnitTextMile = @"mi";
-static NSString * const kUnitTextKPH = @"km/h";
-static NSString * const kUnitTextMPH = @"mph";
-static NSString * const kUnitTextKG = @"kg";
-static NSString * const kUnitTextLBS = @"lbs";
-static NSString * const kUnitTextLiter = @"L";
-static NSString * const kUnitTextGallon = @"gal";
+static NSString *kUnitTextKilometer = @"km";
+static NSString *kUnitTextMile = @"mi";
+static NSString *kUnitTextKPH = @"km/h";
+static NSString *kUnitTextMPH = @"mph";
+static NSString *kUnitTextKG = @"kg";
+static NSString *kUnitTextLBS = @"lbs";
+static NSString *kUnitTextLiter = @"L";
+static NSString *kUnitTextGallon = @"gal";
+static NSString *kUnitTextCalorie = @"Cal";
 
 // text for data suffixes
-static NSString * const kDataSuffixCO2 = @"CO2";
-static NSString * const kDataSuffixGas = @"gas";
+static NSString *kDataSuffixCO2 = @"CO2";
+static NSString *kDataSuffixGas = @"gas";
+static NSString *kDataSuffixCalories = @"burned";
 
 // kg CO_2 / L, emissions from 1 L gasoline
 static CGFloat const kEmissionsMassPerLiterGas = 2.3477;
@@ -65,7 +67,5 @@ static CGFloat const kEmissionsMassPerLiterGas = 2.3477;
 static CGFloat const kEmissionsMassPerKWH = 0.5534;
 // kg CO_2 / hour, emissions for powering a home for 1 hour
 static CGFloat const kEmissionsPerHomeHour = 0.54282;
-
-// calories burned / m at given speeds
 
 #endif

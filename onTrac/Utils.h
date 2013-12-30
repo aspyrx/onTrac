@@ -9,6 +9,8 @@
 #import <Foundation/Foundation.h>
 #import <MapKit/MapKit.h>
 
+@class GPXRoot;
+
 @interface Utils : NSObject
 
 + (CGFloat)metersBetweenCoordinate:(CLLocationCoordinate2D)a coordinate:(CLLocationCoordinate2D)b;
@@ -21,7 +23,8 @@
 + (double)standardDeviationOf:(NSArray *)array;
 + (NSString *)timeStringFromSeconds:(int)s;
 + (NSDictionary *)loadSettings;
-+ (NSAttributedString *)attributedStringFromMass:(CGFloat)mass baseFontSize:(CGFloat)size dataSuffix:(NSString *)dataSuffix unitText:(NSString *)unitText;
++ (NSAttributedString *)attributedStringFromNumber:(CGFloat)num baseFontSize:(CGFloat)size dataSuffix:(NSString *)dataSuffix unitText:(NSString *)unitText;
 + (UIColor *)colorForEmissions:(CGFloat)mass;
++ (GPXRoot *)rootWithMetadataAtPath:(NSString *)path;
 
 @end

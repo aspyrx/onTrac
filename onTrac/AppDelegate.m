@@ -7,7 +7,6 @@
 //
 
 #import "AppDelegate.h"
-#import "RootViewController.h"
 #import "MapViewController.h"
 
 @implementation AppDelegate
@@ -16,11 +15,9 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-    
-//    RootViewController *rootViewController = [[RootViewController alloc] initWithNibName:@"RootViewController" bundle:nil];
+
     MapViewController *mapViewController = [[MapViewController alloc] initWithNibName:@"MapViewController" bundle:nil];
     
-//    UINavigationController *navController = [[UINavigationController alloc] initWithRootViewController:rootViewController];
     UINavigationController *navController = [[UINavigationController alloc] initWithRootViewController:mapViewController];
     self.window.rootViewController = navController;
     [self.window makeKeyAndVisible];

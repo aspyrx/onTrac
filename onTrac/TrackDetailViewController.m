@@ -34,7 +34,7 @@
     if (self) {
         self.title = @"Track Details";
         self.filePath = filePath;
-        gpx = [GPXParser parseGPXAtPath:self.filePath];
+        gpx = [Utils rootWithMetadataAtPath:self.filePath];
         NSDictionary *settings = [Utils loadSettings];
         // change unit labels depending on setting
         if ([[settings objectForKey:kSettingsKeyUseMetric] boolValue]) {
@@ -64,18 +64,20 @@
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     // Return the number of sections.
-    return (hasDesc ? 4 : 3);
+    return (hasDesc ? 5 : 4);
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     // Return the number of rows in the section.
     if (section == 0)
-        return 3;
+        return 1;
     else if (section == 1)
+        return 3;
+    else if (section == 2)
         return 2;
-    else if (hasDesc && section == 2)
+    else if (hasDesc && section == 3)
             return 1;
-    else if ((!hasDesc && section == 2) || section == 3)
+    else if ((!hasDesc && section == 3) || section == 4)
         return 5;
     else return 0;
 }
@@ -86,42 +88,43 @@
         NSDateFormatter *dateFormatter = [NSDateFormatter new];
         [dateFormatter setDateFormat:@"EEE, MMM d, YYYY h:mm a"];
         return [dateFormatter stringFromDate:gpx.metadata.time];
-    } else if (section == 1)
+    } else if (section == 2)
         return @"That's the same as...";
-    else if (hasDesc && section == 2)
+    else if (hasDesc && section == 3)
             return @"Track Description";
-    else if ((!hasDesc && section == 2) || section == 3)
+    else if ((!hasDesc && section == 3) || section == 4)
         return @"More Details";
     else return nil;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (indexPath.section == 0) {
+    if (indexPath.section == 0 && indexPath.row == 0) {
+        UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        cell.textLabel.text = gpx.metadata.name;
+        cell.textLabel.font = nameFont;
+        cell.textLabel.lineBreakMode = NSLineBreakByWordWrapping;
+        cell.textLabel.numberOfLines = 0;
+        return cell;
+    } else if (indexPath.section == 1) {
+        UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:@"dataDisplayCell"];
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        cell.textLabel.textColor = [UIColor darkGrayColor];
         switch (indexPath.row) {
             case 0: {
-                UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
-                cell.selectionStyle = UITableViewCellSelectionStyleNone;
-                cell.textLabel.text = gpx.metadata.name;
-                cell.textLabel.font = nameFont;
-                cell.textLabel.lineBreakMode = NSLineBreakByWordWrapping;
-                cell.textLabel.numberOfLines = 0;
-                return cell;
-            } case 1: {
-                UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:nil];
-                cell.selectionStyle = UITableViewCellSelectionStyleNone;
                 cell.textLabel.text = @"Emissions";
-                cell.textLabel.textColor = [UIColor darkGrayColor];
-                cell.detailTextLabel.attributedText = [Utils attributedStringFromMass:emissions baseFontSize:18.0f dataSuffix:kDataSuffixCO2 unitText:massUnitText];
-                return cell;
-            } case 2: {
-                UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:nil];
-                cell.selectionStyle = UITableViewCellSelectionStyleNone;
+                cell.detailTextLabel.attributedText = [Utils attributedStringFromNumber:emissions baseFontSize:18.0f dataSuffix:kDataSuffixCO2 unitText:massUnitText];
+                break;
+            } case 1: {
                 cell.textLabel.text = @"Fuel Used";
-                cell.textLabel.textColor = [UIColor darkGrayColor];
-                cell.detailTextLabel.attributedText = [Utils attributedStringFromMass:emissions baseFontSize:18.0f dataSuffix:kDataSuffixGas unitText:volumeUnitText];
-                return cell;
+                cell.detailTextLabel.attributedText = [Utils attributedStringFromNumber:emissions baseFontSize:18.0f dataSuffix:kDataSuffixGas unitText:volumeUnitText];
+                break;
+            } case 2: {
+                cell.textLabel.text = @"Calories";
+                cell.detailTextLabel.attributedText = [Utils attributedStringFromNumber:gpx.metadata.extensions.caloriesBurned baseFontSize:18.0f dataSuffix:kDataSuffixCalories unitText:kUnitTextCalorie];
             }
         }
+        return cell;
     } else if (indexPath.section == 1) {
         static NSString *cellIdentifier = @"equivalenceCell";
         UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
@@ -217,7 +220,7 @@
     CGFloat defaultHeight = [super tableView:tableView heightForRowAtIndexPath:indexPath];
     if (indexPath.section == 0 && indexPath.row == 0) {
         return MAX(defaultHeight, [gpx.metadata.name sizeWithFont:nameFont constrainedToSize:CGSizeMake(self.tableView.frame.size.width - 120, CGFLOAT_MAX) lineBreakMode:NSLineBreakByWordWrapping].height);
-    } else if (indexPath.section == 2) {
+    } else if (indexPath.section == 3) {
         return MAX(defaultHeight, [gpx.metadata.desc sizeWithFont:descFont constrainedToSize:CGSizeMake(self.tableView.frame.size.width - 120, CGFLOAT_MAX) lineBreakMode:NSLineBreakByWordWrapping].height);
     } else return defaultHeight;
 }

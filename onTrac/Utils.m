@@ -8,6 +8,7 @@
 
 #import "Utils.h"
 #import "Defines.h"
+#import "GPX.h"
 
 @implementation Utils
 
@@ -23,8 +24,7 @@
 }
 
 + (CGFloat)caloriesBurnedForDistance:(CGFloat)dist speed:(CGFloat)speed {
-    // TODO: finish
-    return 0;
+    return (speed > 0 ? dist * 0.044827 * powf(0.043527, speed) : 0);
 }
 
 + (double)speedFromMetersSec:(double)metersSec units:(NSString *)units {
@@ -101,15 +101,16 @@
     return settings;
 }
 
-+ (NSAttributedString *)attributedStringFromMass:(CGFloat)mass baseFontSize:(CGFloat)size dataSuffix:(NSString *)dataSuffix unitText:(NSString *)unitText {
++ (NSAttributedString *)attributedStringFromNumber:(CGFloat)num baseFontSize:(CGFloat)size dataSuffix:(NSString *)dataSuffix unitText:(NSString *)unitText {
     UIFont *numberFont = [UIFont systemFontOfSize:size];
     UIFont *suffixFont = [UIFont systemFontOfSize:0.8 * size];
     NSMutableAttributedString *suffixString = [[NSMutableAttributedString alloc]
                                                initWithString:[NSString stringWithFormat:@"%@ %@", unitText, dataSuffix]
                                                attributes:@{NSFontAttributeName: suffixFont}];
     CGFloat number = 0.0f;
+    UIColor *numberColor = [self colorForEmissions:num];
     if ([dataSuffix isEqualToString:kDataSuffixCO2]) {
-        number = [Utils massFromKilograms:mass units:unitText];
+        number = [Utils massFromKilograms:num units:unitText];
         
         // add subscript to the "2" in CO2
         UIFont *subscriptFont = [UIFont systemFontOfSize:0.6 * size];
@@ -119,13 +120,16 @@
         [suffixString addAttribute:NSBaselineOffsetAttributeName value:[NSNumber numberWithFloat:-2.0] range:range];
         [suffixString endEditing];
     } else if ([dataSuffix isEqualToString:kDataSuffixGas]) {
-        number = [Utils volumeFromLiters:mass / kEmissionsMassPerLiterGas units:unitText];
+        number = [Utils volumeFromLiters:num / kEmissionsMassPerLiterGas units:unitText];
+    } else if ([dataSuffix isEqualToString:kDataSuffixCalories]) {
+        number = num;
+        numberColor = [UIColor colorWithRed:0.0 green:0.8 blue:0.0 alpha:1.0];
     }
     
     NSAttributedString *numberString = [[NSAttributedString alloc]
                                         initWithString:[NSString stringWithFormat:@"%.2f ", number]
                                         attributes:@{NSFontAttributeName: numberFont,
-                                                     NSForegroundColorAttributeName: [self colorForEmissions:mass]}];
+                                                     NSForegroundColorAttributeName: numberColor}];
     [suffixString insertAttributedString:numberString atIndex:0];
     
     return suffixString;
@@ -137,6 +141,23 @@
             : (mass < 10
                ? [UIColor orangeColor]
                : [UIColor colorWithRed:0.8 green:0 blue:0 alpha:1.0]));
+}
+
++ (GPXRoot *)rootWithMetadataAtPath:(NSString *)path {
+    // get gpx string at path
+    NSError *error;
+    NSString *gpxString = [NSString stringWithContentsOfFile:path encoding:NSUTF8StringEncoding error:&error];
+    if (error) {
+        NSLog(@"%@", error);
+        return nil;
+    }
+    
+    // get range of metadata closing tag
+    NSRange tagRange = [gpxString rangeOfString:@"</metadata>"];
+    // truncate string to metadata tag, append gpx closing tag
+    gpxString = [[gpxString substringToIndex:tagRange.location + tagRange.length] stringByAppendingString:@"</gpx>"];
+    // parse and return
+    return [GPXParser parseGPXWithString:gpxString];
 }
 
 @end

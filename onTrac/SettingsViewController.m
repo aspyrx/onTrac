@@ -59,16 +59,22 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     if (section == 0)
+        // Unit cells
         return 2;
     else if (section == 1)
+        // Fuel efficiency cell
         return 1;
     else if (section == 2)
-        return 2;
+        // Displayed data cells
+        return 3;
     else if (section == 3)
+        // Map mode cells
         return 3;
     else if (section == 4)
+        // Follow location cell
         return 1;
     else if (section == 5)
+        // About cell
         return 1;
     else return 0;
 }
@@ -132,6 +138,9 @@
         } else if (indexPath.row == 1) {
             cell.textLabel.text = @"Gasoline usage";
             cell.accessoryType = ([dataSuffix isEqualToString:kDataSuffixGas] ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone);
+        } else if (indexPath.row == 2) {
+            cell.textLabel.text = @"Calories";
+            cell.accessoryType = ([dataSuffix isEqualToString:kDataSuffixCalories] ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone);
         }
         return cell;
     } else if (indexPath.section == 3) {
@@ -201,10 +210,17 @@
             [settings setObject:kDataSuffixCO2 forKey:kSettingsKeyDataSuffix];
             [tableView cellForRowAtIndexPath:indexPath].accessoryType = UITableViewCellAccessoryCheckmark;
             [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:2]].accessoryType = UITableViewCellAccessoryNone;
+            [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:2 inSection:2]].accessoryType = UITableViewCellAccessoryNone;
         } else if (indexPath.row == 1) {
             [settings setObject:kDataSuffixGas forKey:kSettingsKeyDataSuffix];
             [tableView cellForRowAtIndexPath:indexPath].accessoryType = UITableViewCellAccessoryCheckmark;
             [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:2]].accessoryType = UITableViewCellAccessoryNone;
+            [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:2 inSection:2]].accessoryType = UITableViewCellAccessoryNone;
+        } else if (indexPath.row == 2) {
+            [settings setObject:kDataSuffixCalories forKey:kSettingsKeyDataSuffix];
+            [tableView cellForRowAtIndexPath:indexPath].accessoryType = UITableViewCellAccessoryCheckmark;
+            [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:2]].accessoryType = UITableViewCellAccessoryNone;
+            [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:2]].accessoryType = UITableViewCellAccessoryNone;
         }
     } else if (indexPath.section == 3) {
         if (indexPath.row == 0) {

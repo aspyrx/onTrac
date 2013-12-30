@@ -181,6 +181,9 @@ static NSUInteger const kAccelerometerOff = 0;
         } else if ([dataSuffix isEqualToString:kDataSuffixGas]) {
             self.displayedDataName.text = @"Gas used";
             dataUnitText = (useMetricSetting ? kUnitTextLiter : kUnitTextGallon);
+        } else if ([dataSuffix isEqualToString:kDataSuffixCalories]) {
+            self.displayedDataName.text = @"Calories";
+            dataUnitText = kUnitTextCalorie;
         }
         if (useMetricSetting) {
             distanceUnitText = kUnitTextKilometer;
@@ -448,7 +451,7 @@ static NSUInteger const kAccelerometerOff = 0;
             GPXTrackPoint *firstPoint = [[[tracksegments firstObject] trackpoints] firstObject];
             CLLocationCoordinate2D firstCoord = CLLocationCoordinate2DMake(firstPoint.latitude, firstPoint.longitude);
             // create track annotation at first coordinate, add to map view
-            TrackAnnotation *annotation = [[TrackAnnotation alloc] initWithFilePath:filePath title:metadata.name subtitle:[[Utils attributedStringFromMass:emissions baseFontSize:1.0f dataSuffix:dataSuffix unitText:dataUnitText] string] coordinate:firstCoord];
+            TrackAnnotation *annotation = [[TrackAnnotation alloc] initWithFilePath:filePath title:metadata.name subtitle:[[Utils attributedStringFromNumber:emissions baseFontSize:1.0f dataSuffix:dataSuffix unitText:dataUnitText] string] coordinate:firstCoord];
             [self.mapView addAnnotation:annotation];
             
             // load bounds
@@ -529,7 +532,7 @@ static NSUInteger const kAccelerometerOff = 0;
     self.totalDistanceLabel.text = [NSString stringWithFormat:@"%.2f %@", [Utils distanceFromMeters:totalDistance units:distanceUnitText], distanceUnitText];
     self.averageSpeedLabel.text = [NSString stringWithFormat:@"%.2f %@", [Utils speedFromMetersSec:averageSpeed units:speedUnitText], speedUnitText];
     self.currentSpeedLabel.text = [NSString stringWithFormat:@"%.2f %@", [Utils speedFromMetersSec:currentSpeed units:speedUnitText], speedUnitText];
-    self.displayedDataLabel.attributedText = [Utils attributedStringFromMass:carbonEmissions baseFontSize:21.0f dataSuffix:dataSuffix unitText:dataUnitText];
+    self.displayedDataLabel.attributedText = [Utils attributedStringFromNumber:carbonEmissions baseFontSize:21.0f dataSuffix:dataSuffix unitText:dataUnitText];
     // testing: statistics button text
     self.statisticsButton.titleLabel.text = [NSString stringWithFormat:@"%.4f %.4f %@", accelMagStdDev, walkingStdDev, (isDriving ? @"Yes" : @"No")];
 }

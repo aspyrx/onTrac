@@ -52,9 +52,7 @@
 		4D8C213717663232007DA212 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 4D8C213517663232007DA212 /* InfoPlist.strings */; };
 		4D8C213917663232007DA212 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D8C213817663232007DA212 /* main.m */; };
 		4D8C213D17663232007DA212 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D8C213C17663232007DA212 /* AppDelegate.m */; };
-		4D8C214C17663622007DA212 /* RootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D8C214A17663622007DA212 /* RootViewController.m */; };
 		4D8C215117663A88007DA212 /* MapViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D8C214F17663A88007DA212 /* MapViewController.m */; };
-		4D950F4A180B07DD002CEB2F /* RootViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4D950F49180B07DD002CEB2F /* RootViewController.xib */; };
 		4D950F52180B1DB1002CEB2F /* MapViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4D950F51180B1DB1002CEB2F /* MapViewController.xib */; };
 		4D9EA2D1178F2C6000CD5CD9 /* GPXAuthor.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D9EA2A3178F2C6000CD5CD9 /* GPXAuthor.m */; };
 		4D9EA2D2178F2C6000CD5CD9 /* GPXBounds.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D9EA2A5178F2C6000CD5CD9 /* GPXBounds.m */; };
@@ -153,11 +151,8 @@
 		4D8C213A17663232007DA212 /* onTrac-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "onTrac-Prefix.pch"; sourceTree = "<group>"; };
 		4D8C213B17663232007DA212 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		4D8C213C17663232007DA212 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
-		4D8C214917663622007DA212 /* RootViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RootViewController.h; sourceTree = "<group>"; };
-		4D8C214A17663622007DA212 /* RootViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RootViewController.m; sourceTree = "<group>"; };
 		4D8C214E17663A88007DA212 /* MapViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MapViewController.h; sourceTree = "<group>"; };
 		4D8C214F17663A88007DA212 /* MapViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MapViewController.m; sourceTree = "<group>"; };
-		4D950F49180B07DD002CEB2F /* RootViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = RootViewController.xib; sourceTree = "<group>"; };
 		4D950F51180B1DB1002CEB2F /* MapViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MapViewController.xib; sourceTree = "<group>"; };
 		4D9EA2A1178F2C6000CD5CD9 /* GPX.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GPX.h; sourceTree = "<group>"; };
 		4D9EA2A2178F2C6000CD5CD9 /* GPXAuthor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GPXAuthor.h; sourceTree = "<group>"; };
@@ -276,8 +271,6 @@
 			isa = PBXGroup;
 			children = (
 				4DF41D2318479705004ED8DB /* Nibs */,
-				4D8C214917663622007DA212 /* RootViewController.h */,
-				4D8C214A17663622007DA212 /* RootViewController.m */,
 				4D8C214E17663A88007DA212 /* MapViewController.h */,
 				4D8C214F17663A88007DA212 /* MapViewController.m */,
 				4D1158EE1766D83000A1FAF4 /* TracksViewController.h */,
@@ -479,7 +472,6 @@
 		4DF41D2318479705004ED8DB /* Nibs */ = {
 			isa = PBXGroup;
 			children = (
-				4D950F49180B07DD002CEB2F /* RootViewController.xib */,
 				4D950F51180B1DB1002CEB2F /* MapViewController.xib */,
 				4DA29546180B329A003CC51D /* SaveViewController.xib */,
 			);
@@ -543,7 +535,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				4D8C213717663232007DA212 /* InfoPlist.strings in Resources */,
-				4D950F4A180B07DD002CEB2F /* RootViewController.xib in Resources */,
 				4D1158CF176663CE00A1FAF4 /* BackFragmentShader.glsl in Resources */,
 				4D1158D0176663CE00A1FAF4 /* BackPageGradient.png in Resources */,
 				4D0EF99E181CC17800B4EC73 /* Default.png in Resources */,
@@ -583,7 +574,6 @@
 			files = (
 				4D8C213917663232007DA212 /* main.m in Sources */,
 				4D8C213D17663232007DA212 /* AppDelegate.m in Sources */,
-				4D8C214C17663622007DA212 /* RootViewController.m in Sources */,
 				4D8C215117663A88007DA212 /* MapViewController.m in Sources */,
 				4D1158CE176663CE00A1FAF4 /* CGPointAdditions.c in Sources */,
 				4D1158D8176663CE00A1FAF4 /* XBAnimation.m in Sources */,

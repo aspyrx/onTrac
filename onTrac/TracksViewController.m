@@ -22,7 +22,6 @@
 @implementation TracksViewController {
     int recordingState;
     NSMutableArray *gpxFilePaths;
-    NSMutableArray *gpxRoots;
     NSMutableDictionary *selectedTrackPaths;
     NSString *dataSuffix;
     NSString *dataUnitText;
@@ -48,6 +47,7 @@
 }
 
 - (void)viewWillAppear:(BOOL)animated {
+    NSLog(@"Will appear");
     [super viewWillAppear:animated];
     
     // load saved GPX file paths
@@ -57,9 +57,6 @@
     for (int i = 0; i < [gpxFilePaths count]; i++) {
         gpxFilePaths[i] = [[NSHomeDirectory() stringByAppendingPathComponent:kTracksDirectory] stringByAppendingPathComponent:gpxFilePaths[i]];
     }
-    gpxRoots = [NSMutableArray new];
-    for (NSString *path in gpxFilePaths)
-        [gpxRoots addObject:[GPXParser parseGPXAtPath:path]];
     
     // create Settings directory if necessary
     NSString *settingsDirectory = [NSHomeDirectory() stringByAppendingPathComponent:kSettingsDirectory];
@@ -76,6 +73,7 @@
     [self updateUnits];
     
     [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:UITableViewRowAnimationAutomatic];
+    NSLog(@"Will appear done");
 }
 
 #pragma mark - UITableViewDataSource
@@ -134,16 +132,13 @@
         UITableViewCell *trackCell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
         if (!trackCell) trackCell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:cellIdentifier];
         
-        // load and parse appropriate gpx file
-        GPXRoot *root = [gpxRoots objectAtIndex:indexPath.row];
+        // load and parse appropriate gpx file's metadata
+        GPXRoot *root = [Utils rootWithMetadataAtPath:[gpxFilePaths objectAtIndex:indexPath.row]];
         
         // set track cell properties
         trackCell.textLabel.text = root.metadata.name;
-        NSDateFormatter *dateFormatter = [NSDateFormatter new];
-        [dateFormatter setDateFormat:@"MMM d, yyyy h:mm a"];
-        NSString *trackDate = [dateFormatter stringFromDate:root.metadata.time];
-        trackCell.detailTextLabel.text = trackDate;
-        trackCell.detailTextLabel.attributedText = [Utils attributedStringFromMass:root.metadata.extensions.carbonEmissions baseFontSize:14.0f dataSuffix:dataSuffix unitText:dataUnitText];
+        CGFloat num = ([dataSuffix isEqualToString:kDataSuffixCalories] ? root.metadata.extensions.caloriesBurned : root.metadata.extensions.carbonEmissions);
+        trackCell.detailTextLabel.attributedText = [Utils attributedStringFromNumber:num baseFontSize:14.0f dataSuffix:dataSuffix unitText:dataUnitText];
         
         trackCell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
         
@@ -177,7 +172,6 @@
         [fileManager removeItemAtPath:[gpxFilePaths objectAtIndex:indexPath.row] error:&error];
         if (error)
             NSLog(@"Error deleting GPX file: %@", error);
-        [gpxRoots removeObjectAtIndex:indexPath.row];
         [gpxFilePaths removeObjectAtIndex:indexPath.row];
         [selectedTrackPaths removeObjectForKey:[NSString stringWithFormat:@"%i", indexPath.row]];
         [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
@@ -299,6 +293,8 @@
     dataUnitText = (useMetric ? kUnitTextKG : kUnitTextLBS);
     if ([dataSuffix isEqualToString:kDataSuffixGas])
         dataUnitText = (useMetric ? kUnitTextLiter : kUnitTextGallon);
+    else if ([dataSuffix isEqualToString:kDataSuffixCalories])
+        dataUnitText = kUnitTextCalorie;
 }
 
 @end
