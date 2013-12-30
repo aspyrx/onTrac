@@ -234,9 +234,10 @@ static NSUInteger const kAccelerometerOff = 0;
         } else {
             // calculate distance
             CGFloat distance = 0;
-            if (oldLocation != nil)
+            if (oldLocation != nil) {
                 distance = [Utils metersBetweenCoordinate:oldLocation.coordinate coordinate:newLocation.coordinate];
                 totalDistance += distance;
+            }
             oldLocation = newLocation;
             
             // get current speed, calculate average speed
@@ -745,6 +746,7 @@ static NSUInteger const kAccelerometerOff = 0;
     extensions.totalDistance = totalDistance;
     extensions.averageSpeed = averageSpeed;
     extensions.carbonEmissions = carbonEmissions;
+    extensions.carbonAvoidance = carbonAvoidance;
     extensions.caloriesBurned = caloriesBurned;
     
     // create and set metadata
