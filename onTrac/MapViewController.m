@@ -559,7 +559,7 @@ static NSUInteger const kAccelerometerOff = 0;
                                                                     dataSuffix:dataSuffix
                                                                       unitText:dataUnitText];
     // testing: statistics button text
-    self.statisticsButton.titleLabel.text = [NSString stringWithFormat:@"%.4f %.4f %@", accelMagStdDev, walkingStdDev, (isDriving ? @"Yes" : @"No")];
+//    self.statisticsButton.titleLabel.text = [NSString stringWithFormat:@"%.4f %.4f %@", accelMagStdDev, walkingStdDev, (isDriving ? @"Yes" : @"No")];
 }
 
 #pragma mark accelerometer
@@ -567,7 +567,7 @@ static NSUInteger const kAccelerometerOff = 0;
 - (void)outputAccelerationData:(CMAcceleration)acceleration {
     // add current acceleration magnitude to array
     [accelMagnitudes addObject:[NSNumber numberWithDouble:sqrt((acceleration.x * acceleration.x) + (acceleration.y * acceleration.y) + (acceleration.z * acceleration.z))]];
-    if (recordingState < 2) {
+    if (recordingState < kRecordingRunning) {
         // currently stopped, check if array has too many objects and remove if necessary
         while ([accelMagnitudes count] > kAccelMagnitudeSamplesStopped)
             [accelMagnitudes removeObjectAtIndex:0];
@@ -590,8 +590,8 @@ static NSUInteger const kAccelerometerOff = 0;
             [accelMagnitudes removeObjectAtIndex:0];
         
         NSUInteger count = [accelMagnitudes count];
-        if (count >= kAccelMagnitudeSamplesWalking) {
-            // there are enough samples, take standard deviation
+        if (count >= kAccelMagnitudeSamplesWalking && isDriving ) {
+            // there are enough samples AND currently driving, take standard deviation
             walkingStdDev = [Utils standardDeviationOf:[accelMagnitudes subarrayWithRange:NSMakeRange(count - kAccelMagnitudeSamplesWalking, kAccelMagnitudeSamplesWalking)]];
             if (walkingStdDev > kStandardDeviationWalkingThreshold) {
                 // standard deviation is above threshold for walking
@@ -602,10 +602,10 @@ static NSUInteger const kAccelerometerOff = 0;
             } else numStandardDeviationSamplesAboveThreshold = 0;
         }
         
-        if (count >= kAccelMagnitudeSamplesMoving) {
-            // there are enough samples, take standard deviation
+        if (count >= kAccelMagnitudeSamplesMoving && currentSpeed < kCurrentSpeedStopThreshold) {
+            // there are enough samples AND speed is below threshold, take standard deviation
             accelMagStdDev = [Utils standardDeviationOf:accelMagnitudes];
-            if ((accelMagStdDev < kStandardDeviationStopThreshold) && (currentSpeed < kCurrentSpeedStopThreshold)) {
+            if (accelMagStdDev < kStandardDeviationStopThreshold) {
                 // standard deviation and speed fell below the thresholds, stop recording
                 [self pauseRecording];
                 NSLog(@"GPS turned off due to inactivity");
