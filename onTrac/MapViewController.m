@@ -177,16 +177,12 @@ static NSUInteger const kAccelerometerOff = 0;
         || ![distanceUnitText isEqualToString:(useMetricSetting ? kUnitTextKilometer : kUnitTextMile)]) {
         dataSuffix = newSuffix;
         if ([dataSuffix isEqualToString:kDataSuffixCO2Emitted]) {
-            self.displayedDataName.text = @"Emissions";
             dataUnitText = (useMetricSetting ? kUnitTextKG : kUnitTextLBS);
         } else if ([dataSuffix isEqualToString:kDataSuffixCO2Avoided]) {
-            self.displayedDataName.text = @"Avoidance";
             dataUnitText = (useMetricSetting ? kUnitTextKG : kUnitTextLBS);
         } else if ([dataSuffix isEqualToString:kDataSuffixGas]) {
-            self.displayedDataName.text = @"Gasoline";
             dataUnitText = (useMetricSetting ? kUnitTextLiter : kUnitTextGallon);
         } else if ([dataSuffix isEqualToString:kDataSuffixCalories]) {
-            self.displayedDataName.text = @"Calories";
             dataUnitText = kUnitTextCalorie;
         }
         
@@ -236,12 +232,10 @@ static NSUInteger const kAccelerometerOff = 0;
                 currentGPXTrackSegment = [currentGPXTrack newTrackSegment];
             }
         } else {
-            // successful location update, reset counter
-            numStatsUpdatesWithoutLocationUpdate = 0;
-            
-            // calculate total distance
-            CGFloat distance = [Utils metersBetweenCoordinate:oldLocation.coordinate coordinate:newLocation.coordinate];
+            // calculate distance
+            CGFloat distance = 0;
             if (oldLocation != nil)
+                distance = [Utils metersBetweenCoordinate:oldLocation.coordinate coordinate:newLocation.coordinate];
                 totalDistance += distance;
             oldLocation = newLocation;
             
@@ -307,6 +301,9 @@ static NSUInteger const kAccelerometerOff = 0;
                     [crumbView setNeedsDisplayInMapRect:updateRect];
                 }
             }
+            
+            // successful location update, reset counter
+            numStatsUpdatesWithoutLocationUpdate = 0;
         }
     }
 }
@@ -467,7 +464,7 @@ static NSUInteger const kAccelerometerOff = 0;
                                                                                         ? emissions
                                                                                         : ([dataSuffix isEqualToString:kDataSuffixCO2Avoided]
                                                                                            ? metadata.extensions.carbonAvoidance
-                                                                                           : metadata.extensions.carbonEmissions))
+                                                                                           : metadata.extensions.caloriesBurned))
                                                                           baseFontSize:1.0f
                                                                             dataSuffix:dataSuffix
                                                                               unitText:dataUnitText] string]
@@ -557,7 +554,7 @@ static NSUInteger const kAccelerometerOff = 0;
                                                                                 : ([dataSuffix isEqualToString:kDataSuffixCO2Avoided]
                                                                                    ? carbonAvoidance
                                                                                    : caloriesBurned))
-                                                                  baseFontSize:21.0f
+                                                                  baseFontSize:23.0f
                                                                     dataSuffix:dataSuffix
                                                                       unitText:dataUnitText];
     // testing: statistics button text

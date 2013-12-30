@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>dataSuffix</key>
-	<string>gas</string>
+	<string>CO2 emitted</string>
 	<key>fuelEfficiency</key>
 	<real>9.484</real>
 	<key>useMetric</key>
