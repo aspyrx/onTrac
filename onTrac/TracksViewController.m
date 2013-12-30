@@ -85,10 +85,10 @@
     if (section == 0)
         if (recordingState > kRecordingOff) return 2;
         else return 1;
-    else if (section == 1)
-        // section 1 has as many rows as there are track files
-        return [gpxFilePaths count];
-    else return 0;
+        else if (section == 1)
+            // section 1 has as many rows as there are track files
+            return [gpxFilePaths count];
+        else return 0;
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
@@ -135,7 +135,11 @@
         
         // set track cell properties
         trackCell.textLabel.text = root.metadata.name;
-        CGFloat num = ([dataSuffix isEqualToString:kDataSuffixCalories] ? root.metadata.extensions.caloriesBurned : root.metadata.extensions.carbonEmissions);
+        CGFloat num = ([dataSuffix isEqualToString:kDataSuffixCO2Emitted] || [dataSuffix isEqualToString:kDataSuffixGas]
+                       ? root.metadata.extensions.carbonEmissions
+                       : ([dataSuffix isEqualToString:kDataSuffixCO2Avoided]
+                          ? root.metadata.extensions.carbonAvoidance
+                          : root.metadata.extensions.caloriesBurned));
         trackCell.detailTextLabel.attributedText = [Utils attributedStringFromNumber:num baseFontSize:14.0f dataSuffix:dataSuffix unitText:dataUnitText];
         
         trackCell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;

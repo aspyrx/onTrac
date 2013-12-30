@@ -109,12 +109,23 @@
                                                attributes:@{NSFontAttributeName: suffixFont}];
     CGFloat number = 0.0f;
     UIColor *numberColor = [self colorForEmissions:num];
-    if ([dataSuffix isEqualToString:kDataSuffixCO2]) {
+    if ([dataSuffix isEqualToString:kDataSuffixCO2Emitted]) {
         number = [Utils massFromKilograms:num units:unitText];
         
         // add subscript to the "2" in CO2
         UIFont *subscriptFont = [UIFont systemFontOfSize:0.6 * size];
-        NSRange range = NSMakeRange([suffixString length] - 1, 1);
+        NSRange range = [suffixString.string rangeOfString:@"2"];
+        [suffixString beginEditing];
+        [suffixString addAttribute:NSFontAttributeName value:subscriptFont range:range];
+        [suffixString addAttribute:NSBaselineOffsetAttributeName value:[NSNumber numberWithFloat:-2.0] range:range];
+        [suffixString endEditing];
+    } else if ([dataSuffix isEqualToString:kDataSuffixCO2Avoided]) {
+        number = [Utils massFromKilograms:num units:unitText];
+        numberColor = [UIColor colorWithRed:0.0 green:0.8 blue:0.0 alpha:1.0];
+        
+        // add subscript to the "2" in CO2
+        UIFont *subscriptFont = [UIFont systemFontOfSize:0.6 * size];
+        NSRange range = [suffixString.string rangeOfString:@"2"];
         [suffixString beginEditing];
         [suffixString addAttribute:NSFontAttributeName value:subscriptFont range:range];
         [suffixString addAttribute:NSBaselineOffsetAttributeName value:[NSNumber numberWithFloat:-2.0] range:range];

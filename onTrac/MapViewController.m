@@ -91,6 +91,7 @@ static NSUInteger const kAccelerometerOff = 0;
     int numAverageSpeedSamples;
     CGFloat currentSpeed; // m/s
     CGFloat carbonEmissions; // kg
+    CGFloat carbonAvoidance; // kg
     CGFloat caloriesBurned; // calories
     CGFloat fuelEfficiency; // L/100 km
     
@@ -175,16 +176,20 @@ static NSUInteger const kAccelerometerOff = 0;
     if (![dataSuffix isEqualToString:newSuffix]
         || ![distanceUnitText isEqualToString:(useMetricSetting ? kUnitTextKilometer : kUnitTextMile)]) {
         dataSuffix = newSuffix;
-        if ([dataSuffix isEqualToString:kDataSuffixCO2]) {
+        if ([dataSuffix isEqualToString:kDataSuffixCO2Emitted]) {
             self.displayedDataName.text = @"Emissions";
             dataUnitText = (useMetricSetting ? kUnitTextKG : kUnitTextLBS);
+        } else if ([dataSuffix isEqualToString:kDataSuffixCO2Avoided]) {
+            self.displayedDataName.text = @"Avoidance";
+            dataUnitText = (useMetricSetting ? kUnitTextKG : kUnitTextLBS);
         } else if ([dataSuffix isEqualToString:kDataSuffixGas]) {
-            self.displayedDataName.text = @"Gas used";
+            self.displayedDataName.text = @"Gasoline";
             dataUnitText = (useMetricSetting ? kUnitTextLiter : kUnitTextGallon);
         } else if ([dataSuffix isEqualToString:kDataSuffixCalories]) {
             self.displayedDataName.text = @"Calories";
             dataUnitText = kUnitTextCalorie;
         }
+        
         if (useMetricSetting) {
             distanceUnitText = kUnitTextKilometer;
             speedUnitText = kUnitTextKPH;
@@ -249,10 +254,14 @@ static NSUInteger const kAccelerometerOff = 0;
                 isDriving = YES;
             }
             
-            // calculate carbon emissions or calories burned
+            // calculate carbon emissions or avoidance and calories burned
+            CGFloat deltaCarbon = distance / 100000 * fuelEfficiency * kEmissionsMassPerLiterGas;
             if (isDriving)
-                carbonEmissions += distance / 100000 * fuelEfficiency * kEmissionsMassPerLiterGas;
-            else caloriesBurned += [Utils caloriesBurnedForDistance:distance speed:currentSpeed];
+                carbonEmissions += deltaCarbon;
+            else {
+                carbonAvoidance += deltaCarbon;
+                caloriesBurned += [Utils caloriesBurnedForDistance:distance speed:currentSpeed];
+            }
             
             // record location information in GPX format
             // add newLocation as GPXTrackPoint
@@ -451,7 +460,18 @@ static NSUInteger const kAccelerometerOff = 0;
             GPXTrackPoint *firstPoint = [[[tracksegments firstObject] trackpoints] firstObject];
             CLLocationCoordinate2D firstCoord = CLLocationCoordinate2DMake(firstPoint.latitude, firstPoint.longitude);
             // create track annotation at first coordinate, add to map view
-            TrackAnnotation *annotation = [[TrackAnnotation alloc] initWithFilePath:filePath title:metadata.name subtitle:[[Utils attributedStringFromNumber:emissions baseFontSize:1.0f dataSuffix:dataSuffix unitText:dataUnitText] string] coordinate:firstCoord];
+            TrackAnnotation *annotation = [[TrackAnnotation alloc]
+                                           initWithFilePath:filePath
+                                           title:metadata.name
+                                           subtitle:[[Utils attributedStringFromNumber:([dataSuffix isEqualToString:kDataSuffixCO2Emitted] || [dataSuffix isEqualToString:kDataSuffixGas]
+                                                                                        ? emissions
+                                                                                        : ([dataSuffix isEqualToString:kDataSuffixCO2Avoided]
+                                                                                           ? metadata.extensions.carbonAvoidance
+                                                                                           : metadata.extensions.carbonEmissions))
+                                                                          baseFontSize:1.0f
+                                                                            dataSuffix:dataSuffix
+                                                                              unitText:dataUnitText] string]
+                                           coordinate:firstCoord];
             [self.mapView addAnnotation:annotation];
             
             // load bounds
@@ -532,7 +552,14 @@ static NSUInteger const kAccelerometerOff = 0;
     self.totalDistanceLabel.text = [NSString stringWithFormat:@"%.2f %@", [Utils distanceFromMeters:totalDistance units:distanceUnitText], distanceUnitText];
     self.averageSpeedLabel.text = [NSString stringWithFormat:@"%.2f %@", [Utils speedFromMetersSec:averageSpeed units:speedUnitText], speedUnitText];
     self.currentSpeedLabel.text = [NSString stringWithFormat:@"%.2f %@", [Utils speedFromMetersSec:currentSpeed units:speedUnitText], speedUnitText];
-    self.displayedDataLabel.attributedText = [Utils attributedStringFromNumber:([dataSuffix isEqualToString:kDataSuffixCalories] ? caloriesBurned : carbonEmissions) baseFontSize:21.0f dataSuffix:dataSuffix unitText:dataUnitText];
+    self.displayedDataLabel.attributedText = [Utils attributedStringFromNumber:([dataSuffix isEqualToString:kDataSuffixCO2Emitted] || [dataSuffix isEqualToString:kDataSuffixGas]
+                                                                                ? carbonEmissions
+                                                                                : ([dataSuffix isEqualToString:kDataSuffixCO2Avoided]
+                                                                                   ? carbonAvoidance
+                                                                                   : caloriesBurned))
+                                                                  baseFontSize:21.0f
+                                                                    dataSuffix:dataSuffix
+                                                                      unitText:dataUnitText];
     // testing: statistics button text
     self.statisticsButton.titleLabel.text = [NSString stringWithFormat:@"%.4f %.4f %@", accelMagStdDev, walkingStdDev, (isDriving ? @"Yes" : @"No")];
 }
@@ -633,6 +660,7 @@ static NSUInteger const kAccelerometerOff = 0;
     numAverageSpeedSamples =
     currentSpeed =
     carbonEmissions =
+    carbonAvoidance =
     caloriesBurned = 0;
     isDriving = NO;
     

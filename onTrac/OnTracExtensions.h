@@ -16,6 +16,7 @@
 @property (nonatomic, assign) CGFloat totalDistance;
 @property (nonatomic, assign) CGFloat averageSpeed;
 @property (nonatomic, assign) CGFloat carbonEmissions;
+@property (nonatomic, assign) CGFloat carbonAvoidance;
 @property (nonatomic, assign) CGFloat caloriesBurned;
 
 @end

@@ -72,7 +72,7 @@
     if (section == 0)
         return 1;
     else if (section == 1)
-        return 3;
+        return 4;
     else if (section == 2)
         return 2;
     else if (hasDesc && section == 3)
@@ -107,21 +107,26 @@
         cell.textLabel.numberOfLines = 0;
         return cell;
     } else if (indexPath.section == 1) {
-        UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:@"dataDisplayCell"];
+        UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue2 reuseIdentifier:@"dataDisplayCell"];
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
         cell.textLabel.textColor = [UIColor darkGrayColor];
         switch (indexPath.row) {
             case 0: {
                 cell.textLabel.text = @"Emissions";
-                cell.detailTextLabel.attributedText = [Utils attributedStringFromNumber:emissions baseFontSize:18.0f dataSuffix:kDataSuffixCO2 unitText:massUnitText];
+                cell.detailTextLabel.attributedText = [Utils attributedStringFromNumber:emissions baseFontSize:18.0f dataSuffix:kDataSuffixCO2Emitted unitText:massUnitText];
                 break;
             } case 1: {
-                cell.textLabel.text = @"Fuel Used";
-                cell.detailTextLabel.attributedText = [Utils attributedStringFromNumber:emissions baseFontSize:18.0f dataSuffix:kDataSuffixGas unitText:volumeUnitText];
+                cell.textLabel.text = @"Avoidance";
+                cell.detailTextLabel.attributedText = [Utils attributedStringFromNumber:gpx.metadata.extensions.carbonAvoidance baseFontSize:18.0f dataSuffix:kDataSuffixCO2Avoided unitText:massUnitText];
                 break;
             } case 2: {
+                cell.textLabel.text = @"Gasoline";
+                cell.detailTextLabel.attributedText = [Utils attributedStringFromNumber:emissions baseFontSize:18.0f dataSuffix:kDataSuffixGas unitText:volumeUnitText];
+                break;
+            } case 3: {
                 cell.textLabel.text = @"Calories";
                 cell.detailTextLabel.attributedText = [Utils attributedStringFromNumber:gpx.metadata.extensions.caloriesBurned baseFontSize:18.0f dataSuffix:kDataSuffixCalories unitText:kUnitTextCalorie];
+                break;
             }
         }
         return cell;

@@ -66,7 +66,7 @@
         return 1;
     else if (section == 2)
         // Displayed data cells
-        return 3;
+        return 4;
     else if (section == 3)
         // Map mode cells
         return 3;
@@ -134,11 +134,14 @@
         UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
         if (indexPath.row == 0) {
             cell.textLabel.text = @"Carbon emissions";
-            cell.accessoryType = ([dataSuffix isEqualToString:kDataSuffixCO2] ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone);
+            cell.accessoryType = ([dataSuffix isEqualToString:kDataSuffixCO2Emitted] ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone);
         } else if (indexPath.row == 1) {
+            cell.textLabel.text = @"Carbon avoidance";
+            cell.accessoryType = ([dataSuffix isEqualToString:kDataSuffixCO2Avoided] ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone);
+        } else if (indexPath.row == 2) {
             cell.textLabel.text = @"Gasoline usage";
             cell.accessoryType = ([dataSuffix isEqualToString:kDataSuffixGas] ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone);
-        } else if (indexPath.row == 2) {
+        } else if (indexPath.row == 3) {
             cell.textLabel.text = @"Calories";
             cell.accessoryType = ([dataSuffix isEqualToString:kDataSuffixCalories] ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone);
         }
@@ -207,20 +210,29 @@
         [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:UITableViewRowAnimationNone];
     } else if (indexPath.section == 2) {
         if (indexPath.row == 0) {
-            [settings setObject:kDataSuffixCO2 forKey:kSettingsKeyDataSuffix];
+            [settings setObject:kDataSuffixCO2Emitted forKey:kSettingsKeyDataSuffix];
             [tableView cellForRowAtIndexPath:indexPath].accessoryType = UITableViewCellAccessoryCheckmark;
             [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:2]].accessoryType = UITableViewCellAccessoryNone;
             [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:2 inSection:2]].accessoryType = UITableViewCellAccessoryNone;
+            [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:3 inSection:2]].accessoryType = UITableViewCellAccessoryNone;
         } else if (indexPath.row == 1) {
-            [settings setObject:kDataSuffixGas forKey:kSettingsKeyDataSuffix];
+            [settings setObject:kDataSuffixCO2Avoided forKey:kSettingsKeyDataSuffix];
             [tableView cellForRowAtIndexPath:indexPath].accessoryType = UITableViewCellAccessoryCheckmark;
             [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:2]].accessoryType = UITableViewCellAccessoryNone;
             [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:2 inSection:2]].accessoryType = UITableViewCellAccessoryNone;
+            [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:3 inSection:2]].accessoryType = UITableViewCellAccessoryNone;
         } else if (indexPath.row == 2) {
+            [settings setObject:kDataSuffixGas forKey:kSettingsKeyDataSuffix];
+            [tableView cellForRowAtIndexPath:indexPath].accessoryType = UITableViewCellAccessoryCheckmark;
+            [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:2]].accessoryType = UITableViewCellAccessoryNone;
+            [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:2]].accessoryType = UITableViewCellAccessoryNone;
+            [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:3 inSection:2]].accessoryType = UITableViewCellAccessoryNone;
+        } else if (indexPath.row == 3) {
             [settings setObject:kDataSuffixCalories forKey:kSettingsKeyDataSuffix];
             [tableView cellForRowAtIndexPath:indexPath].accessoryType = UITableViewCellAccessoryCheckmark;
             [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:2]].accessoryType = UITableViewCellAccessoryNone;
             [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:2]].accessoryType = UITableViewCellAccessoryNone;
+            [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:2 inSection:2]].accessoryType = UITableViewCellAccessoryNone;
         }
     } else if (indexPath.section == 3) {
         if (indexPath.row == 0) {
