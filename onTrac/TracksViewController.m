@@ -47,7 +47,6 @@
 }
 
 - (void)viewWillAppear:(BOOL)animated {
-    NSLog(@"Will appear");
     [super viewWillAppear:animated];
     
     // load saved GPX file paths
@@ -73,7 +72,6 @@
     [self updateUnits];
     
     [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:UITableViewRowAnimationAutomatic];
-    NSLog(@"Will appear done");
 }
 
 #pragma mark - UITableViewDataSource

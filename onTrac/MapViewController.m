@@ -532,7 +532,7 @@ static NSUInteger const kAccelerometerOff = 0;
     self.totalDistanceLabel.text = [NSString stringWithFormat:@"%.2f %@", [Utils distanceFromMeters:totalDistance units:distanceUnitText], distanceUnitText];
     self.averageSpeedLabel.text = [NSString stringWithFormat:@"%.2f %@", [Utils speedFromMetersSec:averageSpeed units:speedUnitText], speedUnitText];
     self.currentSpeedLabel.text = [NSString stringWithFormat:@"%.2f %@", [Utils speedFromMetersSec:currentSpeed units:speedUnitText], speedUnitText];
-    self.displayedDataLabel.attributedText = [Utils attributedStringFromNumber:carbonEmissions baseFontSize:21.0f dataSuffix:dataSuffix unitText:dataUnitText];
+    self.displayedDataLabel.attributedText = [Utils attributedStringFromNumber:([dataSuffix isEqualToString:kDataSuffixCalories] ? caloriesBurned : carbonEmissions) baseFontSize:21.0f dataSuffix:dataSuffix unitText:dataUnitText];
     // testing: statistics button text
     self.statisticsButton.titleLabel.text = [NSString stringWithFormat:@"%.4f %.4f %@", accelMagStdDev, walkingStdDev, (isDriving ? @"Yes" : @"No")];
 }

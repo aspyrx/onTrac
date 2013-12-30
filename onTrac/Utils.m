@@ -148,7 +148,7 @@
     NSError *error;
     NSString *gpxString = [NSString stringWithContentsOfFile:path encoding:NSUTF8StringEncoding error:&error];
     if (error) {
-        NSLog(@"%@", error);
+        NSLog(@"Error reading GPX from file: %@", error);
         return nil;
     }
     
