@@ -3,7 +3,8 @@ Copyright © 2013 caekboard
 All rights reserved.
 
 
-Emissions data provided by the United States Energy Information Administration (EIA) (www.eia.gov).
+Emissions data obtained from the United States Energy Information Administration (EIA) (www.eia.gov).
+Transportation statistics obtained from the United States Department of Transportation Research and Innovative Technology Administration, Bureau of Transportation Statistics (BTS) (www.rita.dot.gov/bts).
 
 
 Apple Software Disclaimer:

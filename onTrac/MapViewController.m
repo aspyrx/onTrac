@@ -56,7 +56,7 @@ static CGFloat const kCurrentSpeedStopThreshold = 0.05;
 static NSTimeInterval const kStatsUpdateInterval = 1.0;
 
 // m/s, maximum not driving speed
-static CGFloat const kSpeedMaxNotDriving = 5.0;
+static CGFloat const kSpeedMaxNotDriving = 8.0;
 
 // accelerometer states
 static NSUInteger const kAccelerometerMoving = 2;
