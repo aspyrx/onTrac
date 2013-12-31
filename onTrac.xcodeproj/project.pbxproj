@@ -76,6 +76,7 @@
 		4D9EA2E4178F2C6000CD5CD9 /* GPXType.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D9EA2CA178F2C6000CD5CD9 /* GPXType.m */; };
 		4D9EA2E5178F2C6000CD5CD9 /* GPXWaypoint.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D9EA2CC178F2C6000CD5CD9 /* GPXWaypoint.m */; };
 		4D9EA2E6178F2C6000CD5CD9 /* GPXXML.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D9EA2CE178F2C6000CD5CD9 /* GPXXML.m */; };
+		4DA08CD4187284DE0052538A /* TransportModeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4DA08CD3187284DE0052538A /* TransportModeViewController.m */; };
 		4DA29547180B329A003CC51D /* SaveViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4DA29546180B329A003CC51D /* SaveViewController.xib */; };
 		4DD070AA1768DC4800F373D3 /* CBLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 4DD070A91768DC4800F373D3 /* CBLayer.m */; };
 		4DDB5493176A46F7002485E9 /* CrumbPath.m in Sources */ = {isa = PBXBuildFile; fileRef = 4DDB5492176A46F7002485E9 /* CrumbPath.m */; };
@@ -200,6 +201,8 @@
 		4D9EA2CC178F2C6000CD5CD9 /* GPXWaypoint.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPXWaypoint.m; sourceTree = "<group>"; };
 		4D9EA2CD178F2C6000CD5CD9 /* GPXXML.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GPXXML.h; sourceTree = "<group>"; };
 		4D9EA2CE178F2C6000CD5CD9 /* GPXXML.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPXXML.m; sourceTree = "<group>"; };
+		4DA08CD2187284DE0052538A /* TransportModeViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TransportModeViewController.h; sourceTree = "<group>"; };
+		4DA08CD3187284DE0052538A /* TransportModeViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TransportModeViewController.m; sourceTree = "<group>"; };
 		4DA29546180B329A003CC51D /* SaveViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = SaveViewController.xib; sourceTree = "<group>"; };
 		4DD070A81768DC4800F373D3 /* CBLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CBLayer.h; sourceTree = "<group>"; };
 		4DD070A91768DC4800F373D3 /* CBLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CBLayer.m; sourceTree = "<group>"; };
@@ -281,6 +284,8 @@
 				4D1158EA1766D82500A1FAF4 /* SaveViewController.m */,
 				4D1158E41766D80E00A1FAF4 /* SettingsViewController.h */,
 				4D1158E51766D80E00A1FAF4 /* SettingsViewController.m */,
+				4DA08CD2187284DE0052538A /* TransportModeViewController.h */,
+				4DA08CD3187284DE0052538A /* TransportModeViewController.m */,
 				4DE97677176939A200A40E51 /* AboutViewController.h */,
 				4DE97678176939A200A40E51 /* AboutViewController.m */,
 			);
@@ -585,6 +590,7 @@
 				4D1158DD176663CE00A1FAF4 /* XBSnappingPoint.m in Sources */,
 				4D1158E71766D80E00A1FAF4 /* SettingsViewController.m in Sources */,
 				4D1158EC1766D82500A1FAF4 /* SaveViewController.m in Sources */,
+				4DA08CD4187284DE0052538A /* TransportModeViewController.m in Sources */,
 				4D1158F11766D83100A1FAF4 /* TracksViewController.m in Sources */,
 				4DD070AA1768DC4800F373D3 /* CBLayer.m in Sources */,
 				4DE9767A176939A200A40E51 /* AboutViewController.m in Sources */,

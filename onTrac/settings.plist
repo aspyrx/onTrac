@@ -2,12 +2,16 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>dataSuffix</key>
-	<string>CO2 emitted</string>
-	<key>fuelEfficiency</key>
-	<real>9.484</real>
 	<key>useMetric</key>
 	<true/>
+	<key>dataSuffix</key>
+	<string>CO2 emitted</string>
+	<key>emissionsPerMeter</key>
+	<real>0.000271765</real>
+	<key>userCarEmissionsPerMeter</key>
+	<string>0.000271765</string>
+	<key>transportMode</key>
+	<integer>0</integer>
 	<key>mapMode</key>
 	<integer>0</integer>
 	<key>followLocation</key>

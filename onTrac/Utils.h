@@ -14,7 +14,7 @@
 @interface Utils : NSObject
 
 + (CGFloat)metersBetweenCoordinate:(CLLocationCoordinate2D)a coordinate:(CLLocationCoordinate2D)b;
-+ (CGFloat)caloriesBurnedForDistance:(CGFloat)dist speed:(CGFloat)speed;
++ (double)caloriesBurnedForDistance:(double)dist speed:(double)speed;
 + (double)speedFromMetersSec:(double)metersSec units:(NSString *)units;
 + (double)distanceFromMeters:(double)meters units:(NSString *)units;
 + (double)massFromKilograms:(double)kg units:(NSString *)units;

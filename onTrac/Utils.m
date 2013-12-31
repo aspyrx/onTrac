@@ -23,8 +23,8 @@
     return (result == NAN ? 0 : result);
 }
 
-+ (CGFloat)caloriesBurnedForDistance:(CGFloat)dist speed:(CGFloat)speed {
-    return (speed > 0 ? dist * 0.044827 * powf(0.043527, speed) : 0);
++ (double)caloriesBurnedForDistance:(double)dist speed:(double)speed {
+    return (speed > 0 ? dist * 0.044827 * pow(0.043527, speed) : 0);
 }
 
 + (double)speedFromMetersSec:(double)metersSec units:(NSString *)units {

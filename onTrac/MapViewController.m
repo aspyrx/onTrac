@@ -90,10 +90,10 @@ static NSUInteger const kAccelerometerOff = 0;
     CGFloat averageSpeed; // m/s
     int numAverageSpeedSamples;
     CGFloat currentSpeed; // m/s
-    CGFloat carbonEmissions; // kg
-    CGFloat carbonAvoidance; // kg
-    CGFloat caloriesBurned; // calories
-    CGFloat fuelEfficiency; // L/100 km
+    double carbonEmissions; // kg
+    double carbonAvoidance; // kg
+    double caloriesBurned; // calories
+    double emissionsPerMeter; // kg CO2 / passenger meter traveled
     
     NSString *distanceUnitText;
     NSString *speedUnitText;
@@ -210,7 +210,7 @@ static NSUInteger const kAccelerometerOff = 0;
     }
     
     // get fuel efficiency depending on setting
-    fuelEfficiency = [[settings objectForKey:kSettingsKeyFuelEfficiency] floatValue];
+    emissionsPerMeter = [[settings objectForKey:kSettingsKeyEmissionsPerMeter] floatValue];
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
@@ -250,7 +250,7 @@ static NSUInteger const kAccelerometerOff = 0;
             }
             
             // calculate carbon emissions or avoidance and calories burned
-            CGFloat deltaCarbon = distance / 100000 * fuelEfficiency * kEmissionsMassPerLiterGas;
+            CGFloat deltaCarbon = distance * emissionsPerMeter;
             if (isDriving)
                 carbonEmissions += deltaCarbon;
             else {
@@ -391,7 +391,7 @@ static NSUInteger const kAccelerometerOff = 0;
      */
     
     // DEBUG: toggle driving mode
-    isDriving = !isDriving;
+//    isDriving = !isDriving;
 }
 
 - (void)optionsButtonPressed:(id)sender {

@@ -10,15 +10,14 @@
 #import "SettingsViewController.h"
 #import "Defines.h"
 #import "Utils.h"
+#import "TransportModeViewController.h"
 #import "AboutViewController.h"
 
 @interface SettingsViewController ()
 
 @end
 
-@implementation SettingsViewController {
-    NSMutableDictionary *settings;
-}
+@implementation SettingsViewController
 
 #pragma mark - UITableViewController
 
@@ -29,11 +28,6 @@
         self.title = @"Settings";
         self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(cancelButtonPressed:)];
         self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSave target:self action:@selector(saveButtonPressed:)];
-        self.tapView = [[UIView alloc] initWithFrame:self.tableView.frame];
-        self.tapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(viewTapped:)];
-        [self.tapView addGestureRecognizer:self.tapRecognizer];
-        [self.view addSubview:self.tapView];
-        [self.tapView setHidden:YES];
     }
     return self;
 }
@@ -44,8 +38,9 @@
     // set navbar properties
     [self.navigationController.navigationBar setBarStyle:UIBarStyleBlackTranslucent];
     
-    // load settings
-    settings = [[Utils loadSettings] mutableCopy];
+    if (self.settings == nil)
+        // load settings
+        self.settings = [[Utils loadSettings] mutableCopy];
     
     // reload tableview
     [self.tableView reloadData];
@@ -62,7 +57,7 @@
         // Unit cells
         return 2;
     else if (section == 1)
-        // Fuel efficiency cell
+        // Transport mode cell
         return 1;
     else if (section == 2)
         // Displayed data cells
@@ -92,7 +87,7 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section == 0) {
         // Unit cells
-        BOOL useMetric = [[settings objectForKey:kSettingsKeyUseMetric] boolValue];
+        BOOL useMetric = [[self.settings objectForKey:kSettingsKeyUseMetric] boolValue];
         UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
         if (indexPath.row == 0) {
             cell.textLabel.text = @"Imperial";
@@ -105,32 +100,31 @@
     } else if (indexPath.section == 1) {
         // Fuel Efficiency cell
         if (indexPath.row == 0) {
-            BOOL useMetric = [[settings objectForKey:kSettingsKeyUseMetric] boolValue];
-            UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
-            cell.selectionStyle = UITableViewCellSelectionStyleNone;
-            cell.textLabel.text = [@"Fuel Efficiency (" stringByAppendingString:(useMetric ? @"L/100km)" : @"mpg)")];
-            
-            // create text field
-            // TODO: fix positioning in iOS 6.1
-            UITextField *fuelEfficiencyField = [[UITextField alloc] initWithFrame:CGRectMake(cell.contentView.frame.size.width - ([self respondsToSelector:@selector(topLayoutGuide)] ? 96 : 110), 0, 80, cell.contentView.frame.size.height)];
-            fuelEfficiencyField.adjustsFontSizeToFitWidth = YES;
-            fuelEfficiencyField.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
-            CGFloat efficiency = [[settings objectForKey:kSettingsKeyFuelEfficiency] floatValue];
-            fuelEfficiencyField.text = [NSString stringWithFormat:@"%.1f", (useMetric ? efficiency : 1 / efficiency * MPG_PER_100KMPL)];
-            fuelEfficiencyField.textColor = [UIColor colorWithRed:0.0f green:0.478f blue:1.0f alpha:1.0f];
-            fuelEfficiencyField.textAlignment = NSTextAlignmentRight;
-            fuelEfficiencyField.keyboardType = UIKeyboardTypeDecimalPad;
-            fuelEfficiencyField.borderStyle = UITextBorderStyleNone;
-            [fuelEfficiencyField addTarget:self action:@selector(fuelEfficiencyFieldEditingDidBegin:) forControlEvents:UIControlEventEditingDidBegin];
-            [fuelEfficiencyField addTarget:self action:@selector(fuelEfficiencyFieldEditingDidEnd:) forControlEvents:UIControlEventEditingDidEnd];
-            
-            [cell.contentView addSubview:fuelEfficiencyField];
-            
+            UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:nil];
+            cell.textLabel.text = @"Transport Mode";
+            NSString *detailText;
+            enum transport_mode_t mode = [[self.settings objectForKey:kSettingsKeyTransportMode] intValue];
+            switch (mode) {
+                case TransportModeCar:
+                    detailText = @"Car";
+                    break;
+                case TransportModeBus:
+                    detailText = @"Bus";
+                    break;
+                case TransportModeTrain:
+                    detailText = @"Train";
+                    break;
+                case TransportModeSubway:
+                    detailText = @"Subway";
+                    break;
+            }
+            cell.detailTextLabel.text = detailText;
+            cell.detailTextLabel.textColor = [UIColor colorWithRed:0.0f green:0.478f blue:1.0f alpha:1.0f];
             return cell;
         }
     } else if (indexPath.section == 2) {
         // Displayed Data cells
-        NSString *dataSuffix = [settings objectForKey:kSettingsKeyDataSuffix];
+        NSString *dataSuffix = [self.settings objectForKey:kSettingsKeyDataSuffix];
         UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
         if (indexPath.row == 0) {
             cell.textLabel.text = @"Carbon emissions";
@@ -148,7 +142,7 @@
         return cell;
     } else if (indexPath.section == 3) {
         // Map Mode cells
-        MKMapType mapMode = [[settings objectForKey:kSettingsKeyMapMode] unsignedIntegerValue];
+        MKMapType mapMode = [[self.settings objectForKey:kSettingsKeyMapMode] unsignedIntegerValue];
         UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
         if (indexPath.row == 0) {
             cell.textLabel.text = @"Standard";
@@ -173,7 +167,7 @@
             cell.accessoryView = switchView;
             
             // depending on saved value, set switch position
-            if ([[settings objectForKey:kSettingsKeyFollowLocation]boolValue])
+            if ([[self.settings objectForKey:kSettingsKeyFollowLocation]boolValue])
                 [switchView setOn:YES animated:NO];
             else [switchView setOn:NO animated:NO];
             
@@ -199,57 +193,69 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section == 0) {
         if (indexPath.row == 0) {
-            [settings setObject:[NSNumber numberWithBool:NO] forKey:kSettingsKeyUseMetric];
+            [self.settings setObject:[NSNumber numberWithBool:NO] forKey:kSettingsKeyUseMetric];
             [tableView cellForRowAtIndexPath:indexPath].accessoryType = UITableViewCellAccessoryCheckmark;
             [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:0]].accessoryType = UITableViewCellAccessoryNone;
         } else if (indexPath.row == 1) {
-            [settings setObject:[NSNumber numberWithBool:YES] forKey:kSettingsKeyUseMetric];
+            [self.settings setObject:[NSNumber numberWithBool:YES] forKey:kSettingsKeyUseMetric];
             [tableView cellForRowAtIndexPath:indexPath].accessoryType = UITableViewCellAccessoryCheckmark;
             [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]].accessoryType = UITableViewCellAccessoryNone;
         }
         [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:UITableViewRowAnimationNone];
-    } else if (indexPath.section == 2) {
+    } else if (indexPath.section == 1) {
         if (indexPath.row == 0) {
-            [settings setObject:kDataSuffixCO2Emitted forKey:kSettingsKeyDataSuffix];
-            [tableView cellForRowAtIndexPath:indexPath].accessoryType = UITableViewCellAccessoryCheckmark;
-            [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:2]].accessoryType = UITableViewCellAccessoryNone;
-            [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:2 inSection:2]].accessoryType = UITableViewCellAccessoryNone;
-            [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:3 inSection:2]].accessoryType = UITableViewCellAccessoryNone;
-        } else if (indexPath.row == 1) {
-            [settings setObject:kDataSuffixCO2Avoided forKey:kSettingsKeyDataSuffix];
-            [tableView cellForRowAtIndexPath:indexPath].accessoryType = UITableViewCellAccessoryCheckmark;
-            [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:2]].accessoryType = UITableViewCellAccessoryNone;
-            [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:2 inSection:2]].accessoryType = UITableViewCellAccessoryNone;
-            [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:3 inSection:2]].accessoryType = UITableViewCellAccessoryNone;
-        } else if (indexPath.row == 2) {
-            [settings setObject:kDataSuffixGas forKey:kSettingsKeyDataSuffix];
-            [tableView cellForRowAtIndexPath:indexPath].accessoryType = UITableViewCellAccessoryCheckmark;
-            [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:2]].accessoryType = UITableViewCellAccessoryNone;
-            [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:2]].accessoryType = UITableViewCellAccessoryNone;
-            [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:3 inSection:2]].accessoryType = UITableViewCellAccessoryNone;
-        } else if (indexPath.row == 3) {
-            [settings setObject:kDataSuffixCalories forKey:kSettingsKeyDataSuffix];
-            [tableView cellForRowAtIndexPath:indexPath].accessoryType = UITableViewCellAccessoryCheckmark;
-            [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:2]].accessoryType = UITableViewCellAccessoryNone;
-            [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:2]].accessoryType = UITableViewCellAccessoryNone;
-            [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:2 inSection:2]].accessoryType = UITableViewCellAccessoryNone;
+            TransportModeViewController *viewController = [[TransportModeViewController alloc] initWithStyle:UITableViewStyleGrouped];
+            [self.navigationController pushViewController:viewController animated:YES];
+        }
+    } else if (indexPath.section == 2) {
+        NSString *value = [self.settings objectForKey:kSettingsKeyDataSuffix];
+        NSUInteger oldRow = ([value isEqualToString:kDataSuffixCO2Emitted]
+                             ? 0
+                             : ([value isEqualToString:kDataSuffixCO2Avoided]
+                                ? 1
+                                : ([value isEqualToString:kDataSuffixGas]
+                                   ? 2
+                                   : 3)));
+        if (oldRow != indexPath.row) {
+            [self.settings setObject:(indexPath.row == 0
+                                      ? kDataSuffixCO2Emitted
+                                      : (indexPath.row == 1
+                                         ? kDataSuffixCO2Avoided
+                                         : (indexPath.row == 2
+                                            ? kDataSuffixGas
+                                            : kDataSuffixCalories))) forKey:kSettingsKeyDataSuffix];
+            [[tableView cellForRowAtIndexPath:indexPath] setAccessoryType:UITableViewCellAccessoryCheckmark];
+            [[tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:oldRow inSection:2]] setAccessoryType:UITableViewCellAccessoryNone];
         }
     } else if (indexPath.section == 3) {
-        if (indexPath.row == 0) {
-            [settings setObject:[NSNumber numberWithUnsignedInteger:MKMapTypeStandard] forKey:kSettingsKeyMapMode];
-            [tableView cellForRowAtIndexPath:indexPath].accessoryType = UITableViewCellAccessoryCheckmark;
-            [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:3]].accessoryType = UITableViewCellAccessoryNone;
-            [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:2 inSection:3]].accessoryType = UITableViewCellAccessoryNone;
-        } else if (indexPath.row == 1) {
-            [settings setObject:[NSNumber numberWithUnsignedInteger:MKMapTypeSatellite] forKey:kSettingsKeyMapMode];
-            [tableView cellForRowAtIndexPath:indexPath].accessoryType = UITableViewCellAccessoryCheckmark;
-            [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:3]].accessoryType = UITableViewCellAccessoryNone;
-            [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:2 inSection:3]].accessoryType = UITableViewCellAccessoryNone;
-        } else if (indexPath.row == 2) {
-            [settings setObject:[NSNumber numberWithUnsignedInteger:MKMapTypeHybrid] forKey:kSettingsKeyMapMode];
-            [tableView cellForRowAtIndexPath:indexPath].accessoryType = UITableViewCellAccessoryCheckmark;
-            [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:3]].accessoryType = UITableViewCellAccessoryNone;
-            [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:3]].accessoryType = UITableViewCellAccessoryNone;
+        enum MKMapType value = [[self.settings objectForKey:kSettingsKeyMapMode] intValue];
+        NSUInteger oldRow;
+        switch (value) {
+            case MKMapTypeStandard:
+                oldRow = 0;
+                break;
+            case MKMapTypeSatellite:
+                oldRow = 1;
+                break;
+            case MKMapTypeHybrid:
+                oldRow = 2;
+                break;
+        }
+        if (oldRow != indexPath.row) {
+            switch (indexPath.row) {
+                case 0:
+                    value = MKMapTypeStandard;
+                    break;
+                case 1:
+                    value = MKMapTypeSatellite;
+                    break;
+                case 2:
+                    value = MKMapTypeHybrid;
+                    break;
+            }
+            [self.settings setObject:[NSNumber numberWithInt:value] forKey:kSettingsKeyMapMode];
+            [[tableView cellForRowAtIndexPath:indexPath] setAccessoryType:UITableViewCellAccessoryCheckmark];
+            [[tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:oldRow inSection:3]] setAccessoryType:UITableViewCellAccessoryNone];
         }
     } else if (indexPath.section == 5) {
         if (indexPath.row == 0) {
@@ -267,30 +273,9 @@
 
 #pragma mark - interface methods
 
-- (void)viewTapped:(id)sender {
-    if ([self.activeField isFirstResponder])
-        [self.activeField resignFirstResponder];
-    [self.tapView setHidden:YES];
-}
-
-- (void)fuelEfficiencyFieldEditingDidBegin:(id)sender {
-    self.activeField = sender;
-    [self.tapView setHidden:NO];
-}
-
-- (void)fuelEfficiencyFieldEditingDidEnd:(id)sender {
-    self.activeField = nil;
-    UITextField *field = sender;
-    if (field.text) {
-        BOOL useMetric = [[settings objectForKey:kSettingsKeyUseMetric] boolValue];
-        CGFloat efficiency = [[[NSNumberFormatter new] numberFromString:field.text] floatValue];
-        [settings setObject:[NSNumber numberWithFloat:(useMetric ? efficiency : 1 / (efficiency / MPG_PER_100KMPL))] forKey:kSettingsKeyFuelEfficiency];
-    } else [settings setObject:[NSNumber numberWithFloat:9.484f] forKey:kSettingsKeyFuelEfficiency];
-}
-
 - (void)followLocationSwitchChanged:(id)sender {
     UISwitch *followLocationControl = sender;
-    [settings setObject:[NSNumber numberWithBool:[followLocationControl isOn]] forKey:kSettingsKeyFollowLocation];
+    [self.settings setObject:[NSNumber numberWithBool:[followLocationControl isOn]] forKey:kSettingsKeyFollowLocation];
 }
 
 - (void)cancelButtonPressed:(id)sender {
@@ -310,7 +295,8 @@
     }
     
     // save settings to plist file, dismiss options view
-    [settings writeToFile:[settingsDirectory stringByAppendingPathComponent:kSettingsFileName] atomically:NO];
+    [self.settings writeToFile:[settingsDirectory stringByAppendingPathComponent:kSettingsFileName] atomically:NO];
+    self.settings = [[Utils loadSettings] mutableCopy];
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 

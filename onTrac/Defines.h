@@ -34,11 +34,13 @@ static NSString *kUserInfoKeyTrackDescription = @"trackDescription";
 static NSString *kUserInfoKeyRecordingState = @"recordingState";
 
 // settings dictionary keys
-static NSString *kSettingsKeyDataSuffix = @"dataSuffix";
 static NSString *kSettingsKeyUseMetric = @"useMetric";
+static NSString *kSettingsKeyDataSuffix = @"dataSuffix";
+static NSString *kSettingsKeyEmissionsPerMeter = @"emissionsPerMeter";
+static NSString *kSettingsKeyUserCarEmissionsPerMeter = @"userCarEmissionsPerMeter";
+static NSString *kSettingsKeyTransportMode = @"transportMode";
 static NSString *kSettingsKeyMapMode = @"mapMode";
 static NSString *kSettingsKeyFollowLocation = @"followLocation";
-static NSString *kSettingsKeyFuelEfficiency = @"fuelEfficiency";
 
 // recording states
 static NSUInteger const kRecordingRunning = 2;
@@ -62,11 +64,24 @@ static NSString *kDataSuffixCO2Avoided = @"CO2 saved";
 static NSString *kDataSuffixGas = @"gas used";
 static NSString *kDataSuffixCalories = @"burned";
 
+// transport modes
+enum transport_mode_t {
+    TransportModeCar,
+    TransportModeBus,
+    TransportModeTrain,
+    TransportModeSubway
+};
+
 // kg CO_2 / L, emissions from 1 L gasoline
 static CGFloat const kEmissionsMassPerLiterGas = 2.3477;
 // kg CO_2 / kWh, emissions per generated kWh
 static CGFloat const kEmissionsMassPerKWH = 0.5534;
 // kg CO_2 / hour, emissions for powering a home for 1 hour
 static CGFloat const kEmissionsPerHomeHour = 0.54282;
+
+static double const kEmissionsMassPerMeterCar = 0.0002717653201;
+static double const kEmissionsMassPerMeterBus = 0.0001657655687;
+static double const kEmissionsMassPerMeterTrain = 0.0000893668117;
+static double const kEmissionsMassPerMeterSubway = 0.0000366488502;
 
 #endif
