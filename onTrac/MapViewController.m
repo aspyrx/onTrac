@@ -68,7 +68,7 @@ static NSUInteger const kAccelerometerOff = 0;
 @end
 
 @implementation MapViewController {
-    int recordingState;
+    enum recording_state_t recordingState;
     BOOL isFollowing;
     BOOL isDriving;
     BOOL shouldUpdateStatsLabels;
@@ -203,7 +203,7 @@ static NSUInteger const kAccelerometerOff = 0;
     // change user tracking mode depending on setting and whether or not recording
     if (followLocationSetting) {
         isFollowing = true;
-        if (recordingState == kRecordingRunning) self.mapView.userTrackingMode = MKUserTrackingModeFollow;
+        if (recordingState == RecordingStateRunning) self.mapView.userTrackingMode = MKUserTrackingModeFollow;
     } else {
         self.mapView.userTrackingMode = MKUserTrackingModeNone;
         isFollowing = false;
@@ -490,7 +490,7 @@ static NSUInteger const kAccelerometerOff = 0;
                 maxCoordinate = CLLocationCoordinate2DMake(bounds.maxLatitude, bounds.maxLongitude);
         }
         
-        if (!isFollowing || recordingState < kRecordingRunning) {
+        if (!isFollowing || recordingState < RecordingStateRunning) {
             // currently set to not follow user location, zoom map view to fit largest bounds
             [self.mapView setRegion:[self.mapView regionThatFits: MKCoordinateRegionMake(CLLocationCoordinate2DMake((minCoordinate.latitude + maxCoordinate.latitude) / 2, (minCoordinate.longitude + maxCoordinate.longitude) / 2), MKCoordinateSpanMake((maxCoordinate.latitude - minCoordinate.latitude) * 1.1, (maxCoordinate.longitude - minCoordinate.longitude) * 1.1))] animated:YES];
         }
@@ -508,12 +508,12 @@ static NSUInteger const kAccelerometerOff = 0;
 }
 
 - (void)applicationWillTerminate:(NSNotification *)notification {
-    if (recordingState > kRecordingOff) {
+    if (recordingState > RecordingStateOff) {
         NSDateFormatter *dateFormatter = [NSDateFormatter new];
         [dateFormatter setDateFormat:@"EEE, MMM d h:mm a"];
         [self saveTrack:[NSNotification notificationWithName:kNotificationSetRecordingStatus
                                                       object:nil
-                                                    userInfo:@{kUserInfoKeyRecordingState: [NSNumber numberWithInt:kRecordingOff],
+                                                    userInfo:@{kUserInfoKeyRecordingState: [NSNumber numberWithInt:RecordingStateOff],
                                                                kUserInfoKeyTrackName: [dateFormatter stringFromDate:[NSDate date]],
                                                                kUserInfoKeyTrackDescription: @"The app was stopped while a recording was in progress."}]];
         NSLog(@"Application terminating, saving current track.");
@@ -529,7 +529,7 @@ static NSUInteger const kAccelerometerOff = 0;
     
     // calculate times
     NSTimeInterval timeSinceLastUpdate = [NSDate timeIntervalSinceReferenceDate] - lastUpdateTime;
-    if (currentSpeed < kCurrentSpeedStopThreshold || recordingState < kRecordingRunning)
+    if (currentSpeed < kCurrentSpeedStopThreshold || recordingState < RecordingStateRunning)
         timeStopped += timeSinceLastUpdate;
     else timeMoving += timeSinceLastUpdate;
     totalTime += timeSinceLastUpdate;
@@ -567,7 +567,7 @@ static NSUInteger const kAccelerometerOff = 0;
 - (void)outputAccelerationData:(CMAcceleration)acceleration {
     // add current acceleration magnitude to array
     [accelMagnitudes addObject:[NSNumber numberWithDouble:sqrt((acceleration.x * acceleration.x) + (acceleration.y * acceleration.y) + (acceleration.z * acceleration.z))]];
-    if (recordingState < kRecordingRunning) {
+    if (recordingState < RecordingStateRunning) {
         // currently stopped, check if array has too many objects and remove if necessary
         while ([accelMagnitudes count] > kAccelMagnitudeSamplesStopped)
             [accelMagnitudes removeObjectAtIndex:0];
@@ -632,10 +632,10 @@ static NSUInteger const kAccelerometerOff = 0;
 
 - (void)setRecordingStatus:(NSNotification *)notification {
     int state = [[[notification userInfo] valueForKey:kUserInfoKeyRecordingState] intValue];
-    if (state == kRecordingOff) [self saveTrack:notification];
-    else if (state == kRecordingPaused) [self pauseRecording];
-    else if (state == kRecordingRunning && recordingState == kRecordingOff) [self startRecording];
-    else if (state == kRecordingRunning && recordingState == kRecordingPaused) [self resumeRecording];
+    if (state == RecordingStateOff) [self saveTrack:notification];
+    else if (state == RecordingStatePaused) [self pauseRecording];
+    else if (state == RecordingStateRunning && recordingState == RecordingStateOff) [self startRecording];
+    else if (state == RecordingStateRunning && recordingState == RecordingStatePaused) [self resumeRecording];
 }
 
 - (void)postRecordingStateChangedNotification:(int)state {
@@ -684,7 +684,7 @@ static NSUInteger const kAccelerometerOff = 0;
     [self setAccelerometerStatus:kAccelerometerMoving];
     
     // post notification
-    recordingState = kRecordingRunning;
+    recordingState = RecordingStateRunning;
     [self postRecordingStateChangedNotification:recordingState];
     NSLog(@"Recording State: %i", recordingState);
 }
@@ -701,7 +701,7 @@ static NSUInteger const kAccelerometerOff = 0;
     [self setAccelerometerStatus:kAccelerometerStopped];
     
     // post notification
-    recordingState = kRecordingPaused;
+    recordingState = RecordingStatePaused;
     [self postRecordingStateChangedNotification:recordingState];
     NSLog(@"Recording State: %i", recordingState);
 }
@@ -775,7 +775,7 @@ static NSUInteger const kAccelerometerOff = 0;
         NSLog(@"Error writing GPX to file: %@", error);
     
     // post notification
-    recordingState = kRecordingOff;
+    recordingState = RecordingStateOff;
     [self postRecordingStateChangedNotification:recordingState];
     NSLog(@"Recording State: %i", recordingState);
 }

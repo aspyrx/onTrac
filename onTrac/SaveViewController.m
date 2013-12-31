@@ -106,7 +106,7 @@
     // stop recording and save track
     [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationSetRecordingStatus
                                                         object:nil
-                                                      userInfo:@{kUserInfoKeyRecordingState: [NSNumber numberWithInt:kRecordingOff],
+                                                      userInfo:@{kUserInfoKeyRecordingState: [NSNumber numberWithInt:RecordingStateOff],
                                                                  kUserInfoKeyTrackName: self.trackNameTextField.text,
                                                                  kUserInfoKeyTrackDescription: self.textView.text}];
     

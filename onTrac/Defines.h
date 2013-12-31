@@ -42,11 +42,6 @@ static NSString *kSettingsKeyTransportMode = @"transportMode";
 static NSString *kSettingsKeyMapMode = @"mapMode";
 static NSString *kSettingsKeyFollowLocation = @"followLocation";
 
-// recording states
-static NSUInteger const kRecordingRunning = 2;
-static NSUInteger const kRecordingPaused = 1;
-static NSUInteger const kRecordingOff = 0;
-
 // text for units
 static NSString *kUnitTextKilometer = @"km";
 static NSString *kUnitTextMile = @"mi";
@@ -70,6 +65,13 @@ enum transport_mode_t {
     TransportModeBus,
     TransportModeTrain,
     TransportModeSubway
+};
+
+// recording states
+enum recording_state_t {
+    RecordingStateOff,
+    RecordingStatePaused,
+    RecordingStateRunning
 };
 
 // kg CO_2 / L, emissions from 1 L gasoline
