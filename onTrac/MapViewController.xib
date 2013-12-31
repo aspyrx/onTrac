@@ -46,7 +46,7 @@
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <fontDescription key="fontDescription" type="system" pointSize="19"/>
                             <size key="titleShadowOffset" width="0.0" height="1"/>
-                            <state key="normal" title="Debug Information"/>
+                            <state key="normal" title="Statistics"/>
                             <connections>
                                 <action selector="statisticsButtonPressed:" destination="-1" eventType="touchUpInside" id="KYI-I4-Bt1"/>
                             </connections>
