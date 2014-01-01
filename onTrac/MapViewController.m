@@ -27,6 +27,8 @@ static CGFloat const kMinDistance = 1.0;
 
 // number of stats updates without location updates until current speed is assumed to be 0
 static NSUInteger const kStatsUpdatesUntilCurrentSpeedReset = 5;
+// number of stats updates without location update until recording stopped
+static NSUInteger const kStatsUpdatesUntilRecordingStop = 300;
 
 // seconds, time between accelerometer updates while stopped
 static NSTimeInterval const kAccelerometerUpdateIntervalStopped = 0.2;
@@ -602,7 +604,7 @@ static NSUInteger const kAccelerometerOff = 0;
             } else numStandardDeviationSamplesAboveThreshold = 0;
         }
         
-        if (count >= kAccelMagnitudeSamplesMoving && currentSpeed < kCurrentSpeedStopThreshold) {
+        if (count >= kAccelMagnitudeSamplesMoving && currentSpeed < kCurrentSpeedStopThreshold && numStatsUpdatesWithoutLocationUpdate > kStatsUpdatesUntilRecordingStop) {
             // there are enough samples AND speed is below threshold, take standard deviation
             accelMagStdDev = [Utils standardDeviationOf:accelMagnitudes];
             if (accelMagStdDev < kStandardDeviationStopThreshold) {
