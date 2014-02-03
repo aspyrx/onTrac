@@ -567,6 +567,31 @@ static NSUInteger const kAccelerometerOff = 0;
 #pragma mark accelerometer
 
 - (void)outputAccelerationData:(CMAcceleration)acceleration {
+    if (recordingState == RecordingStateRunning) {
+        // add current acceleration magnitude to array
+        [accelMagnitudes addObject:[NSNumber numberWithDouble:sqrt((acceleration.x * acceleration.x) + (acceleration.y * acceleration.y) + (acceleration.z * acceleration.z))]];
+        
+        // currently moving, check if array has too many objects and remove if necessary
+        while ([accelMagnitudes count] > kAccelMagnitudeSamplesMoving)
+            [accelMagnitudes removeObjectAtIndex:0];
+        
+        NSUInteger count = [accelMagnitudes count];
+        if (count >= kAccelMagnitudeSamplesWalking && isDriving ) {
+            // there are enough samples AND currently driving, take standard deviation
+            walkingStdDev = [Utils standardDeviationOf:[accelMagnitudes subarrayWithRange:NSMakeRange(count - kAccelMagnitudeSamplesWalking, kAccelMagnitudeSamplesWalking)]];
+            if (walkingStdDev > kStandardDeviationWalkingThreshold) {
+                // standard deviation is above threshold for walking
+                if (++numStandardDeviationSamplesAboveThreshold > kStandardDeviationSamplesAboveWalkingThreshold) {
+                    // there are enough samples consecutively above the threshold for walking
+                    isDriving = NO;
+                }
+            } else numStandardDeviationSamplesAboveThreshold = 0;
+        }
+    }
+}
+
+/* battery saving feature
+- (void)outputAccelerationData:(CMAcceleration)acceleration {
     // add current acceleration magnitude to array
     [accelMagnitudes addObject:[NSNumber numberWithDouble:sqrt((acceleration.x * acceleration.x) + (acceleration.y * acceleration.y) + (acceleration.z * acceleration.z))]];
     if (recordingState < RecordingStateRunning) {
@@ -615,6 +640,7 @@ static NSUInteger const kAccelerometerOff = 0;
         }
     }
 }
+ */
 
 - (void)setAccelerometerStatus:(int)status {
     [self.motionManager stopAccelerometerUpdates];
