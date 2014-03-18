@@ -28,16 +28,16 @@ static CGFloat const kMinDistance = 1.0;
 // number of stats updates without location updates until current speed is assumed to be 0
 static NSUInteger const kStatsUpdatesUntilCurrentSpeedReset = 5;
 // number of stats updates without location update until recording stopped
-static NSUInteger const kStatsUpdatesUntilRecordingStop = 300;
+// static NSUInteger const kStatsUpdatesUntilRecordingStop = 300;
 
 // seconds, time between accelerometer updates while stopped
 static NSTimeInterval const kAccelerometerUpdateIntervalStopped = 0.2;
 // number of samples from which to calculate standard deviation while stopped
 static NSUInteger const kAccelMagnitudeSamplesStopped = 50;
 // threshold which the standard deviation must pass to start recording
-static CGFloat const kStandardDeviationStartThreshold = 0.1;
+// static CGFloat const kStandardDeviationStartThreshold = 0.1;
 // number of samples which must remain above this threshold to start recording
-static NSUInteger const kStandardDeviationSamplesAboveStartThreshold = 30;
+// static NSUInteger const kStandardDeviationSamplesAboveStartThreshold = 30;
 
 // seconds, time between accelerometer updates while moving
 static NSTimeInterval const kAccelerometerUpdateIntervalMoving = 0.5;
@@ -46,7 +46,7 @@ static NSUInteger const kAccelMagnitudeSamplesMoving = 600;
 // number of samples from which to calculate standard deviation for checking whether walking
 static NSUInteger const kAccelMagnitudeSamplesWalking = 20;
 // threshold below which the standard deviation must fall to stop recording
-static CGFloat const kStandardDeviationStopThreshold = 0.2;
+// static CGFloat const kStandardDeviationStopThreshold = 0.2;
 // thershold which the standard deviation must pass to be considered walking
 static CGFloat const kStandardDeviationWalkingThreshold = 0.25;
 // number of samples which must remain above this threshold to be considered walking
