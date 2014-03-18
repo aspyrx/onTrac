@@ -148,7 +148,7 @@
         trackCell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
         
         // set appropriate icon image
-        UIImage *image = [UIImage imageNamed:([selectedTrackPaths objectForKey:[NSString stringWithFormat:@"%i", indexPath.row]] ? @"eyeIcon.png" : @"slashEyeIcon.png")];
+        UIImage *image = [UIImage imageNamed:([selectedTrackPaths objectForKey:[NSString stringWithFormat:@"%li", (long)indexPath.row]] ? @"eyeIcon.png" : @"slashEyeIcon.png")];
         trackCell.imageView.image = image;
         
         // create selection button
@@ -178,7 +178,7 @@
         if (error)
             NSLog(@"Error deleting GPX file: %@", error);
         [gpxFilePaths removeObjectAtIndex:indexPath.row];
-        [selectedTrackPaths removeObjectForKey:[NSString stringWithFormat:@"%i", indexPath.row]];
+        [selectedTrackPaths removeObjectForKey:[NSString stringWithFormat:@"%li", (long)indexPath.row]];
         [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
     }
 }
@@ -234,15 +234,15 @@
         superview = [superview superview];
     UITableViewCell *cell = (UITableViewCell *)superview;
     NSIndexPath *indexPath = [self.tableView indexPathForCell:cell];
-    if (!selectedTrackPaths || ![selectedTrackPaths objectForKey:[NSString stringWithFormat:@"%i", indexPath.row]]) {
+    if (!selectedTrackPaths || ![selectedTrackPaths objectForKey:[NSString stringWithFormat:@"%li", (long)indexPath.row]]) {
         cell.imageView.image = [UIImage imageNamed:@"eyeIcon.png"];
         if (selectedTrackPaths)
-            [selectedTrackPaths setObject:[gpxFilePaths objectAtIndex:indexPath.row] forKey:[NSString stringWithFormat:@"%i", indexPath.row]];
+            [selectedTrackPaths setObject:[gpxFilePaths objectAtIndex:indexPath.row] forKey:[NSString stringWithFormat:@"%li", (long)indexPath.row]];
         else
-            selectedTrackPaths = [NSMutableDictionary dictionaryWithObject:[gpxFilePaths objectAtIndex:indexPath.row] forKey:[NSString stringWithFormat:@"%i", indexPath.row]];
+            selectedTrackPaths = [NSMutableDictionary dictionaryWithObject:[gpxFilePaths objectAtIndex:indexPath.row] forKey:[NSString stringWithFormat:@"%li", (long)indexPath.row]];
     } else {
         cell.imageView.image = [UIImage imageNamed:@"slashEyeIcon.png"];
-        [selectedTrackPaths removeObjectForKey:[NSString stringWithFormat:@"%i", indexPath.row]];
+        [selectedTrackPaths removeObjectForKey:[NSString stringWithFormat:@"%li", (long)indexPath.row]];
     }
 }
 

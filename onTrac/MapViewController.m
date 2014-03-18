@@ -363,7 +363,7 @@ static NSUInteger const kAccelerometerOff = 0;
 #pragma mark - interface methods
 
 - (IBAction)transportModeControlChanged:(id)sender {
-    int selIndex = [(UISegmentedControl *)sender selectedSegmentIndex];
+    NSInteger selIndex = [(UISegmentedControl *)sender selectedSegmentIndex];
     enum transport_mode_t mode = (selIndex == 0 ? TransportModeCar
                                   : (selIndex == 1 ? TransportModeBus
                                      : (selIndex == 2 ? TransportModeTrain
