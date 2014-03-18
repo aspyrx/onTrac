@@ -26,6 +26,7 @@
     UIFont *descFont;
     BOOL hasDesc;
     CGFloat emissions;
+    CGFloat avoidance;
     UIColor *numberColor;
 }
 
@@ -54,6 +55,7 @@
         hasDesc = [gpx.metadata.desc length] > 0;
         
         emissions = gpx.metadata.extensions.carbonEmissions;
+        avoidance = gpx.metadata.extensions.carbonAvoidance;
         numberColor = [Utils colorForEmissions:emissions];
         
     }
@@ -74,7 +76,7 @@
         return 1;
     else if (section == 1)
         // footprint data
-        return 5;
+        return 10;
     else if (section == 2)
         // equivalences
         return 2;
@@ -94,7 +96,7 @@
         [dateFormatter setDateFormat:@"EEE, MMM d, YYYY h:mm a"];
         return [dateFormatter stringFromDate:gpx.metadata.time];
     } else if (section == 2)
-        return @"That's the same as...";
+        return @"Your footprint was equal to...";
     else if (hasDesc && section == 3)
         return @"Track Description";
     else if ((!hasDesc && section == 3) || section == 4)
@@ -112,33 +114,59 @@
         cell.textLabel.numberOfLines = 0;
         return cell;
     } else if (indexPath.section == 1) {
-        UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue2 reuseIdentifier:@"dataDisplayCell"];
-        cell.selectionStyle = UITableViewCellSelectionStyleNone;
-        cell.textLabel.textColor = [UIColor darkGrayColor];
-        switch (indexPath.row) {
-            case 0: {
-                cell.textLabel.text = @"Net Footprint";
-                cell.detailTextLabel.attributedText = [Utils attributedStringFromNumber:emissions - gpx.metadata.extensions.carbonAvoidance baseFontSize:18.0f dataSuffix:kDataSuffixNetCO2 unitText:massUnitText];
-                break;
-            } case 1: {
-                cell.textLabel.text = @"Emissions";
-                cell.detailTextLabel.attributedText = [Utils attributedStringFromNumber:emissions baseFontSize:18.0f dataSuffix:kDataSuffixCO2Emitted unitText:massUnitText];
-                break;
-            } case 2: {
-                cell.textLabel.text = @"Avoidance";
-                cell.detailTextLabel.attributedText = [Utils attributedStringFromNumber:gpx.metadata.extensions.carbonAvoidance baseFontSize:18.0f dataSuffix:kDataSuffixCO2Avoided unitText:massUnitText];
-                break;
-            } case 3: {
-                cell.textLabel.text = @"Gasoline";
-                cell.detailTextLabel.attributedText = [Utils attributedStringFromNumber:emissions baseFontSize:18.0f dataSuffix:kDataSuffixGas unitText:volumeUnitText];
-                break;
-            } case 4: {
-                cell.textLabel.text = @"Calories";
-                cell.detailTextLabel.attributedText = [Utils attributedStringFromNumber:gpx.metadata.extensions.caloriesBurned baseFontSize:18.0f dataSuffix:kDataSuffixCalories unitText:kUnitTextCalorie];
-                break;
+        if (indexPath.row % 2 == 0) {
+            UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue2 reuseIdentifier:@"dataDisplayCell"];
+            cell.selectionStyle = UITableViewCellSelectionStyleNone;
+            cell.textLabel.textColor = [UIColor darkGrayColor];
+            switch (indexPath.row) {
+                case 0:
+                    cell.textLabel.text = @"Net footprint";
+                    cell.detailTextLabel.attributedText = [Utils attributedStringFromNumber:emissions - avoidance baseFontSize:18.0f dataSuffix:kDataSuffixNetCO2 unitText:massUnitText];
+                    break;
+                case 2:
+                    cell.textLabel.text = @"Emissions";
+                    cell.detailTextLabel.attributedText = [Utils attributedStringFromNumber:emissions baseFontSize:18.0f dataSuffix:kDataSuffixCO2Emitted unitText:massUnitText];
+                    break;
+                case 4:
+                    cell.textLabel.text = @"Avoidance";
+                    cell.detailTextLabel.attributedText = [Utils attributedStringFromNumber:avoidance baseFontSize:18.0f dataSuffix:kDataSuffixCO2Avoided unitText:massUnitText];
+                    break;
+                case 6:
+                    cell.textLabel.text = @"Gasoline";
+                    cell.detailTextLabel.attributedText = [Utils attributedStringFromNumber:emissions baseFontSize:18.0f dataSuffix:kDataSuffixGas unitText:volumeUnitText];
+                    break;
+                case 8:
+                    cell.textLabel.text = @"Calories";
+                    cell.detailTextLabel.attributedText = [Utils attributedStringFromNumber:gpx.metadata.extensions.caloriesBurned baseFontSize:18.0f dataSuffix:kDataSuffixCalories unitText:kUnitTextCalorie];
+                    break;
             }
+            return cell;
+        } else {
+            UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"dataDisplayCellCaption"];
+            cell.selectionStyle = UITableViewCellSelectionStyleNone;
+            cell.textLabel.textColor = [UIColor darkGrayColor];
+            cell.textLabel.font = [UIFont systemFontOfSize:11.5f];
+            cell.textLabel.numberOfLines = 0;
+            cell.textLabel.lineBreakMode = NSLineBreakByWordWrapping;
+            switch (indexPath.row) {
+                case 1:
+                    cell.textLabel.text = kHelpNetCO2;
+                    break;
+                case 3:
+                    cell.textLabel.text = kHelpCO2Emitted;
+                    break;
+                case 5:
+                    cell.textLabel.text = kHelpCO2Avoided;
+                    break;
+                case 7:
+                    cell.textLabel.text = kHelpGas;
+                    break;
+                case 9:
+                    cell.textLabel.text = kHelpCalories;
+                    break;
+            }
+            return cell;
         }
-        return cell;
     } else if (indexPath.section == 2) {
         static NSString *cellIdentifier = @"equivalenceCell";
         UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
@@ -154,7 +182,7 @@
                                                    initWithString:@"...powering a home for "
                                                    attributes:@{NSFontAttributeName: titleFont}];
                 NSAttributedString *number = [[NSAttributedString alloc]
-                                              initWithString:[NSString stringWithFormat:@"%.1f", emissions / kEmissionsPerHomeHour]
+                                              initWithString:[NSString stringWithFormat:@"%.1f", (emissions - avoidance) / kEmissionsPerHomeHour]
                                               attributes:@{NSFontAttributeName: numberFont,
                                                            NSForegroundColorAttributeName: numberColor}];
                 NSAttributedString *suffix = [[NSAttributedString alloc]
@@ -169,7 +197,7 @@
                                                    initWithString:@"...leaving a lightbulb on for "
                                                    attributes:@{NSFontAttributeName: titleFont}];
                 NSAttributedString *number = [[NSAttributedString alloc]
-                                              initWithString:[NSString stringWithFormat:@"%.1f", emissions / kEmissionsMassPerKWH * 5 / 3]
+                                              initWithString:[NSString stringWithFormat:@"%.1f", (emissions - avoidance) / kEmissionsMassPerKWH * 5 / 3]
                                               attributes:@{NSFontAttributeName: numberFont,
                                                            NSForegroundColorAttributeName: numberColor}];
                 NSAttributedString *suffix = [[NSAttributedString alloc]
@@ -198,27 +226,26 @@
         cell.textLabel.textColor = [UIColor darkGrayColor];
         cell.detailTextLabel.textColor = [UIColor blackColor];
         switch (indexPath.row) {
-            case 0: {
+            case 0:
                 cell.detailTextLabel.text = [NSString stringWithFormat:@"%.1f %@", [Utils distanceFromMeters:gpx.metadata.extensions.totalDistance units:distanceUnitText], distanceUnitText];
                 cell.textLabel.text = @"Total Distance";
                 return cell;
-            } case 1: {
+            case 1:
                 cell.detailTextLabel.text = [Utils timeStringFromSeconds:gpx.metadata.extensions.totalTime];
                 cell.textLabel.text = @"Total Time";
                 return cell;
-            } case 2: {
+            case 2:
                 cell.detailTextLabel.text = [Utils timeStringFromSeconds:gpx.metadata.extensions.timeMoving];
                 cell.textLabel.text = @"Time Moving";
                 return cell;
-            } case 3: {
+            case 3:
                 cell.detailTextLabel.text = [Utils timeStringFromSeconds:gpx.metadata.extensions.timeStopped];
                 cell.textLabel.text = @"Time Stopped";
                 return cell;
-            } case 4: {
+            case 4:
                 cell.detailTextLabel.text = [NSString stringWithFormat:@"%.1f %@", [Utils speedFromMetersSec:gpx.metadata.extensions.averageSpeed units:speedUnitText], speedUnitText];
                 cell.textLabel.text = @"Average Speed";
                 return cell;
-            }
         }
     } return nil;
 }
@@ -234,6 +261,22 @@
     CGFloat defaultHeight = [super tableView:tableView heightForRowAtIndexPath:indexPath];
     if (indexPath.section == 0 && indexPath.row == 0) {
         return MAX(defaultHeight, [gpx.metadata.name sizeWithFont:nameFont constrainedToSize:CGSizeMake(self.tableView.frame.size.width - 120, CGFLOAT_MAX) lineBreakMode:NSLineBreakByWordWrapping].height);
+    } else if (indexPath.section == 1 && indexPath.row % 2 == 1) {
+        UIFont *font = [UIFont systemFontOfSize:11.5f];
+        switch (indexPath.row) {
+            case 1:
+                return MAX(defaultHeight, [kHelpNetCO2 sizeWithFont:font constrainedToSize:CGSizeMake(self.tableView.frame.size.width - 120, CGFLOAT_MAX) lineBreakMode:NSLineBreakByWordWrapping].height);
+            case 3:
+                return MAX(defaultHeight, [kHelpCO2Emitted sizeWithFont:font constrainedToSize:CGSizeMake(self.tableView.frame.size.width - 120, CGFLOAT_MAX) lineBreakMode:NSLineBreakByWordWrapping].height);
+            case 5:
+                return MAX(defaultHeight, [kHelpCO2Avoided sizeWithFont:font constrainedToSize:CGSizeMake(self.tableView.frame.size.width - 120, CGFLOAT_MAX) lineBreakMode:NSLineBreakByWordWrapping].height);
+            case 7:
+                return MAX(defaultHeight, [kHelpGas sizeWithFont:font constrainedToSize:CGSizeMake(self.tableView.frame.size.width - 120, CGFLOAT_MAX) lineBreakMode:NSLineBreakByWordWrapping].height);
+            case 9:
+                return MAX(defaultHeight, [kHelpCalories sizeWithFont:font constrainedToSize:CGSizeMake(self.tableView.frame.size.width - 120, CGFLOAT_MAX) lineBreakMode:NSLineBreakByWordWrapping].height);
+            default:
+                return defaultHeight;
+        }
     } else if (indexPath.section == 3) {
         return MAX(defaultHeight, [gpx.metadata.desc sizeWithFont:descFont constrainedToSize:CGSizeMake(self.tableView.frame.size.width - 120, CGFLOAT_MAX) lineBreakMode:NSLineBreakByWordWrapping].height);
     } else return defaultHeight;
