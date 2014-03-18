@@ -108,21 +108,15 @@
                                                initWithString:[NSString stringWithFormat:@"%@ %@", unitText, dataSuffix]
                                                attributes:@{NSFontAttributeName: suffixFont}];
     CGFloat number = 0.0f;
-    UIColor *numberColor = [self colorForEmissions:num];
-    if ([dataSuffix isEqualToString:kDataSuffixCO2Emitted]) {
+    UIColor *numberColor = ([dataSuffix isEqualToString:kDataSuffixCO2Avoided]
+                            ? (num > 0
+                               ? [UIColor colorWithRed:0.0f green:0.8f blue:0.0f alpha:1.0f]
+                               : [UIColor colorWithRed:0.8f green:0.0f blue:0.0f alpha:1.0f])
+                            : [self colorForEmissions:num]);
+    if ([dataSuffix isEqualToString:kDataSuffixNetCO2]
+        || [dataSuffix isEqualToString:kDataSuffixCO2Emitted]
+        || [dataSuffix isEqualToString:kDataSuffixCO2Avoided]) {
         number = [Utils massFromKilograms:num units:unitText];
-        
-        // add subscript to the "2" in CO2
-        UIFont *subscriptFont = [UIFont systemFontOfSize:0.6 * size];
-        NSRange range = [suffixString.string rangeOfString:@"2"];
-        [suffixString beginEditing];
-        [suffixString addAttribute:NSFontAttributeName value:subscriptFont range:range];
-        [suffixString addAttribute:NSBaselineOffsetAttributeName value:[NSNumber numberWithFloat:-2.0] range:range];
-        [suffixString endEditing];
-    } else if ([dataSuffix isEqualToString:kDataSuffixCO2Avoided]) {
-        number = [Utils massFromKilograms:num units:unitText];
-        numberColor = (num > 0 ? [UIColor colorWithRed:0.0 green:0.8 blue:0.0 alpha:1.0]
-                       : [UIColor colorWithRed:0.8 green:0 blue:0 alpha:1.0]);
         
         // add subscript to the "2" in CO2
         UIFont *subscriptFont = [UIFont systemFontOfSize:0.6 * size];
@@ -135,7 +129,7 @@
         number = [Utils volumeFromLiters:num / kEmissionsMassPerLiterGas units:unitText];
     } else if ([dataSuffix isEqualToString:kDataSuffixCalories]) {
         number = num;
-        numberColor = [UIColor colorWithRed:0.0 green:0.8 blue:0.0 alpha:1.0];
+        numberColor = [UIColor colorWithRed:0.0f green:0.8f blue:0.0f alpha:1.0f];
     }
     
     NSAttributedString *numberString = [[NSAttributedString alloc]
@@ -149,10 +143,10 @@
 
 + (UIColor *)colorForEmissions:(CGFloat)mass {
     return (mass < 0.1
-            ? [UIColor colorWithRed:0.0 green:0.8 blue:0.0 alpha:1.0]
+            ? [UIColor colorWithRed:0.0f green:0.8f blue:0.0f alpha:1.0f]
             : (mass < 10
                ? [UIColor orangeColor]
-               : [UIColor colorWithRed:0.8 green:0 blue:0 alpha:1.0]));
+               : [UIColor colorWithRed:0.8f green:0.0f blue:0.0f alpha:1.0f]));
 }
 
 + (GPXRoot *)rootWithMetadataAtPath:(NSString *)path {

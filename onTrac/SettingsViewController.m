@@ -60,7 +60,7 @@
         return 1;
     else if (section == 2)
         // Displayed data cells
-        return 4;
+        return 5;
     else if (section == 3)
         // Map mode cells
         return 3;
@@ -126,15 +126,18 @@
         NSString *dataSuffix = [self.settings objectForKey:kSettingsKeyDataSuffix];
         UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
         if (indexPath.row == 0) {
+            cell.textLabel.text = @"Net carbon footprint";
+            cell.accessoryType = ([dataSuffix isEqualToString:kDataSuffixNetCO2] ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone);
+        } else if (indexPath.row == 1) {
             cell.textLabel.text = @"Carbon emissions";
             cell.accessoryType = ([dataSuffix isEqualToString:kDataSuffixCO2Emitted] ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone);
-        } else if (indexPath.row == 1) {
+        } else if (indexPath.row == 2) {
             cell.textLabel.text = @"Carbon avoidance";
             cell.accessoryType = ([dataSuffix isEqualToString:kDataSuffixCO2Avoided] ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone);
-        } else if (indexPath.row == 2) {
+        } else if (indexPath.row == 3) {
             cell.textLabel.text = @"Gasoline usage";
             cell.accessoryType = ([dataSuffix isEqualToString:kDataSuffixGas] ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone);
-        } else if (indexPath.row == 3) {
+        } else if (indexPath.row == 4) {
             cell.textLabel.text = @"Calories";
             cell.accessoryType = ([dataSuffix isEqualToString:kDataSuffixCalories] ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone);
         }
@@ -208,21 +211,25 @@
         }
     } else if (indexPath.section == 2) {
         NSString *value = [self.settings objectForKey:kSettingsKeyDataSuffix];
-        NSUInteger oldRow = ([value isEqualToString:kDataSuffixCO2Emitted]
+        NSUInteger oldRow = ([value isEqualToString:kDataSuffixNetCO2]
                              ? 0
-                             : ([value isEqualToString:kDataSuffixCO2Avoided]
+                             : ([value isEqualToString:kDataSuffixCO2Emitted]
                                 ? 1
-                                : ([value isEqualToString:kDataSuffixGas]
+                                : ([value isEqualToString:kDataSuffixCO2Avoided]
                                    ? 2
-                                   : 3)));
+                                   : ([value isEqualToString:kDataSuffixGas]
+                                      ? 3
+                                      : 4))));
         if (oldRow != indexPath.row) {
             [self.settings setObject:(indexPath.row == 0
-                                      ? kDataSuffixCO2Emitted
+                                      ? kDataSuffixNetCO2
                                       : (indexPath.row == 1
-                                         ? kDataSuffixCO2Avoided
+                                         ? kDataSuffixCO2Emitted
                                          : (indexPath.row == 2
-                                            ? kDataSuffixGas
-                                            : kDataSuffixCalories))) forKey:kSettingsKeyDataSuffix];
+                                            ? kDataSuffixCO2Avoided
+                                            : (indexPath.row == 3
+                                               ? kDataSuffixGas
+                                               : kDataSuffixCalories)))) forKey:kSettingsKeyDataSuffix];
             [[tableView cellForRowAtIndexPath:indexPath] setAccessoryType:UITableViewCellAccessoryCheckmark];
             [[tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:oldRow inSection:2]] setAccessoryType:UITableViewCellAccessoryNone];
         }

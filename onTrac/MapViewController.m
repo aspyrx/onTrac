@@ -365,10 +365,10 @@ static NSUInteger const kAccelerometerOff = 0;
 - (IBAction)transportModeControlChanged:(id)sender {
     int selIndex = [(UISegmentedControl *)sender selectedSegmentIndex];
     enum transport_mode_t mode = (selIndex == 0 ? TransportModeCar
-                             : (selIndex == 1 ? TransportModeBus
-                                : (selIndex == 2 ? TransportModeTrain
-                                   : (selIndex == 3 ? TransportModeSubway
-                                      : -1))));
+                                  : (selIndex == 1 ? TransportModeBus
+                                     : (selIndex == 2 ? TransportModeTrain
+                                        : (selIndex == 3 ? TransportModeSubway
+                                           : -1))));
     [settings setObject:[NSNumber numberWithInt:mode] forKey:kSettingsKeyTransportMode];
     
     // create Settings directory if necessary
@@ -437,7 +437,6 @@ static NSUInteger const kAccelerometerOff = 0;
             // load GPX root from file
             GPXRoot *rootFromFile = [GPXParser parseGPXAtPath:filePath];
             GPXMetadata *metadata = rootFromFile.metadata;
-            CGFloat emissions = metadata.extensions.carbonEmissions;
             // get track
             GPXTrack *track = [[rootFromFile tracks] lastObject];
             // get track segments
@@ -457,7 +456,6 @@ static NSUInteger const kAccelerometerOff = 0;
                 
                 // create polyline, add to map view
                 MKPolyline *trackLine = [MKPolyline polylineWithCoordinates:coordinates count:count];
-                trackLine.title = [NSString stringWithFormat:@"%.2f", emissions];
                 [self.mapView addOverlay:trackLine];
             }
             
@@ -468,11 +466,14 @@ static NSUInteger const kAccelerometerOff = 0;
             TrackAnnotation *annotation = [[TrackAnnotation alloc]
                                            initWithFilePath:filePath
                                            title:metadata.name
-                                           subtitle:[[Utils attributedStringFromNumber:([dataSuffix isEqualToString:kDataSuffixCO2Emitted] || [dataSuffix isEqualToString:kDataSuffixGas]
-                                                                                        ? emissions
-                                                                                        : ([dataSuffix isEqualToString:kDataSuffixCO2Avoided]
-                                                                                           ? metadata.extensions.carbonAvoidance
-                                                                                           : metadata.extensions.caloriesBurned))
+                                           subtitle:[[Utils attributedStringFromNumber:([dataSuffix isEqualToString:kDataSuffixNetCO2]
+                                                                                        ? metadata.extensions.carbonEmissions - metadata.extensions.carbonAvoidance
+                                                                                        : ([dataSuffix isEqualToString:kDataSuffixCO2Emitted]
+                                                                                           || [dataSuffix isEqualToString:kDataSuffixGas]
+                                                                                           ? metadata.extensions.carbonEmissions
+                                                                                           : ([dataSuffix isEqualToString:kDataSuffixCO2Avoided]
+                                                                                              ? metadata.extensions.carbonAvoidance
+                                                                                              : metadata.extensions.caloriesBurned)))
                                                                           baseFontSize:1.0f
                                                                             dataSuffix:dataSuffix
                                                                               unitText:dataUnitText] string]
@@ -552,11 +553,14 @@ static NSUInteger const kAccelerometerOff = 0;
     self.totalDistanceLabel.text = [NSString stringWithFormat:@"%.2f %@", [Utils distanceFromMeters:totalDistance units:distanceUnitText], distanceUnitText];
     self.averageSpeedLabel.text = [NSString stringWithFormat:@"%.2f %@", [Utils speedFromMetersSec:averageSpeed units:speedUnitText], speedUnitText];
     self.currentSpeedLabel.text = [NSString stringWithFormat:@"%.2f %@", [Utils speedFromMetersSec:currentSpeed units:speedUnitText], speedUnitText];
-    self.displayedDataLabel.attributedText = [Utils attributedStringFromNumber:([dataSuffix isEqualToString:kDataSuffixCO2Emitted] || [dataSuffix isEqualToString:kDataSuffixGas]
-                                                                                ? carbonEmissions
-                                                                                : ([dataSuffix isEqualToString:kDataSuffixCO2Avoided]
-                                                                                   ? carbonAvoidance
-                                                                                   : caloriesBurned))
+    self.displayedDataLabel.attributedText = [Utils attributedStringFromNumber:([dataSuffix isEqualToString:kDataSuffixNetCO2]
+                                                                                ? carbonEmissions - carbonAvoidance
+                                                                                :([dataSuffix isEqualToString:kDataSuffixCO2Emitted]
+                                                                                  || [dataSuffix isEqualToString:kDataSuffixGas]
+                                                                                  ? carbonEmissions
+                                                                                  : ([dataSuffix isEqualToString:kDataSuffixCO2Avoided]
+                                                                                     ? carbonAvoidance
+                                                                                     : caloriesBurned)))
                                                                   baseFontSize:23.0f
                                                                     dataSuffix:dataSuffix
                                                                       unitText:dataUnitText];
@@ -589,55 +593,55 @@ static NSUInteger const kAccelerometerOff = 0;
 }
 
 /* battery saving feature
-- (void)outputAccelerationData:(CMAcceleration)acceleration {
-    // add current acceleration magnitude to array
-    [accelMagnitudes addObject:[NSNumber numberWithDouble:sqrt((acceleration.x * acceleration.x) + (acceleration.y * acceleration.y) + (acceleration.z * acceleration.z))]];
-    if (recordingState < RecordingStateRunning) {
-        // currently stopped, check if array has too many objects and remove if necessary
-        while ([accelMagnitudes count] > kAccelMagnitudeSamplesStopped)
-            [accelMagnitudes removeObjectAtIndex:0];
-        
-        if ([accelMagnitudes count] >= kAccelMagnitudeSamplesStopped) {
-            // there are enough magnitude of acceleration samples, take standard deviation
-            accelMagStdDev = [Utils standardDeviationOf:accelMagnitudes];
-            if (accelMagStdDev > kStandardDeviationStartThreshold) {
-                if (++numStandardDeviationSamplesAboveThreshold > kStandardDeviationSamplesAboveStartThreshold) {
-                    // there are enough samples consecutively above the threshold, start recording
-                    numStandardDeviationSamplesAboveThreshold = 0;
-                    [self resumeRecording];
-                    NSLog(@"GPS turned on due to movement");
-                }
-            } else numStandardDeviationSamplesAboveThreshold = 0;
-        }
-    } else {
-        // currently moving, check if array has too many objects and remove if necessary
-        while ([accelMagnitudes count] > kAccelMagnitudeSamplesMoving)
-            [accelMagnitudes removeObjectAtIndex:0];
-        
-        NSUInteger count = [accelMagnitudes count];
-        if (count >= kAccelMagnitudeSamplesWalking && isDriving ) {
-            // there are enough samples AND currently driving, take standard deviation
-            walkingStdDev = [Utils standardDeviationOf:[accelMagnitudes subarrayWithRange:NSMakeRange(count - kAccelMagnitudeSamplesWalking, kAccelMagnitudeSamplesWalking)]];
-            if (walkingStdDev > kStandardDeviationWalkingThreshold) {
-                // standard deviation is above threshold for walking
-                if (++numStandardDeviationSamplesAboveThreshold > kStandardDeviationSamplesAboveWalkingThreshold) {
-                    // there are enough samples consecutively above the threshold for walking
-                    isDriving = NO;
-                }
-            } else numStandardDeviationSamplesAboveThreshold = 0;
-        }
-        
-        if (count >= kAccelMagnitudeSamplesMoving && currentSpeed < kCurrentSpeedStopThreshold && numStatsUpdatesWithoutLocationUpdate > kStatsUpdatesUntilRecordingStop) {
-            // there are enough samples AND speed is below threshold, take standard deviation
-            accelMagStdDev = [Utils standardDeviationOf:accelMagnitudes];
-            if (accelMagStdDev < kStandardDeviationStopThreshold) {
-                // standard deviation and speed fell below the thresholds, stop recording
-                [self pauseRecording];
-                NSLog(@"GPS turned off due to inactivity");
-            }
-        }
-    }
-}
+ - (void)outputAccelerationData:(CMAcceleration)acceleration {
+ // add current acceleration magnitude to array
+ [accelMagnitudes addObject:[NSNumber numberWithDouble:sqrt((acceleration.x * acceleration.x) + (acceleration.y * acceleration.y) + (acceleration.z * acceleration.z))]];
+ if (recordingState < RecordingStateRunning) {
+ // currently stopped, check if array has too many objects and remove if necessary
+ while ([accelMagnitudes count] > kAccelMagnitudeSamplesStopped)
+ [accelMagnitudes removeObjectAtIndex:0];
+ 
+ if ([accelMagnitudes count] >= kAccelMagnitudeSamplesStopped) {
+ // there are enough magnitude of acceleration samples, take standard deviation
+ accelMagStdDev = [Utils standardDeviationOf:accelMagnitudes];
+ if (accelMagStdDev > kStandardDeviationStartThreshold) {
+ if (++numStandardDeviationSamplesAboveThreshold > kStandardDeviationSamplesAboveStartThreshold) {
+ // there are enough samples consecutively above the threshold, start recording
+ numStandardDeviationSamplesAboveThreshold = 0;
+ [self resumeRecording];
+ NSLog(@"GPS turned on due to movement");
+ }
+ } else numStandardDeviationSamplesAboveThreshold = 0;
+ }
+ } else {
+ // currently moving, check if array has too many objects and remove if necessary
+ while ([accelMagnitudes count] > kAccelMagnitudeSamplesMoving)
+ [accelMagnitudes removeObjectAtIndex:0];
+ 
+ NSUInteger count = [accelMagnitudes count];
+ if (count >= kAccelMagnitudeSamplesWalking && isDriving ) {
+ // there are enough samples AND currently driving, take standard deviation
+ walkingStdDev = [Utils standardDeviationOf:[accelMagnitudes subarrayWithRange:NSMakeRange(count - kAccelMagnitudeSamplesWalking, kAccelMagnitudeSamplesWalking)]];
+ if (walkingStdDev > kStandardDeviationWalkingThreshold) {
+ // standard deviation is above threshold for walking
+ if (++numStandardDeviationSamplesAboveThreshold > kStandardDeviationSamplesAboveWalkingThreshold) {
+ // there are enough samples consecutively above the threshold for walking
+ isDriving = NO;
+ }
+ } else numStandardDeviationSamplesAboveThreshold = 0;
+ }
+ 
+ if (count >= kAccelMagnitudeSamplesMoving && currentSpeed < kCurrentSpeedStopThreshold && numStatsUpdatesWithoutLocationUpdate > kStatsUpdatesUntilRecordingStop) {
+ // there are enough samples AND speed is below threshold, take standard deviation
+ accelMagStdDev = [Utils standardDeviationOf:accelMagnitudes];
+ if (accelMagStdDev < kStandardDeviationStopThreshold) {
+ // standard deviation and speed fell below the thresholds, stop recording
+ [self pauseRecording];
+ NSLog(@"GPS turned off due to inactivity");
+ }
+ }
+ }
+ }
  */
 
 - (void)setAccelerometerStatus:(int)status {

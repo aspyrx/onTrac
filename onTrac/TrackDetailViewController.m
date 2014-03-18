@@ -70,14 +70,19 @@
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     // Return the number of rows in the section.
     if (section == 0)
+        // track name
         return 1;
     else if (section == 1)
-        return 4;
+        // footprint data
+        return 5;
     else if (section == 2)
+        // equivalences
         return 2;
     else if (hasDesc && section == 3)
-            return 1;
+        // description
+        return 1;
     else if ((!hasDesc && section == 3) || section == 4)
+        // track details
         return 5;
     else return 0;
 }
@@ -91,7 +96,7 @@
     } else if (section == 2)
         return @"That's the same as...";
     else if (hasDesc && section == 3)
-            return @"Track Description";
+        return @"Track Description";
     else if ((!hasDesc && section == 3) || section == 4)
         return @"More Details";
     else return nil;
@@ -112,18 +117,22 @@
         cell.textLabel.textColor = [UIColor darkGrayColor];
         switch (indexPath.row) {
             case 0: {
+                cell.textLabel.text = @"Net Footprint";
+                cell.detailTextLabel.attributedText = [Utils attributedStringFromNumber:emissions - gpx.metadata.extensions.carbonAvoidance baseFontSize:18.0f dataSuffix:kDataSuffixNetCO2 unitText:massUnitText];
+                break;
+            } case 1: {
                 cell.textLabel.text = @"Emissions";
                 cell.detailTextLabel.attributedText = [Utils attributedStringFromNumber:emissions baseFontSize:18.0f dataSuffix:kDataSuffixCO2Emitted unitText:massUnitText];
                 break;
-            } case 1: {
+            } case 2: {
                 cell.textLabel.text = @"Avoidance";
                 cell.detailTextLabel.attributedText = [Utils attributedStringFromNumber:gpx.metadata.extensions.carbonAvoidance baseFontSize:18.0f dataSuffix:kDataSuffixCO2Avoided unitText:massUnitText];
                 break;
-            } case 2: {
+            } case 3: {
                 cell.textLabel.text = @"Gasoline";
                 cell.detailTextLabel.attributedText = [Utils attributedStringFromNumber:emissions baseFontSize:18.0f dataSuffix:kDataSuffixGas unitText:volumeUnitText];
                 break;
-            } case 3: {
+            } case 4: {
                 cell.textLabel.text = @"Calories";
                 cell.detailTextLabel.attributedText = [Utils attributedStringFromNumber:gpx.metadata.extensions.caloriesBurned baseFontSize:18.0f dataSuffix:kDataSuffixCalories unitText:kUnitTextCalorie];
                 break;

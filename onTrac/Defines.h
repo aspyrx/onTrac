@@ -54,6 +54,7 @@ static NSString *kUnitTextGallon = @"gal";
 static NSString *kUnitTextCalorie = @"Cal";
 
 // text for data suffixes
+static NSString *kDataSuffixNetCO2 = @"net CO2";
 static NSString *kDataSuffixCO2Emitted = @"CO2 emitted";
 static NSString *kDataSuffixCO2Avoided = @"CO2 saved";
 static NSString *kDataSuffixGas = @"gas used";

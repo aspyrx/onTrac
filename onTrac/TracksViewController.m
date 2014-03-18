@@ -135,11 +135,14 @@
         
         // set track cell properties
         trackCell.textLabel.text = root.metadata.name;
-        CGFloat num = ([dataSuffix isEqualToString:kDataSuffixCO2Emitted] || [dataSuffix isEqualToString:kDataSuffixGas]
-                       ? root.metadata.extensions.carbonEmissions
-                       : ([dataSuffix isEqualToString:kDataSuffixCO2Avoided]
-                          ? root.metadata.extensions.carbonAvoidance
-                          : root.metadata.extensions.caloriesBurned));
+        CGFloat num = ([dataSuffix isEqualToString:kDataSuffixNetCO2]
+                       ? root.metadata.extensions.carbonEmissions - root.metadata.extensions.carbonAvoidance
+                       : ([dataSuffix isEqualToString:kDataSuffixCO2Emitted]
+                          || [dataSuffix isEqualToString:kDataSuffixGas]
+                          ? root.metadata.extensions.carbonEmissions
+                          : ([dataSuffix isEqualToString:kDataSuffixCO2Avoided]
+                             ? root.metadata.extensions.carbonAvoidance
+                             : root.metadata.extensions.caloriesBurned)));
         trackCell.detailTextLabel.attributedText = [Utils attributedStringFromNumber:num baseFontSize:14.0f dataSuffix:dataSuffix unitText:dataUnitText];
         
         trackCell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
