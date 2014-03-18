@@ -79,7 +79,7 @@ static NSUInteger const kAccelerometerOff = 0;
     double accelMagStdDev;
     double walkingStdDev;
     
-    NSDictionary *settings;
+    NSMutableDictionary *settings;
     NSMutableArray *accelMagnitudes;
     NSTimer *statsUpdateTimer;
     
@@ -108,10 +108,6 @@ static NSUInteger const kAccelerometerOff = 0;
     GPXBounds *currentGPXBounds;
     GPXTrack *currentGPXTrack;
     GPXTrackSegment *currentGPXTrackSegment;
-    
-    // accelerometer testing
-    //    CMAcceleration testAccel;
-    //    int testMode;
 }
 
 #pragma mark - UIViewController
@@ -168,11 +164,12 @@ static NSUInteger const kAccelerometerOff = 0;
     // start updating stats labels
     shouldUpdateStatsLabels = YES;
     
-    settings = [Utils loadSettings];
+    settings = [[Utils loadSettings] mutableCopy];
     BOOL useMetricSetting = [[settings objectForKey:kSettingsKeyUseMetric] boolValue];
     MKMapType mapModeSetting = [[settings objectForKey:kSettingsKeyMapMode] unsignedIntegerValue];
     BOOL followLocationSetting = [[settings objectForKey:kSettingsKeyFollowLocation] boolValue];
     NSString *newSuffix = [settings objectForKey:kSettingsKeyDataSuffix];
+    enum transport_mode_t mode = [[settings objectForKey:kSettingsKeyTransportMode] intValue];
     
     // change unit labels depending on setting
     if (![dataSuffix isEqualToString:newSuffix]
@@ -197,6 +194,13 @@ static NSUInteger const kAccelerometerOff = 0;
         }
         [self updateSelectedTracks:nil];
     }
+    
+    // change transport mode depending on setting
+    [self.transportModeControl setSelectedSegmentIndex:(mode == TransportModeCar ? 0
+                                                        : (mode == TransportModeBus ? 1
+                                                           : (mode == TransportModeTrain ? 2
+                                                              : (mode == TransportModeSubway ? 3
+                                                                 : -1))))];
     
     // change map mode depending on setting
     if (self.mapView.mapType != mapModeSetting)
@@ -358,6 +362,30 @@ static NSUInteger const kAccelerometerOff = 0;
 
 #pragma mark - interface methods
 
+- (IBAction)transportModeControlChanged:(id)sender {
+    int selIndex = [(UISegmentedControl *)sender selectedSegmentIndex];
+    enum transport_mode_t mode = (selIndex == 0 ? TransportModeCar
+                             : (selIndex == 1 ? TransportModeBus
+                                : (selIndex == 2 ? TransportModeTrain
+                                   : (selIndex == 3 ? TransportModeSubway
+                                      : -1))));
+    [settings setObject:[NSNumber numberWithInt:mode] forKey:kSettingsKeyTransportMode];
+    
+    // create Settings directory if necessary
+    NSError *error;
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSString *settingsDirectory = [NSHomeDirectory() stringByAppendingPathComponent:kSettingsDirectory];
+    if (![fileManager fileExistsAtPath:settingsDirectory]) {
+        [fileManager createDirectoryAtPath:settingsDirectory withIntermediateDirectories:YES attributes:nil error:&error];
+        if (error)
+            NSLog(@"Error creating Settings directory: %@", error);
+    }
+    
+    // save settings to plist file, dismiss options view
+    [settings writeToFile:[settingsDirectory stringByAppendingPathComponent:kSettingsFileName] atomically:NO];
+    settings = [[Utils loadSettings] mutableCopy];
+}
+
 - (IBAction)tapCurlViewTapped:(id)sender {
     // tap curl view was touched, curl view
     self.tapCurlView.hidden = YES;
@@ -371,29 +399,6 @@ static NSUInteger const kAccelerometerOff = 0;
     // tap uncurl view was touched, uncurl view
     self.tapCurlView.hidden = NO;
     [self.curlView uncurlAnimatedWithDuration:kCurlAnimationDuration];
-}
-
-- (IBAction)statisticsButtonPressed:(id)sender {
-    // TODO: go to statistics view
-    /* testing: change accel test mode
-     testMode++;
-     if (testMode > 2)
-     testMode = 0;
-     CMAcceleration a = {0.0, 0.0, 0.0};
-     switch (testMode) {
-     case 1: {
-     a.x = a.y = a.z = 0.5;
-     break;
-     } case 2: {
-     a.x = a.y = a.z = 1.0;
-     break;
-     }
-     }
-     testAccel = a;
-     */
-    
-    // DEBUG: toggle driving mode
-//    isDriving = !isDriving;
 }
 
 - (void)optionsButtonPressed:(id)sender {
@@ -537,17 +542,12 @@ static NSUInteger const kAccelerometerOff = 0;
     totalTime += timeSinceLastUpdate;
     lastUpdateTime = [NSDate timeIntervalSinceReferenceDate];
     
-    // testing: output test accel values
-    //    [self outputAccelerationData:testAccel];
-    
     if (shouldUpdateStatsLabels)
         [self updateStatsLabels];
 }
 
 - (void)updateStatsLabels {
     // set label text in appropriate units
-    self.timeMovingLabel.text = [Utils timeStringFromSeconds:timeMoving];
-    self.timeStoppedLabel.text = [Utils timeStringFromSeconds:timeStopped];
     self.totalTimeLabel.text = [Utils timeStringFromSeconds:totalTime];
     self.totalDistanceLabel.text = [NSString stringWithFormat:@"%.2f %@", [Utils distanceFromMeters:totalDistance units:distanceUnitText], distanceUnitText];
     self.averageSpeedLabel.text = [NSString stringWithFormat:@"%.2f %@", [Utils speedFromMetersSec:averageSpeed units:speedUnitText], speedUnitText];
@@ -560,8 +560,6 @@ static NSUInteger const kAccelerometerOff = 0;
                                                                   baseFontSize:23.0f
                                                                     dataSuffix:dataSuffix
                                                                       unitText:dataUnitText];
-    // testing: statistics button text
-//    self.statisticsButton.titleLabel.text = [NSString stringWithFormat:@"%.4f %.4f %@", accelMagStdDev, walkingStdDev, (isDriving ? @"Yes" : @"No")];
 }
 
 #pragma mark accelerometer

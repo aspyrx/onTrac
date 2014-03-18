@@ -38,9 +38,8 @@
     // set navbar properties
     [self.navigationController.navigationBar setBarStyle:UIBarStyleBlackTranslucent];
     
-    if (self.settings == nil)
-        // load settings
-        self.settings = [[Utils loadSettings] mutableCopy];
+    // load settings
+    self.settings = [[Utils loadSettings] mutableCopy];
     
     // reload tableview
     [self.tableView reloadData];

@@ -20,14 +20,12 @@
 @property (weak, nonatomic) IBOutlet UIView *frontView;
 @property (weak, nonatomic) IBOutlet UIView *tapCurlView;
 @property (weak, nonatomic) IBOutlet UIView *tapUncurlView;
-@property (weak, nonatomic) IBOutlet UILabel *timeStoppedLabel;
-@property (weak, nonatomic) IBOutlet UILabel *timeMovingLabel;
 @property (weak, nonatomic) IBOutlet UILabel *totalTimeLabel;
 @property (weak, nonatomic) IBOutlet UILabel *totalDistanceLabel;
 @property (weak, nonatomic) IBOutlet UILabel *averageSpeedLabel;
 @property (weak, nonatomic) IBOutlet UILabel *currentSpeedLabel;
 @property (weak, nonatomic) IBOutlet UILabel *displayedDataLabel;
-@property (weak, nonatomic) IBOutlet UIButton *statisticsButton;
+@property (weak, nonatomic) IBOutlet UISegmentedControl *transportModeControl;
 @property (weak, nonatomic) IBOutlet MKMapView *mapView;
 @property (weak, nonatomic) IBOutlet UIImageView *curlImageView;
 @property (strong, nonatomic) CLLocationManager *locationManager;
@@ -36,7 +34,7 @@
 @property (strong, nonatomic) TracksViewController *tracksViewController;
 @property (strong, nonatomic) UINavigationController *settingsNavigationController;
 
-- (IBAction)statisticsButtonPressed:(id)sender;
+- (IBAction)transportModeControlChanged:(id)sender;
 - (IBAction)tapCurlViewTapped:(id)sender;
 - (IBAction)tapUncurlViewTapped:(id)sender;
 
