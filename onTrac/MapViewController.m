@@ -256,13 +256,13 @@ static NSUInteger const kAccelerometerOff = 0;
             }
             
             // calculate carbon emissions or avoidance and calories burned
-            CGFloat deltaCarbon = distance * emissionsPerMeter;
-            if (isDriving)
-                carbonEmissions += deltaCarbon;
-            else {
-                carbonAvoidance += deltaCarbon;
+            if (isDriving) {
+                carbonEmissions += distance * emissionsPerMeter;
+            } else {
                 caloriesBurned += [Utils caloriesBurnedForDistance:distance speed:currentSpeed];
             }
+            
+            carbonAvoidance += distance * (kEmissionsMassPerMeterCar - emissionsPerMeter);
             
             // record location information in GPX format
             // add newLocation as GPXTrackPoint
