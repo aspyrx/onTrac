@@ -175,9 +175,9 @@ static NSUInteger const kAccelerometerOff = 0;
     if (![dataSuffix isEqualToString:newSuffix]
         || ![distanceUnitText isEqualToString:(useMetricSetting ? kUnitTextKilometer : kUnitTextMile)]) {
         dataSuffix = newSuffix;
-        if ([dataSuffix isEqualToString:kDataSuffixCO2Emitted]) {
-            dataUnitText = (useMetricSetting ? kUnitTextKG : kUnitTextLBS);
-        } else if ([dataSuffix isEqualToString:kDataSuffixCO2Avoided]) {
+        if ([dataSuffix isEqualToString:kDataSuffixNetCO2]
+            || [dataSuffix isEqualToString:kDataSuffixCO2Emitted]
+            || [dataSuffix isEqualToString:kDataSuffixCO2Avoided]) {
             dataUnitText = (useMetricSetting ? kUnitTextKG : kUnitTextLBS);
         } else if ([dataSuffix isEqualToString:kDataSuffixGas]) {
             dataUnitText = (useMetricSetting ? kUnitTextLiter : kUnitTextGallon);
