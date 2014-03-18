@@ -258,11 +258,11 @@ static NSUInteger const kAccelerometerOff = 0;
             // calculate carbon emissions or avoidance and calories burned
             if (isDriving) {
                 carbonEmissions += distance * emissionsPerMeter;
+                carbonAvoidance += distance * kEmissionsMassPerMeterCar;
             } else {
                 caloriesBurned += [Utils caloriesBurnedForDistance:distance speed:currentSpeed];
+                carbonAvoidance += distance * (kEmissionsMassPerMeterCar - emissionsPerMeter);
             }
-            
-            carbonAvoidance += distance * (kEmissionsMassPerMeterCar - emissionsPerMeter);
             
             // record location information in GPX format
             // add newLocation as GPXTrackPoint
