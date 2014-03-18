@@ -121,7 +121,8 @@
         [suffixString endEditing];
     } else if ([dataSuffix isEqualToString:kDataSuffixCO2Avoided]) {
         number = [Utils massFromKilograms:num units:unitText];
-        numberColor = [UIColor colorWithRed:0.0 green:0.8 blue:0.0 alpha:1.0];
+        numberColor = (num > 0 ? [UIColor colorWithRed:0.0 green:0.8 blue:0.0 alpha:1.0]
+                       : [UIColor colorWithRed:0.8 green:0 blue:0 alpha:1.0]);
         
         // add subscript to the "2" in CO2
         UIFont *subscriptFont = [UIFont systemFontOfSize:0.6 * size];
