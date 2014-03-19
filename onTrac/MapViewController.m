@@ -175,9 +175,10 @@ static NSUInteger const kAccelerometerOff = 0;
     if (![dataSuffix isEqualToString:newSuffix]
         || ![distanceUnitText isEqualToString:(useMetricSetting ? kUnitTextKilometer : kUnitTextMile)]) {
         dataSuffix = newSuffix;
-        if ([dataSuffix isEqualToString:kDataSuffixNetCO2]
-            || [dataSuffix isEqualToString:kDataSuffixCO2Emitted]
-            || [dataSuffix isEqualToString:kDataSuffixCO2Avoided]) {
+        if ([dataSuffix isEqualToString:kDataSuffixAvoidancePercent]) {
+            dataUnitText = kUnitTextPercent;
+        } else if([dataSuffix isEqualToString:kDataSuffixCO2Emitted]
+                  || [dataSuffix isEqualToString:kDataSuffixCO2Avoided]) {
             dataUnitText = (useMetricSetting ? kUnitTextKG : kUnitTextLBS);
         } else if ([dataSuffix isEqualToString:kDataSuffixGas]) {
             dataUnitText = (useMetricSetting ? kUnitTextLiter : kUnitTextGallon);
@@ -258,10 +259,10 @@ static NSUInteger const kAccelerometerOff = 0;
             // calculate carbon emissions or avoidance and calories burned
             if (isDriving) {
                 carbonEmissions += distance * emissionsPerMeter;
-                carbonAvoidance += distance * kEmissionsMassPerMeterCar;
+                carbonAvoidance += distance * (kEmissionsMassPerMeterCar - emissionsPerMeter);
             } else {
                 caloriesBurned += [Utils caloriesBurnedForDistance:distance speed:currentSpeed];
-                carbonAvoidance += distance * (kEmissionsMassPerMeterCar - emissionsPerMeter);
+                carbonAvoidance += distance * kEmissionsMassPerMeterCar;
             }
             
             // record location information in GPX format
@@ -362,14 +363,68 @@ static NSUInteger const kAccelerometerOff = 0;
 
 #pragma mark - interface methods
 
+- (IBAction)displayedDataLabelTapped:(id)sender {
+    BOOL useMetric = [[settings objectForKey:kSettingsKeyUseMetric] boolValue];
+    if ([dataSuffix isEqualToString:kDataSuffixAvoidancePercent]) {
+        dataSuffix = kDataSuffixCO2Emitted;
+        dataUnitText = (useMetric ? kUnitTextKG : kUnitTextLBS);
+    } else if ([dataSuffix isEqualToString:kDataSuffixCO2Emitted]) {
+        dataSuffix = kDataSuffixCO2Avoided;
+        dataUnitText = (useMetric ? kUnitTextKG : kUnitTextLBS);
+    } else if ([dataSuffix isEqualToString:kDataSuffixCO2Avoided]) {
+        dataSuffix = kDataSuffixGas;
+        dataUnitText = (useMetric ? kUnitTextLiter : kUnitTextGallon);
+    } else if ([dataSuffix isEqualToString:kDataSuffixGas]) {
+        dataSuffix = kDataSuffixCalories;
+        dataUnitText = kUnitTextCalorie;
+    } else if ([dataSuffix isEqualToString:kDataSuffixCalories]) {
+        dataSuffix = kDataSuffixAvoidancePercent;
+        dataUnitText = kUnitTextPercent;
+    }
+    
+    [settings setObject:dataSuffix forKey:kSettingsKeyDataSuffix];
+    [self updateStatsLabels];
+    
+    // create Settings directory if necessary
+    NSError *error;
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSString *settingsDirectory = [NSHomeDirectory() stringByAppendingPathComponent:kSettingsDirectory];
+    if (![fileManager fileExistsAtPath:settingsDirectory]) {
+        [fileManager createDirectoryAtPath:settingsDirectory withIntermediateDirectories:YES attributes:nil error:&error];
+        if (error)
+            NSLog(@"Error creating Settings directory: %@", error);
+    }
+    
+    // save settings to plist file, dismiss options view
+    [settings writeToFile:[settingsDirectory stringByAppendingPathComponent:kSettingsFileName] atomically:NO];
+    settings = [[Utils loadSettings] mutableCopy];
+}
+
 - (IBAction)transportModeControlChanged:(id)sender {
     NSInteger selIndex = [(UISegmentedControl *)sender selectedSegmentIndex];
-    enum transport_mode_t mode = (selIndex == 0 ? TransportModeCar
-                                  : (selIndex == 1 ? TransportModeBus
-                                     : (selIndex == 2 ? TransportModeTrain
-                                        : (selIndex == 3 ? TransportModeSubway
-                                           : -1))));
+    enum transport_mode_t mode;
+    
+    switch (selIndex) {
+        case 0:
+            mode = TransportModeCar;
+            emissionsPerMeter = [[settings objectForKey:kSettingsKeyUserCarEmissionsPerMeter] doubleValue];
+            break;
+        case 1:
+            mode = TransportModeBus;
+            emissionsPerMeter = kEmissionsMassPerMeterBus;
+            break;
+        case 2:
+            mode = TransportModeTrain;
+            emissionsPerMeter = kEmissionsMassPerMeterTrain;
+            break;
+        case 3:
+            mode = TransportModeSubway;
+            emissionsPerMeter = kEmissionsMassPerMeterSubway;
+            break;
+    }
+    
     [settings setObject:[NSNumber numberWithInt:mode] forKey:kSettingsKeyTransportMode];
+    [settings setObject:[NSNumber numberWithDouble:emissionsPerMeter] forKey:kSettingsKeyEmissionsPerMeter];
     
     // create Settings directory if necessary
     NSError *error;
@@ -466,8 +521,8 @@ static NSUInteger const kAccelerometerOff = 0;
             TrackAnnotation *annotation = [[TrackAnnotation alloc]
                                            initWithFilePath:filePath
                                            title:metadata.name
-                                           subtitle:[[Utils attributedStringFromNumber:([dataSuffix isEqualToString:kDataSuffixNetCO2]
-                                                                                        ? metadata.extensions.carbonEmissions - metadata.extensions.carbonAvoidance
+                                           subtitle:[[Utils attributedStringFromNumber:([dataSuffix isEqualToString:kDataSuffixAvoidancePercent]
+                                                                                        ? (metadata.extensions.carbonEmissions / (metadata.extensions.totalDistance * kEmissionsMassPerMeterCar)) * 100
                                                                                         : ([dataSuffix isEqualToString:kDataSuffixCO2Emitted]
                                                                                            || [dataSuffix isEqualToString:kDataSuffixGas]
                                                                                            ? metadata.extensions.carbonEmissions
@@ -550,11 +605,11 @@ static NSUInteger const kAccelerometerOff = 0;
 - (void)updateStatsLabels {
     // set label text in appropriate units
     self.totalTimeLabel.text = [Utils timeStringFromSeconds:totalTime];
-    self.totalDistanceLabel.text = [NSString stringWithFormat:@"%.2f %@", [Utils distanceFromMeters:totalDistance units:distanceUnitText], distanceUnitText];
-    self.averageSpeedLabel.text = [NSString stringWithFormat:@"%.2f %@", [Utils speedFromMetersSec:averageSpeed units:speedUnitText], speedUnitText];
-    self.currentSpeedLabel.text = [NSString stringWithFormat:@"%.2f %@", [Utils speedFromMetersSec:currentSpeed units:speedUnitText], speedUnitText];
-    self.displayedDataLabel.attributedText = [Utils attributedStringFromNumber:([dataSuffix isEqualToString:kDataSuffixNetCO2]
-                                                                                ? carbonEmissions - carbonAvoidance
+    self.totalDistanceLabel.text = [NSString stringWithFormat:@"%.2f%@", [Utils distanceFromMeters:totalDistance units:distanceUnitText], distanceUnitText];
+    self.averageSpeedLabel.text = [NSString stringWithFormat:@"%.2f%@", [Utils speedFromMetersSec:averageSpeed units:speedUnitText], speedUnitText];
+    self.currentSpeedLabel.text = [NSString stringWithFormat:@"%.2f%@", [Utils speedFromMetersSec:currentSpeed units:speedUnitText], speedUnitText];
+    self.displayedDataLabel.attributedText = [Utils attributedStringFromNumber:([dataSuffix isEqualToString:kDataSuffixAvoidancePercent]
+                                                                                ? (carbonEmissions / (totalDistance * kEmissionsMassPerMeterCar)) * 100
                                                                                 :([dataSuffix isEqualToString:kDataSuffixCO2Emitted]
                                                                                   || [dataSuffix isEqualToString:kDataSuffixGas]
                                                                                   ? carbonEmissions

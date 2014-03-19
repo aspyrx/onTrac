@@ -34,6 +34,7 @@
 @property (strong, nonatomic) TracksViewController *tracksViewController;
 @property (strong, nonatomic) UINavigationController *settingsNavigationController;
 
+- (IBAction)displayedDataLabelTapped:(id)sender;
 - (IBAction)transportModeControlChanged:(id)sender;
 - (IBAction)tapCurlViewTapped:(id)sender;
 - (IBAction)tapUncurlViewTapped:(id)sender;

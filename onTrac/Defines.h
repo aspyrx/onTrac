@@ -43,18 +43,19 @@ static NSString *kSettingsKeyMapMode = @"mapMode";
 static NSString *kSettingsKeyFollowLocation = @"followLocation";
 
 // text for units
-static NSString *kUnitTextKilometer = @"km";
-static NSString *kUnitTextMile = @"mi";
-static NSString *kUnitTextKPH = @"km/h";
-static NSString *kUnitTextMPH = @"mph";
-static NSString *kUnitTextKG = @"kg";
-static NSString *kUnitTextLBS = @"lbs";
-static NSString *kUnitTextLiter = @"L";
-static NSString *kUnitTextGallon = @"gal";
-static NSString *kUnitTextCalorie = @"Cal";
+static NSString *kUnitTextKilometer = @" km";
+static NSString *kUnitTextMile = @" mi";
+static NSString *kUnitTextKPH = @" km/h";
+static NSString *kUnitTextMPH = @" mph";
+static NSString *kUnitTextKG = @" kg";
+static NSString *kUnitTextLBS = @" lbs";
+static NSString *kUnitTextLiter = @" L";
+static NSString *kUnitTextGallon = @" gal";
+static NSString *kUnitTextCalorie = @" Cal";
+static NSString *kUnitTextPercent = @"%";
 
 // text for data suffixes
-static NSString *kDataSuffixNetCO2 = @"net CO2";
+static NSString *kDataSuffixAvoidancePercent = @"emissions";
 static NSString *kDataSuffixCO2Emitted = @"CO2 emitted";
 static NSString *kDataSuffixCO2Avoided = @"CO2 saved";
 static NSString *kDataSuffixGas = @"gas used";
@@ -76,7 +77,7 @@ enum recording_state_t {
 };
 
 // help texts
-static NSString *kHelpNetCO2 = @"The net carbon footprint of the trip (emissions - avoidance). Lower is better.";
+static NSString *kHelpAvoidancePercent = @"The amount of your emissions compared to the emissions of the average American car travelling the same distance. Lower is better.";
 static NSString *kHelpCO2Emitted = @"The amount of carbon emitted during the trip. Lower is better.";
 static NSString *kHelpCO2Avoided = @"The amount of carbon saved by using transport modes more efficient than driving the average American car. Higher is better.";
 static NSString *kHelpGas = @"The equivalent amount of gasoline consumed to emit the same amount of carbon. Lower is better.";

@@ -17,7 +17,9 @@
 
 @end
 
-@implementation SettingsViewController
+@implementation SettingsViewController {
+    BOOL didPopToMainScreen;
+}
 
 #pragma mark - UITableViewController
 
@@ -28,6 +30,8 @@
         self.title = @"Settings";
         self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(cancelButtonPressed:)];
         self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSave target:self action:@selector(saveButtonPressed:)];
+        
+        didPopToMainScreen = true;
     }
     return self;
 }
@@ -39,7 +43,10 @@
     [self.navigationController.navigationBar setBarStyle:UIBarStyleBlackTranslucent];
     
     // load settings
-    self.settings = [[Utils loadSettings] mutableCopy];
+    if (didPopToMainScreen) {
+        self.settings = [[Utils loadSettings] mutableCopy];
+        didPopToMainScreen = false;
+    }
     
     // reload tableview
     [self.tableView reloadData];
@@ -126,8 +133,8 @@
         NSString *dataSuffix = [self.settings objectForKey:kSettingsKeyDataSuffix];
         UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
         if (indexPath.row == 0) {
-            cell.textLabel.text = @"Net carbon footprint";
-            cell.accessoryType = ([dataSuffix isEqualToString:kDataSuffixNetCO2] ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone);
+            cell.textLabel.text = @"Percent emissions";
+            cell.accessoryType = ([dataSuffix isEqualToString:kDataSuffixAvoidancePercent] ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone);
         } else if (indexPath.row == 1) {
             cell.textLabel.text = @"Carbon emissions";
             cell.accessoryType = ([dataSuffix isEqualToString:kDataSuffixCO2Emitted] ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone);
@@ -211,7 +218,7 @@
         }
     } else if (indexPath.section == 2) {
         NSString *value = [self.settings objectForKey:kSettingsKeyDataSuffix];
-        NSUInteger oldRow = ([value isEqualToString:kDataSuffixNetCO2]
+        NSUInteger oldRow = ([value isEqualToString:kDataSuffixAvoidancePercent]
                              ? 0
                              : ([value isEqualToString:kDataSuffixCO2Emitted]
                                 ? 1
@@ -222,7 +229,7 @@
                                       : 4))));
         if (oldRow != indexPath.row) {
             [self.settings setObject:(indexPath.row == 0
-                                      ? kDataSuffixNetCO2
+                                      ? kDataSuffixAvoidancePercent
                                       : (indexPath.row == 1
                                          ? kDataSuffixCO2Emitted
                                          : (indexPath.row == 2
@@ -287,6 +294,8 @@
 - (void)cancelButtonPressed:(id)sender {
     // dismiss options view without saving changes
     [self dismissViewControllerAnimated:YES completion:nil];
+    
+    didPopToMainScreen = true;
 }
 
 - (void)saveButtonPressed:(id)sender {
@@ -304,6 +313,8 @@
     [self.settings writeToFile:[settingsDirectory stringByAppendingPathComponent:kSettingsFileName] atomically:NO];
     self.settings = [[Utils loadSettings] mutableCopy];
     [self dismissViewControllerAnimated:YES completion:nil];
+    
+    didPopToMainScreen = true;
 }
 
 @end

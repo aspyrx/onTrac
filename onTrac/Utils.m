@@ -113,9 +113,13 @@
                                ? [UIColor colorWithRed:0.0f green:0.8f blue:0.0f alpha:1.0f]
                                : [UIColor colorWithRed:0.8f green:0.0f blue:0.0f alpha:1.0f])
                             : [self colorForEmissions:num]);
-    if ([dataSuffix isEqualToString:kDataSuffixNetCO2]
-        || [dataSuffix isEqualToString:kDataSuffixCO2Emitted]
-        || [dataSuffix isEqualToString:kDataSuffixCO2Avoided]) {
+    if ([dataSuffix isEqualToString:kDataSuffixAvoidancePercent]) {
+        number = (isnan(num) ? 0 : num);
+        numberColor = (num < 100 ? [UIColor colorWithRed:0.0f green:0.8f blue:0.0f alpha:1.0f]
+                       : (num < 105 ? [UIColor orangeColor]
+                          : [UIColor colorWithRed:0.8f green:0.0f blue:0.0f alpha:1.0f]));
+    } else if ([dataSuffix isEqualToString:kDataSuffixCO2Emitted]
+               || [dataSuffix isEqualToString:kDataSuffixCO2Avoided]) {
         number = [Utils massFromKilograms:num units:unitText];
         
         // add subscript to the "2" in CO2
@@ -133,7 +137,7 @@
     }
     
     NSAttributedString *numberString = [[NSAttributedString alloc]
-                                        initWithString:[NSString stringWithFormat:@"%.2f ", number]
+                                        initWithString:[NSString stringWithFormat:@"%.2f", number]
                                         attributes:@{NSFontAttributeName: numberFont,
                                                      NSForegroundColorAttributeName: numberColor}];
     [suffixString insertAttributedString:numberString atIndex:0];

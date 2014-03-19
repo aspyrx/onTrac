@@ -120,8 +120,8 @@
             cell.textLabel.textColor = [UIColor darkGrayColor];
             switch (indexPath.row) {
                 case 0:
-                    cell.textLabel.text = @"Net footprint";
-                    cell.detailTextLabel.attributedText = [Utils attributedStringFromNumber:emissions - avoidance baseFontSize:18.0f dataSuffix:kDataSuffixNetCO2 unitText:massUnitText];
+                    cell.textLabel.text = @"Ratio";
+                    cell.detailTextLabel.attributedText = [Utils attributedStringFromNumber:(emissions / (gpx.metadata.extensions.totalDistance * kEmissionsMassPerMeterCar)) baseFontSize:18.0f dataSuffix:kDataSuffixAvoidancePercent unitText:massUnitText];
                     break;
                 case 2:
                     cell.textLabel.text = @"Emissions";
@@ -150,7 +150,7 @@
             cell.textLabel.lineBreakMode = NSLineBreakByWordWrapping;
             switch (indexPath.row) {
                 case 1:
-                    cell.textLabel.text = kHelpNetCO2;
+                    cell.textLabel.text = kHelpAvoidancePercent;
                     break;
                 case 3:
                     cell.textLabel.text = kHelpCO2Emitted;
@@ -265,7 +265,7 @@
         UIFont *font = [UIFont systemFontOfSize:11.5f];
         switch (indexPath.row) {
             case 1:
-                return MAX(defaultHeight, [kHelpNetCO2 sizeWithFont:font constrainedToSize:CGSizeMake(self.tableView.frame.size.width - 120, CGFLOAT_MAX) lineBreakMode:NSLineBreakByWordWrapping].height);
+                return MAX(defaultHeight, [kHelpAvoidancePercent sizeWithFont:font constrainedToSize:CGSizeMake(self.tableView.frame.size.width - 120, CGFLOAT_MAX) lineBreakMode:NSLineBreakByWordWrapping].height);
             case 3:
                 return MAX(defaultHeight, [kHelpCO2Emitted sizeWithFont:font constrainedToSize:CGSizeMake(self.tableView.frame.size.width - 120, CGFLOAT_MAX) lineBreakMode:NSLineBreakByWordWrapping].height);
             case 5:

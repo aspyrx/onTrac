@@ -135,8 +135,8 @@
         
         // set track cell properties
         trackCell.textLabel.text = root.metadata.name;
-        CGFloat num = ([dataSuffix isEqualToString:kDataSuffixNetCO2]
-                       ? root.metadata.extensions.carbonEmissions - root.metadata.extensions.carbonAvoidance
+        CGFloat num = ([dataSuffix isEqualToString:kDataSuffixAvoidancePercent]
+                       ? (root.metadata.extensions.carbonEmissions / (root.metadata.extensions.totalDistance * kEmissionsMassPerMeterCar)) * 100
                        : ([dataSuffix isEqualToString:kDataSuffixCO2Emitted]
                           || [dataSuffix isEqualToString:kDataSuffixGas]
                           ? root.metadata.extensions.carbonEmissions
@@ -296,7 +296,9 @@
     dataSuffix = [settings objectForKey:kSettingsKeyDataSuffix];
     BOOL useMetric = [[settings objectForKey:kSettingsKeyUseMetric] boolValue];
     dataUnitText = (useMetric ? kUnitTextKG : kUnitTextLBS);
-    if ([dataSuffix isEqualToString:kDataSuffixGas])
+    if ([dataSuffix isEqualToString:kDataSuffixAvoidancePercent])
+        dataUnitText = kUnitTextPercent;
+    else if ([dataSuffix isEqualToString:kDataSuffixGas])
         dataUnitText = (useMetric ? kUnitTextLiter : kUnitTextGallon);
     else if ([dataSuffix isEqualToString:kDataSuffixCalories])
         dataUnitText = kUnitTextCalorie;
