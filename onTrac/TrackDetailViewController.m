@@ -121,7 +121,7 @@
             switch (indexPath.row) {
                 case 0:
                     cell.textLabel.text = @"Ratio";
-                    cell.detailTextLabel.attributedText = [Utils attributedStringFromNumber:(emissions / (gpx.metadata.extensions.totalDistance * kEmissionsMassPerMeterCar)) baseFontSize:18.0f dataSuffix:kDataSuffixAvoidancePercent unitText:massUnitText];
+                    cell.detailTextLabel.attributedText = [Utils attributedStringFromNumber:(emissions / (gpx.metadata.extensions.totalDistance * kEmissionsMassPerMeterCar)) * 100 baseFontSize:18.0f dataSuffix:kDataSuffixAvoidancePercent unitText:kUnitTextPercent];
                     break;
                 case 2:
                     cell.textLabel.text = @"Emissions";
@@ -182,7 +182,7 @@
                                                    initWithString:@"...powering a home for "
                                                    attributes:@{NSFontAttributeName: titleFont}];
                 NSAttributedString *number = [[NSAttributedString alloc]
-                                              initWithString:[NSString stringWithFormat:@"%.1f", (emissions - avoidance) / kEmissionsPerHomeHour]
+                                              initWithString:[NSString stringWithFormat:@"%.1f", emissions / kEmissionsPerHomeHour]
                                               attributes:@{NSFontAttributeName: numberFont,
                                                            NSForegroundColorAttributeName: numberColor}];
                 NSAttributedString *suffix = [[NSAttributedString alloc]
@@ -197,7 +197,7 @@
                                                    initWithString:@"...leaving a lightbulb on for "
                                                    attributes:@{NSFontAttributeName: titleFont}];
                 NSAttributedString *number = [[NSAttributedString alloc]
-                                              initWithString:[NSString stringWithFormat:@"%.1f", (emissions - avoidance) / kEmissionsMassPerKWH * 5 / 3]
+                                              initWithString:[NSString stringWithFormat:@"%.1f", emissions / kEmissionsMassPerKWH * 5 / 3]
                                               attributes:@{NSFontAttributeName: numberFont,
                                                            NSForegroundColorAttributeName: numberColor}];
                 NSAttributedString *suffix = [[NSAttributedString alloc]
