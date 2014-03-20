@@ -57,9 +57,6 @@ static CGFloat const kCurrentSpeedStopThreshold = 0.05;
 // seconds, stats update interval
 static NSTimeInterval const kStatsUpdateInterval = 1.0;
 
-// m/s, maximum not driving speed
-static CGFloat const kSpeedMaxNotDriving = 8.0;
-
 // accelerometer states
 static NSUInteger const kAccelerometerMoving = 2;
 static NSUInteger const kAccelerometerStopped = 1;
@@ -95,6 +92,7 @@ static NSUInteger const kAccelerometerOff = 0;
     double carbonAvoidance; // kg
     double caloriesBurned; // calories
     double emissionsPerMeter; // kg CO2 / passenger meter traveled
+    double speedMaxNotDriving; // maximum not driving speed
     
     NSString *distanceUnitText;
     NSString *speedUnitText;
@@ -217,6 +215,9 @@ static NSUInteger const kAccelerometerOff = 0;
     
     // get fuel efficiency depending on setting
     emissionsPerMeter = [[settings objectForKey:kSettingsKeyEmissionsPerMeter] floatValue];
+    
+    // get maximum not driving speed
+    speedMaxNotDriving = [[settings objectForKey:kSettingsKeyMaxWalkBikeSpeed] doubleValue];
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
@@ -250,7 +251,7 @@ static NSUInteger const kAccelerometerOff = 0;
             oldLocation = newLocation;
             
             // check if speed has passed threshold
-            if (currentSpeed > kSpeedMaxNotDriving) {
+            if (currentSpeed > speedMaxNotDriving) {
                 isDriving = YES;
             }
             
