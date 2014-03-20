@@ -227,7 +227,7 @@
         cell.detailTextLabel.textColor = [UIColor blackColor];
         switch (indexPath.row) {
             case 0:
-                cell.detailTextLabel.text = [NSString stringWithFormat:@"%.1f %@", [Utils distanceFromMeters:gpx.metadata.extensions.totalDistance units:distanceUnitText], distanceUnitText];
+                cell.detailTextLabel.text = [NSString stringWithFormat:@"%.1f%@", [Utils distanceFromMeters:gpx.metadata.extensions.totalDistance units:distanceUnitText], distanceUnitText];
                 cell.textLabel.text = @"Total Distance";
                 return cell;
             case 1:
@@ -243,7 +243,7 @@
                 cell.textLabel.text = @"Time Stopped";
                 return cell;
             case 4:
-                cell.detailTextLabel.text = [NSString stringWithFormat:@"%.1f %@", [Utils speedFromMetersSec:gpx.metadata.extensions.averageSpeed units:speedUnitText], speedUnitText];
+                cell.detailTextLabel.text = [NSString stringWithFormat:@"%.1f%@", [Utils speedFromMetersSec:gpx.metadata.extensions.averageSpeed units:speedUnitText], speedUnitText];
                 cell.textLabel.text = @"Average Speed";
                 return cell;
         }
