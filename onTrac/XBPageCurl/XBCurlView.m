@@ -153,7 +153,7 @@ void ImageProviderReleaseData(void *info, const void *data, size_t size);
         return NO;
     }
     
-    [self createVertexBufferWithXRes:self.horizontalResolution yRes:self.verticalResolution];
+    [self createVertexBufferWithXRes:(GLuint) self.horizontalResolution yRes:(GLuint) self.verticalResolution];
     [self createNextPageVertexBuffer];
     
     if (![self setupShaders]) {
@@ -885,8 +885,8 @@ void ImageProviderReleaseData(void *info, const void *data, size_t size);
 
 - (void)drawImage:(UIImage *)image onTexture:(GLuint)texture flipHorizontal:(BOOL)flipHorizontal
 {
-    GLuint width = CGImageGetWidth(image.CGImage);
-    GLuint height = CGImageGetHeight(image.CGImage);
+    GLuint width = (GLuint) CGImageGetWidth(image.CGImage);
+    GLuint height = (GLuint) CGImageGetHeight(image.CGImage);
     
     [self drawOnTexture:texture width:width height:height drawBlock:^(CGContextRef context) {
         if (flipHorizontal) {
@@ -1061,7 +1061,7 @@ void ImageProviderReleaseData(void *info, const void *data, size_t size);
     CGContextDrawImage(context, r, backPageImage.CGImage);
     CGContextRestoreGState(context);  
     GLubyte *textureData = (GLubyte *)CGBitmapContextGetData(context);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureData);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, (GLsizei) width, (GLsizei) height, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureData);
     CGContextRelease(context);
 }
 

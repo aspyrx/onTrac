@@ -184,7 +184,7 @@
 
 - (void)setFix:(NSInteger)fix
 {
-    _fixValue = [GPXType valueForFix:fix];
+    _fixValue = [GPXType valueForFix:(GPXFix) fix];
 }
 
 - (NSInteger)satellites
