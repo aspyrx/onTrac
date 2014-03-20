@@ -90,7 +90,6 @@ static NSUInteger const kAccelerometerOff = 0;
     NSTimeInterval totalTime; // seconds
     CGFloat totalDistance; // meters
     CGFloat averageSpeed; // m/s
-    int numAverageSpeedSamples;
     CGFloat currentSpeed; // m/s
     double carbonEmissions; // kg
     double carbonAvoidance; // kg
@@ -239,17 +238,16 @@ static NSUInteger const kAccelerometerOff = 0;
                 currentGPXTrackSegment = [currentGPXTrack newTrackSegment];
             }
         } else {
-            // calculate distance
             CGFloat distance = 0;
             if (oldLocation != nil) {
+                // calculate distance
                 distance = [Utils metersBetweenCoordinate:oldLocation.coordinate coordinate:newLocation.coordinate];
                 totalDistance += distance;
+                
+                // calculate current speed
+                currentSpeed = distance / (newLocation.timestamp.timeIntervalSinceReferenceDate - oldLocation.timestamp.timeIntervalSinceReferenceDate);
             }
             oldLocation = newLocation;
-            
-            // get current speed, calculate average speed
-            currentSpeed = (newLocation.speed < 0 ? 0 : newLocation.speed);
-            averageSpeed = (averageSpeed * numAverageSpeedSamples + currentSpeed) / (numAverageSpeedSamples++ + 1);
             
             // check if speed has passed threshold
             if (currentSpeed > kSpeedMaxNotDriving) {
@@ -598,6 +596,10 @@ static NSUInteger const kAccelerometerOff = 0;
     totalTime += timeSinceLastUpdate;
     lastUpdateTime = [NSDate timeIntervalSinceReferenceDate];
     
+    // calculate average speed
+    averageSpeed = totalDistance / ((CGFloat) totalTime);
+    if (isinf(averageSpeed) || isnan(averageSpeed)) averageSpeed = 0;
+    
     if (shouldUpdateStatsLabels)
         [self updateStatsLabels];
 }
@@ -740,7 +742,6 @@ static NSUInteger const kAccelerometerOff = 0;
     totalTime =
     totalDistance =
     averageSpeed =
-    numAverageSpeedSamples =
     currentSpeed =
     carbonEmissions =
     carbonAvoidance =
