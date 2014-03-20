@@ -38,6 +38,7 @@ static NSString *kSettingsKeyUseMetric = @"useMetric";
 static NSString *kSettingsKeyDataSuffix = @"dataSuffix";
 static NSString *kSettingsKeyEmissionsPerMeter = @"emissionsPerMeter";
 static NSString *kSettingsKeyUserCarEmissionsPerMeter = @"userCarEmissionsPerMeter";
+static NSString *kSettingsKeyMaxWalkBikeSpeed = @"maxWalkBikeSpeed";
 static NSString *kSettingsKeyTransportMode = @"transportMode";
 static NSString *kSettingsKeyMapMode = @"mapMode";
 static NSString *kSettingsKeyFollowLocation = @"followLocation";
@@ -82,6 +83,7 @@ static NSString *kHelpCO2Emitted = @"The amount of carbon emitted during the tri
 static NSString *kHelpCO2Avoided = @"The amount of carbon saved by using transport modes more efficient than driving the average American car. Higher is better.";
 static NSString *kHelpGas = @"The equivalent amount of gasoline consumed to emit the same amount of carbon. Lower is better.";
 static NSString *kHelpCalories = @"The amount of calories burned while walking, running, or biking during the trip.";
+static NSString *kHelpMaxWalkBikeSpeed = @"Your maximum walking/running/biking speed. When your speed passes this value, your transport mode will be detected as driving/public transit.";
 
 // kg CO_2 / L, emissions from 1 L gasoline
 static CGFloat const kEmissionsMassPerLiterGas = 2.3477;

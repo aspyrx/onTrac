@@ -9,7 +9,9 @@
 	<key>emissionsPerMeter</key>
 	<real>0.000271765</real>
 	<key>userCarEmissionsPerMeter</key>
-	<string>0.000271765</string>
+	<real>0.000271765</real>
+	<key>maxWalkBikeSpeed</key>
+	<real>8</real>
 	<key>transportMode</key>
 	<integer>0</integer>
 	<key>mapMode</key>

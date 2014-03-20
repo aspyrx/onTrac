@@ -11,5 +11,8 @@
 @interface SettingsViewController : UITableViewController
 
 @property (strong, nonatomic) NSMutableDictionary *settings;
+@property (strong, nonatomic) UIView *tapView;
+@property (strong, nonatomic) UITapGestureRecognizer *tapRecognizer;
+@property (strong, nonatomic) UITextField *activeField;
 
 @end
