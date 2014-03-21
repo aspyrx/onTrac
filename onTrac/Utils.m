@@ -12,6 +12,10 @@
 
 @implementation Utils
 
++ (CGFloat)speedBetweenLocation:(CLLocation *)oldLocation location:(CLLocation *)newLocation {
+    return [Utils metersBetweenCoordinate:oldLocation.coordinate coordinate:newLocation.coordinate] / (newLocation.timestamp.timeIntervalSinceReferenceDate - oldLocation.timestamp.timeIntervalSinceReferenceDate);
+}
+
 + (CGFloat)metersBetweenCoordinate:(CLLocationCoordinate2D)a coordinate:(CLLocationCoordinate2D)b {
     CGFloat lat1 = a.latitude * RADIANS_PER_DEGREE;
     CGFloat lat2 = b.latitude * RADIANS_PER_DEGREE;

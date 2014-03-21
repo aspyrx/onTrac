@@ -25,6 +25,12 @@ static CGFloat const kCurlAnimationDuration = 0.5;
 // meters, min distance between location updates
 static CGFloat const kMinDistance = 1.0;
 
+// number of recent speed samples to average to calculate current speed (must be >= 2)
+static NSUInteger const kRecentSpeedSamples = 5;
+// seconds, maximum time between location updates until its speed calculation is no longer averaged
+static NSTimeInterval const kSpeedSampleTimeout = 3.0;
+// number of speeds above threshold required to change mode to driving
+static NSUInteger const kSpeedSamplesAboveWalkBikeThreshold = 1;
 // number of stats updates without location updates until current speed is assumed to be 0
 static NSUInteger const kStatsUpdatesUntilCurrentSpeedReset = 5;
 // number of stats updates without location update until recording stopped
@@ -73,14 +79,15 @@ static NSUInteger const kAccelerometerOff = 0;
     BOOL shouldUpdateStatsLabels;
     int numStatsUpdatesWithoutLocationUpdate;
     int numStandardDeviationSamplesAboveThreshold;
+    int numSpeedSamplesAboveWalkBikeThreshold;
     double accelMagStdDev;
     double walkingStdDev;
     
     NSMutableDictionary *settings;
+    NSMutableArray *recentLocations;
     NSMutableArray *accelMagnitudes;
     NSTimer *statsUpdateTimer;
     
-    CLLocation *oldLocation;
     NSTimeInterval lastUpdateTime; // seconds
     NSTimeInterval timeMoving; // seconds
     NSTimeInterval timeStopped; // seconds
@@ -230,8 +237,7 @@ static NSUInteger const kAccelerometerOff = 0;
 #pragma mark - CLLocationManagerDelegate
 
 - (void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations {
-    CLLocation *newLocation = [locations lastObject];
-    if (newLocation) {
+    for (CLLocation *newLocation in locations) {
         if (newLocation.horizontalAccuracy < 0.0 || newLocation.horizontalAccuracy > 100.0) {
             // GPS signal lost, add the finished track segment, begin a new one
             if (currentGPXTrack) {
@@ -240,18 +246,40 @@ static NSUInteger const kAccelerometerOff = 0;
             }
         } else {
             CGFloat distance = 0;
-            if (oldLocation != nil) {
+            [recentLocations addObject:newLocation];
+            if ([recentLocations count] >= kRecentSpeedSamples) {
+                while ([recentLocations count] > kRecentSpeedSamples) {
+                    [recentLocations removeObjectAtIndex:0];
+                }
+                
+                CLLocation *oldLocation = recentLocations[kRecentSpeedSamples - 2];
                 // calculate distance
-                distance = [Utils metersBetweenCoordinate:oldLocation.coordinate coordinate:newLocation.coordinate];
-                totalDistance += distance;
+                totalDistance += distance = [Utils metersBetweenCoordinate:oldLocation.coordinate coordinate:newLocation.coordinate];
                 
                 // calculate current speed
-                currentSpeed = distance / (newLocation.timestamp.timeIntervalSinceReferenceDate - oldLocation.timestamp.timeIntervalSinceReferenceDate);
+                CGFloat runningTotal = 0;
+                int numSamples = 0;
+                for (int i = kRecentSpeedSamples - 1; i > 0; i--) {
+                    CLLocation *loc0 = recentLocations[i - 1];
+                    CLLocation *loc1 = recentLocations[i];
+                    if (loc1.timestamp.timeIntervalSinceReferenceDate - loc0.timestamp.timeIntervalSinceReferenceDate < kSpeedSampleTimeout) {
+                        runningTotal += [Utils speedBetweenLocation:loc0 location:loc1];
+                        numSamples++;
+                    } else break;
+                }
+                
+                currentSpeed = runningTotal / numSamples;
+                if (!isfinite(currentSpeed)) currentSpeed = 0;
             }
-            oldLocation = newLocation;
             
             // check if speed has passed threshold
-            if (currentSpeed > speedMaxNotDriving) {
+            if (!isDriving && currentSpeed > speedMaxNotDriving) {
+                numSpeedSamplesAboveWalkBikeThreshold++;
+            } else {
+                numSpeedSamplesAboveWalkBikeThreshold = 0;
+            }
+            
+            if (numSpeedSamplesAboveWalkBikeThreshold > kSpeedSamplesAboveWalkBikeThreshold) {
                 isDriving = YES;
             }
             
@@ -274,17 +302,10 @@ static NSUInteger const kAccelerometerOff = 0;
             gpxTrackPoint.desc = [NSString stringWithFormat:@"Speed: %f", currentSpeed];
             
             // compare and set new bounds if necessary
-            if (!currentGPXBounds)
-                currentGPXBounds = [GPXBounds boundsWithMinLatitude:newLocation.coordinate.latitude
-                                                       minLongitude:newLocation.coordinate.longitude
-                                                        maxLatitude:newLocation.coordinate.latitude
-                                                       maxLongitude:newLocation.coordinate.longitude];
-            else {
-                currentGPXBounds.minLatitude = MIN(currentGPXBounds.minLatitude, newLocation.coordinate.latitude);
-                currentGPXBounds.minLongitude = MIN(currentGPXBounds.minLongitude, newLocation.coordinate.longitude);
-                currentGPXBounds.maxLatitude = MAX(currentGPXBounds.maxLatitude, newLocation.coordinate.latitude);
-                currentGPXBounds.maxLongitude = MAX(currentGPXBounds.maxLongitude, newLocation.coordinate.longitude);
-            }
+            currentGPXBounds.minLatitude = MIN(currentGPXBounds.minLatitude, newLocation.coordinate.latitude);
+            currentGPXBounds.minLongitude = MIN(currentGPXBounds.minLongitude, newLocation.coordinate.longitude);
+            currentGPXBounds.maxLatitude = MAX(currentGPXBounds.maxLatitude, newLocation.coordinate.latitude);
+            currentGPXBounds.maxLongitude = MAX(currentGPXBounds.maxLongitude, newLocation.coordinate.longitude);
             
             // update on-screen overlay
             if (!crumbs) {
@@ -599,7 +620,7 @@ static NSUInteger const kAccelerometerOff = 0;
     
     // calculate average speed
     averageSpeed = totalDistance / ((CGFloat) totalTime);
-    if (isinf(averageSpeed) || isnan(averageSpeed)) averageSpeed = 0;
+    if (!isfinite(averageSpeed)) averageSpeed = 0;
     
     if (shouldUpdateStatsLabels)
         [self updateStatsLabels];
@@ -735,9 +756,10 @@ static NSUInteger const kAccelerometerOff = 0;
     currentGPXRoot = [GPXRoot rootWithCreator:@"onTrac"];
     currentGPXTrack = [currentGPXRoot newTrack];
     currentGPXTrackSegment = [currentGPXTrack newTrackSegment];
-    currentGPXBounds = nil;
-    oldLocation = nil;
+    currentGPXBounds = [GPXBounds boundsWithMinLatitude:kCLLocationCoordinate2DInvalid.latitude minLongitude:kCLLocationCoordinate2DInvalid.longitude maxLatitude:kCLLocationCoordinate2DInvalid.latitude maxLongitude:kCLLocationCoordinate2DInvalid.longitude];
     lastUpdateTime = [NSDate timeIntervalSinceReferenceDate];
+    recentLocations = [NSMutableArray new];
+    numSpeedSamplesAboveWalkBikeThreshold =
     timeMoving =
     timeStopped =
     totalTime =

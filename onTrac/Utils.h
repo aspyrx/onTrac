@@ -13,6 +13,7 @@
 
 @interface Utils : NSObject
 
++ (CGFloat)speedBetweenLocation:(CLLocation *)oldLocation location:(CLLocation *)newLocation;
 + (CGFloat)metersBetweenCoordinate:(CLLocationCoordinate2D)a coordinate:(CLLocationCoordinate2D)b;
 + (double)caloriesBurnedForDistance:(double)dist speed:(double)speed;
 + (double)speedFromMetersSec:(double)metersSec units:(NSString *)units;
