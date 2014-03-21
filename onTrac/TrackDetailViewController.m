@@ -265,20 +265,20 @@
         UIFont *font = [UIFont systemFontOfSize:11.5f];
         switch (indexPath.row) {
             case 1:
-                return MAX(defaultHeight, [kHelpAvoidancePercent sizeWithFont:font constrainedToSize:CGSizeMake(self.tableView.frame.size.width - 120, CGFLOAT_MAX) lineBreakMode:NSLineBreakByWordWrapping].height);
+                return MAX(defaultHeight, [kHelpAvoidancePercent sizeWithFont:font constrainedToSize:CGSizeMake(self.tableView.frame.size.width, CGFLOAT_MAX) lineBreakMode:NSLineBreakByWordWrapping].height + 20);
             case 3:
-                return MAX(defaultHeight, [kHelpCO2Emitted sizeWithFont:font constrainedToSize:CGSizeMake(self.tableView.frame.size.width - 120, CGFLOAT_MAX) lineBreakMode:NSLineBreakByWordWrapping].height);
+                return MAX(defaultHeight, [kHelpCO2Emitted sizeWithFont:font constrainedToSize:CGSizeMake(self.tableView.frame.size.width, CGFLOAT_MAX) lineBreakMode:NSLineBreakByWordWrapping].height + 20);
             case 5:
-                return MAX(defaultHeight, [kHelpCO2Avoided sizeWithFont:font constrainedToSize:CGSizeMake(self.tableView.frame.size.width - 120, CGFLOAT_MAX) lineBreakMode:NSLineBreakByWordWrapping].height);
+                return MAX(defaultHeight, [kHelpCO2Avoided sizeWithFont:font constrainedToSize:CGSizeMake(self.tableView.frame.size.width, CGFLOAT_MAX) lineBreakMode:NSLineBreakByWordWrapping].height + 20);
             case 7:
-                return MAX(defaultHeight, [kHelpGas sizeWithFont:font constrainedToSize:CGSizeMake(self.tableView.frame.size.width - 120, CGFLOAT_MAX) lineBreakMode:NSLineBreakByWordWrapping].height);
+                return MAX(defaultHeight, [kHelpGas sizeWithFont:font constrainedToSize:CGSizeMake(self.tableView.frame.size.width, CGFLOAT_MAX) lineBreakMode:NSLineBreakByWordWrapping].height + 20);
             case 9:
-                return MAX(defaultHeight, [kHelpCalories sizeWithFont:font constrainedToSize:CGSizeMake(self.tableView.frame.size.width - 120, CGFLOAT_MAX) lineBreakMode:NSLineBreakByWordWrapping].height);
+                return MAX(defaultHeight, [kHelpCalories sizeWithFont:font constrainedToSize:CGSizeMake(self.tableView.frame.size.width, CGFLOAT_MAX) lineBreakMode:NSLineBreakByWordWrapping].height + 20);
             default:
                 return defaultHeight;
         }
     } else if (indexPath.section == 3) {
-        return MAX(defaultHeight, [gpx.metadata.desc sizeWithFont:descFont constrainedToSize:CGSizeMake(self.tableView.frame.size.width - 120, CGFLOAT_MAX) lineBreakMode:NSLineBreakByWordWrapping].height);
+        return MAX(defaultHeight, [gpx.metadata.desc sizeWithFont:descFont constrainedToSize:CGSizeMake(self.tableView.frame.size.width, CGFLOAT_MAX) lineBreakMode:NSLineBreakByWordWrapping].height + 20);
     } else return defaultHeight;
 }
 
