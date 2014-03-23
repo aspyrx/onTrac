@@ -302,10 +302,17 @@ static NSUInteger const kAccelerometerOff = 0;
             gpxTrackPoint.desc = [NSString stringWithFormat:@"Speed: %f", currentSpeed];
             
             // compare and set new bounds if necessary
-            currentGPXBounds.minLatitude = MIN(currentGPXBounds.minLatitude, newLocation.coordinate.latitude);
-            currentGPXBounds.minLongitude = MIN(currentGPXBounds.minLongitude, newLocation.coordinate.longitude);
-            currentGPXBounds.maxLatitude = MAX(currentGPXBounds.maxLatitude, newLocation.coordinate.latitude);
-            currentGPXBounds.maxLongitude = MAX(currentGPXBounds.maxLongitude, newLocation.coordinate.longitude);
+            if (!currentGPXBounds) {
+                currentGPXBounds = [GPXBounds boundsWithMinLatitude:newLocation.coordinate.latitude
+                                                       minLongitude:newLocation.coordinate.longitude
+                                                        maxLatitude:newLocation.coordinate.latitude
+                                                       maxLongitude:newLocation.coordinate.longitude];
+            } else {
+                currentGPXBounds.minLatitude = MIN(currentGPXBounds.minLatitude, newLocation.coordinate.latitude);
+                currentGPXBounds.minLongitude = MIN(currentGPXBounds.minLongitude, newLocation.coordinate.longitude);
+                currentGPXBounds.maxLatitude = MAX(currentGPXBounds.maxLatitude, newLocation.coordinate.latitude);
+                currentGPXBounds.maxLongitude = MAX(currentGPXBounds.maxLongitude, newLocation.coordinate.longitude);
+            }
             
             // update on-screen overlay
             if (!crumbs) {
@@ -756,7 +763,7 @@ static NSUInteger const kAccelerometerOff = 0;
     currentGPXRoot = [GPXRoot rootWithCreator:@"onTrac"];
     currentGPXTrack = [currentGPXRoot newTrack];
     currentGPXTrackSegment = [currentGPXTrack newTrackSegment];
-    currentGPXBounds = [GPXBounds boundsWithMinLatitude:kCLLocationCoordinate2DInvalid.latitude minLongitude:kCLLocationCoordinate2DInvalid.longitude maxLatitude:kCLLocationCoordinate2DInvalid.latitude maxLongitude:kCLLocationCoordinate2DInvalid.longitude];
+    currentGPXBounds = nil;
     lastUpdateTime = [NSDate timeIntervalSinceReferenceDate];
     recentLocations = [NSMutableArray new];
     numSpeedSamplesAboveWalkBikeThreshold =
