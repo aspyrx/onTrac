@@ -27,8 +27,14 @@
     return (result == NAN ? 0 : result);
 }
 
-+ (double)caloriesBurnedForDistance:(double)dist speed:(double)speed {
-    return (speed > 0 ? dist * 0.044827 * pow(0.043527, speed) : 0);
++ (double)caloriesBurnedForMode:(enum transport_mode_t)mode time:(NSTimeInterval)time speed:(double)speed weight:(double)weight {
+    if ((speed < 1.1176 && mode == TransportModeWalk) || mode == TransportModeCar || mode == TransportModeBus) {
+        return 1.5 * weight * (time / 3600);
+    } else if (speed >= 1.1176 && mode == TransportModeWalk) {
+        return (-3.9 + 2.3 * (speed * 3.6 / KILOMETERS_PER_MILE)) * weight * (time / 3600);
+    } else if (mode == TransportModeTrain || mode == TransportModeSubway) {
+        return 2 * weight * (time / 3600);
+    } else return 0;
 }
 
 + (double)speedFromMetersSec:(double)metersSec units:(NSString *)units {

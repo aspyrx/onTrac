@@ -10,12 +10,13 @@
 #import <MapKit/MapKit.h>
 
 @class GPXRoot;
+enum transport_mode_t;
 
 @interface Utils : NSObject
 
 + (CGFloat)speedBetweenLocation:(CLLocation *)oldLocation location:(CLLocation *)newLocation;
 + (CGFloat)metersBetweenCoordinate:(CLLocationCoordinate2D)a coordinate:(CLLocationCoordinate2D)b;
-+ (double)caloriesBurnedForDistance:(double)dist speed:(double)speed;
++ (double)caloriesBurnedForMode:(enum transport_mode_t)mode time:(NSTimeInterval)time speed:(double)speed weight:(double)weight;
 + (double)speedFromMetersSec:(double)metersSec units:(NSString *)units;
 + (double)distanceFromMeters:(double)meters units:(NSString *)units;
 + (double)massFromKilograms:(double)kg units:(NSString *)units;

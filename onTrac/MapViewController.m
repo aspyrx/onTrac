@@ -111,6 +111,7 @@ static NSUInteger const kAccelerometerOff = 0;
     double carbonEmissions;         // kg
     double carbonAvoidance;         // kg
     double caloriesBurned;          // calories
+    double weight;                  // kg
     double emissionsPerMeter;       // kg CO2 / passenger meter traveled
     double userCarEmissionsPerMeter;// kg CO2 / passenger meter traveled
     
@@ -239,6 +240,8 @@ static NSUInteger const kAccelerometerOff = 0;
         isFollowing = false;
     }
     
+    weight = [[settings objectForKey:kSettingsKeyWeight] doubleValue];
+    
     // get emissions per meter for user car
     userCarEmissionsPerMeter = [[settings objectForKey:kSettingsKeyUserCarEmissionsPerMeter] doubleValue];
     
@@ -317,6 +320,9 @@ static NSUInteger const kAccelerometerOff = 0;
                 
                 currentSpeed = runningTotal / numSamples;
                 if (!isfinite(currentSpeed)) currentSpeed = 0;
+                
+                // calculate calories burned
+                caloriesBurned += [Utils caloriesBurnedForMode:currentMode time:newLocation.timestamp.timeIntervalSinceReferenceDate - oldLocation.timestamp.timeIntervalSinceReferenceDate speed:currentSpeed weight:weight];
             }
             
             // check if speed has passed threshold
@@ -335,7 +341,6 @@ static NSUInteger const kAccelerometerOff = 0;
                 carbonEmissions += distance * emissionsPerMeter;
                 carbonAvoidance += distance * (kEmissionsMassPerMeterCar - emissionsPerMeter);
             } else {
-                caloriesBurned += [Utils caloriesBurnedForDistance:distance speed:currentSpeed];
                 carbonAvoidance += distance * kEmissionsMassPerMeterCar;
             }
             
