@@ -26,7 +26,7 @@
 + (NSDictionary *)loadSettings;
 + (BOOL)deleteSettings;
 + (NSAttributedString *)attributedStringFromNumber:(CGFloat)num baseFontSize:(CGFloat)size dataSuffix:(NSString *)dataSuffix unitText:(NSString *)unitText;
-+ (UIColor *)colorForEmissions:(CGFloat)mass;
++ (UIColor *)colorForNumber:(CGFloat)num dataSuffix:(NSString *)dataSuffix;
 + (GPXRoot *)rootWithMetadataAtPath:(NSString *)path;
 
 @end

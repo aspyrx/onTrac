@@ -361,9 +361,8 @@ static NSUInteger const kAccelerometerOff = 0;
         MKPolyline *polyline = overlay;
         // create and customize polyline view
         MKPolylineView *polylineView = [[MKPolylineView alloc] initWithPolyline:polyline];
-        //        polylineView.strokeColor = [UIColor colorWithRed:1.0 green:0.1 blue:0.1 alpha:0.9];
-        CGFloat emissions = [[[NSNumberFormatter new] numberFromString:polyline.title] floatValue];
-        polylineView.strokeColor = [Utils colorForEmissions:emissions];
+        CGFloat num = [[[NSNumberFormatter new] numberFromString:polyline.title] floatValue];
+        polylineView.strokeColor = [Utils colorForNumber:num dataSuffix:dataSuffix];
         polylineView.lineWidth = 8.0;
         return polylineView;
     } else return nil;
@@ -523,6 +522,14 @@ static NSUInteger const kAccelerometerOff = 0;
             GPXTrack *track = [[rootFromFile tracks] lastObject];
             // get track segments
             NSArray *tracksegments = [track tracksegments];
+            CGFloat num = ([dataSuffix isEqualToString:kDataSuffixAvoidancePercent]
+                           ? (metadata.extensions.carbonEmissions / (metadata.extensions.totalDistance * kEmissionsMassPerMeterCar)) * 100
+                           : ([dataSuffix isEqualToString:kDataSuffixCO2Emitted]
+                              || [dataSuffix isEqualToString:kDataSuffixGas]
+                              ? metadata.extensions.carbonEmissions
+                              : ([dataSuffix isEqualToString:kDataSuffixCO2Avoided]
+                                 ? metadata.extensions.carbonAvoidance
+                                 : metadata.extensions.caloriesBurned)));
             
             for (GPXTrackSegment *tracksegment in tracksegments) {
                 // get track points
@@ -538,6 +545,7 @@ static NSUInteger const kAccelerometerOff = 0;
                 
                 // create polyline, add to map view
                 MKPolyline *trackLine = [MKPolyline polylineWithCoordinates:coordinates count:count];
+                trackLine.title = [NSString stringWithFormat:@"%f", num];
                 [self.mapView addOverlay:trackLine];
             }
             
@@ -548,14 +556,7 @@ static NSUInteger const kAccelerometerOff = 0;
             TrackAnnotation *annotation = [[TrackAnnotation alloc]
                                            initWithFilePath:filePath
                                            title:metadata.name
-                                           subtitle:[[Utils attributedStringFromNumber:([dataSuffix isEqualToString:kDataSuffixAvoidancePercent]
-                                                                                        ? (metadata.extensions.carbonEmissions / (metadata.extensions.totalDistance * kEmissionsMassPerMeterCar)) * 100
-                                                                                        : ([dataSuffix isEqualToString:kDataSuffixCO2Emitted]
-                                                                                           || [dataSuffix isEqualToString:kDataSuffixGas]
-                                                                                           ? metadata.extensions.carbonEmissions
-                                                                                           : ([dataSuffix isEqualToString:kDataSuffixCO2Avoided]
-                                                                                              ? metadata.extensions.carbonAvoidance
-                                                                                              : metadata.extensions.caloriesBurned)))
+                                           subtitle:[[Utils attributedStringFromNumber:num
                                                                           baseFontSize:1.0f
                                                                             dataSuffix:dataSuffix
                                                                               unitText:dataUnitText] string]

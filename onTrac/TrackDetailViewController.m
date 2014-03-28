@@ -27,7 +27,6 @@
     BOOL hasDesc;
     CGFloat emissions;
     CGFloat avoidance;
-    UIColor *numberColor;
 }
 
 - (id)initWithFilePath:(NSString *)filePath {
@@ -56,8 +55,6 @@
         
         emissions = gpx.metadata.extensions.carbonEmissions;
         avoidance = gpx.metadata.extensions.carbonAvoidance;
-        numberColor = [Utils colorForEmissions:emissions];
-        
     }
     return self;
 }
@@ -184,7 +181,7 @@
                 NSAttributedString *number = [[NSAttributedString alloc]
                                               initWithString:[NSString stringWithFormat:@"%.1f", emissions / kEmissionsPerHomeHour]
                                               attributes:@{NSFontAttributeName: numberFont,
-                                                           NSForegroundColorAttributeName: numberColor}];
+                                                           NSForegroundColorAttributeName: [Utils colorForNumber:emissions dataSuffix:kDataSuffixCO2Emitted]}];
                 NSAttributedString *suffix = [[NSAttributedString alloc]
                                               initWithString:@" hours"
                                               attributes:@{NSFontAttributeName: suffixFont}];
@@ -199,7 +196,7 @@
                 NSAttributedString *number = [[NSAttributedString alloc]
                                               initWithString:[NSString stringWithFormat:@"%.1f", emissions / kEmissionsMassPerKWH * 5 / 3]
                                               attributes:@{NSFontAttributeName: numberFont,
-                                                           NSForegroundColorAttributeName: numberColor}];
+                                                           NSForegroundColorAttributeName: [Utils colorForNumber:emissions dataSuffix:kDataSuffixCO2Emitted]}];
                 NSAttributedString *suffix = [[NSAttributedString alloc]
                                               initWithString:@" days"
                                               attributes:@{NSFontAttributeName: suffixFont}];

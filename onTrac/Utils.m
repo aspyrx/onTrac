@@ -126,16 +126,9 @@
                                                initWithString:[NSString stringWithFormat:@"%@ %@", unitText, dataSuffix]
                                                attributes:@{NSFontAttributeName: suffixFont}];
     CGFloat number = 0.0f;
-    UIColor *numberColor = ([dataSuffix isEqualToString:kDataSuffixCO2Avoided]
-                            ? (num > 0
-                               ? [UIColor colorWithRed:0.0f green:0.8f blue:0.0f alpha:1.0f]
-                               : [UIColor colorWithRed:0.8f green:0.0f blue:0.0f alpha:1.0f])
-                            : [self colorForEmissions:num]);
+    UIColor *numberColor = [Utils colorForNumber:num dataSuffix:dataSuffix];
     if ([dataSuffix isEqualToString:kDataSuffixAvoidancePercent]) {
         number = (isnan(num) ? 0 : num);
-        numberColor = (num < 100 ? [UIColor colorWithRed:0.0f green:0.8f blue:0.0f alpha:1.0f]
-                       : (num < 105 ? [UIColor orangeColor]
-                          : [UIColor colorWithRed:0.8f green:0.0f blue:0.0f alpha:1.0f]));
     } else if ([dataSuffix isEqualToString:kDataSuffixCO2Emitted]
                || [dataSuffix isEqualToString:kDataSuffixCO2Avoided]) {
         number = [Utils massFromKilograms:num units:unitText];
@@ -151,7 +144,6 @@
         number = [Utils volumeFromLiters:num / kEmissionsMassPerLiterGas units:unitText];
     } else if ([dataSuffix isEqualToString:kDataSuffixCalories]) {
         number = num;
-        numberColor = [UIColor colorWithRed:0.0f green:0.8f blue:0.0f alpha:1.0f];
     }
     
     NSAttributedString *numberString = [[NSAttributedString alloc]
@@ -163,12 +155,24 @@
     return suffixString;
 }
 
-+ (UIColor *)colorForEmissions:(CGFloat)mass {
-    return (mass < 0.1
-            ? [UIColor colorWithRed:0.0f green:0.8f blue:0.0f alpha:1.0f]
-            : (mass < 10
-               ? [UIColor orangeColor]
-               : [UIColor colorWithRed:0.8f green:0.0f blue:0.0f alpha:1.0f]));
++ (UIColor *)colorForNumber:(CGFloat)num dataSuffix:(NSString *)dataSuffix {
+    if ([dataSuffix isEqualToString:kDataSuffixAvoidancePercent]) {
+        return (num < 100 ? [UIColor colorWithRed:0.0f green:0.8f blue:0.0f alpha:1.0f]
+                : (num < 105 ? [UIColor orangeColor]
+                   : [UIColor colorWithRed:0.8f green:0.0f blue:0.0f alpha:1.0f]));
+    } else if ([dataSuffix isEqualToString:kDataSuffixCO2Emitted] || [dataSuffix isEqualToString:kDataSuffixGas]) {
+        return (num < 0.1
+                ? [UIColor colorWithRed:0.0f green:0.8f blue:0.0f alpha:1.0f]
+                : (num < 10
+                   ? [UIColor orangeColor]
+                   : [UIColor colorWithRed:0.8f green:0.0f blue:0.0f alpha:1.0f]));
+    } else if ([dataSuffix isEqualToString:kDataSuffixCO2Avoided]) {
+        return (num > 0
+                ? [UIColor colorWithRed:0.0f green:0.8f blue:0.0f alpha:1.0f]
+                : [UIColor colorWithRed:0.8f green:0.0f blue:0.0f alpha:1.0f]);
+    } else if ([dataSuffix isEqualToString:kDataSuffixCalories]) {
+        return [UIColor colorWithRed:0.0f green:0.8f blue:0.0f alpha:1.0f];
+    } else return nil;
 }
 
 + (GPXRoot *)rootWithMetadataAtPath:(NSString *)path {
