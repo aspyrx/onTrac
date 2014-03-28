@@ -3,7 +3,7 @@
 //  onTrac
 //
 //  Created by Stan Zhang on 11/28/13.
-//  Copyright (c) 2013 caekboard. All rights reserved.
+//  Copyright (c) 2014 aspyrx. All rights reserved.
 //
 
 #import "TrackDetailViewController.h"

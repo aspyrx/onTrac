@@ -3,7 +3,7 @@
 //  onTrac
 //
 //  Created by Stan Zhang on 10/15/13.
-//  Copyright (c) 2013 caekboard. All rights reserved.
+//  Copyright (c) 2014 aspyrx. All rights reserved.
 //
 
 #ifndef onTrac_Defines_h
