@@ -105,6 +105,20 @@
     return settings;
 }
 
++ (BOOL)deleteSettings {
+    // check if settings file exists
+    NSString *settingsPath = [[NSHomeDirectory() stringByAppendingPathComponent:kSettingsDirectory] stringByAppendingPathComponent:kSettingsFileName];
+    NSFileManager *fileManager = [NSFileManager new];
+    if ([fileManager fileExistsAtPath:settingsPath]) {
+        NSError *error;
+        [fileManager removeItemAtPath:settingsPath error:&error];
+        if (error) {
+            NSLog(@"%@%@", @"Error removing item at path: ", settingsPath);
+            return false;
+        } else return true;
+    } else return true;
+}
+
 + (NSAttributedString *)attributedStringFromNumber:(CGFloat)num baseFontSize:(CGFloat)size dataSuffix:(NSString *)dataSuffix unitText:(NSString *)unitText {
     UIFont *numberFont = [UIFont systemFontOfSize:size];
     UIFont *suffixFont = [UIFont systemFontOfSize:0.8 * size];

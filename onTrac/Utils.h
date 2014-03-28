@@ -24,6 +24,7 @@
 + (double)standardDeviationOf:(NSArray *)array;
 + (NSString *)timeStringFromSeconds:(int)s;
 + (NSDictionary *)loadSettings;
++ (BOOL)deleteSettings;
 + (NSAttributedString *)attributedStringFromNumber:(CGFloat)num baseFontSize:(CGFloat)size dataSuffix:(NSString *)dataSuffix unitText:(NSString *)unitText;
 + (UIColor *)colorForEmissions:(CGFloat)mass;
 + (GPXRoot *)rootWithMetadataAtPath:(NSString *)path;

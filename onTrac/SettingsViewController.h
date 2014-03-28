@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface SettingsViewController : UITableViewController
+@interface SettingsViewController : UITableViewController <UIAlertViewDelegate>
 
 @property (strong, nonatomic) NSMutableDictionary *settings;
 @property (strong, nonatomic) UIView *tapView;

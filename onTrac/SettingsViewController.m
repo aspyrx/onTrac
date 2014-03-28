@@ -83,7 +83,7 @@
         return 1;
     else if (section == 5)
         // About cell
-        return 1;
+        return 2;
     else return 0;
 }
 
@@ -227,6 +227,13 @@
             cell.selectionStyle = UITableViewCellSelectionStyleBlue;
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
             return cell;
+        } else if (indexPath.row == 1) {
+            // Reset Settings cell
+            UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
+            cell.textLabel.text = @"Reset Settings";
+            cell.selectionStyle = UITableViewCellSelectionStyleBlue;
+            cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+            return cell;
         }
     }
     return nil;
@@ -312,6 +319,10 @@
             
             // push about view controller
             [self.navigationController pushViewController:aboutViewController animated:YES];
+        } else if (indexPath.row == 1) {
+            // show alert confirmation
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Reset Settings" message:@"Are you sure you want to reset all settings to their default value?" delegate:self cancelButtonTitle:@"No" otherButtonTitles:@"Yes", nil];
+            [alertView show];
         }
     }
     
@@ -324,6 +335,16 @@
     if (indexPath.section == 1 && indexPath.row == 2) {
         return MAX(defaultHeight, [kHelpMaxWalkBikeSpeed sizeWithFont:[UIFont systemFontOfSize:11.5f] constrainedToSize:CGSizeMake(self.tableView.frame.size.width, CGFLOAT_MAX) lineBreakMode:NSLineBreakByWordWrapping].height + 20);
     } else return defaultHeight;
+}
+
+#pragma mark - UIAlertViewDelegate
+
+- (void)alertView:(UIAlertView *)alertView willDismissWithButtonIndex:(NSInteger)buttonIndex {
+    if (buttonIndex == alertView.firstOtherButtonIndex) {
+        [Utils deleteSettings];
+        self.settings = [[Utils loadSettings] mutableCopy];
+        [self.tableView reloadSections:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, 5)] withRowAnimation:UITableViewRowAnimationNone];
+    }
 }
 
 #pragma mark - interface methods
