@@ -326,6 +326,10 @@ static NSUInteger const kAccelerometerOff = 0;
             }
             
             // check if speed has passed threshold
+            if (currentSpeed > speedMaxWalk && currentSpeed < speedMaxBike) {
+                currentMode = TransportModeBike;
+            }
+            
             if (![self isEmitting] && currentSpeed > speedMaxNotEmitting) {
                 numSpeedSamplesAboveWalkBikeThreshold++;
             } else {
@@ -762,6 +766,27 @@ static NSUInteger const kAccelerometerOff = 0;
                                                                   baseFontSize:23.0f
                                                                     dataSuffix:dataSuffix
                                                                       unitText:dataUnitText];
+    
+    switch (currentMode) {
+        case TransportModeWalk:
+            self.detectedModeLabel.text = @"Walking";
+            break;
+        case TransportModeBike:
+            self.detectedModeLabel.text = @"Biking";
+            break;
+        case TransportModeCar:
+            self.detectedModeLabel.text = @"Car";
+            break;
+        case TransportModeBus:
+            self.detectedModeLabel.text = @"Bus";
+            break;
+        case TransportModeTrain:
+            self.detectedModeLabel.text = @"Train";
+            break;
+        case TransportModeSubway:
+            self.detectedModeLabel.text = @"Subway";
+            break;
+    }
 }
 
 #pragma mark accelerometer

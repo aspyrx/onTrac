@@ -24,6 +24,7 @@
 @property (weak, nonatomic) IBOutlet UILabel *totalDistanceLabel;
 @property (weak, nonatomic) IBOutlet UILabel *averageSpeedLabel;
 @property (weak, nonatomic) IBOutlet UILabel *currentSpeedLabel;
+@property (weak, nonatomic) IBOutlet UILabel *detectedModeLabel;
 @property (weak, nonatomic) IBOutlet UILabel *displayedDataLabel;
 @property (weak, nonatomic) IBOutlet UISegmentedControl *transportModeControl;
 @property (weak, nonatomic) IBOutlet MKMapView *mapView;

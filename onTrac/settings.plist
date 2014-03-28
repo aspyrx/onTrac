@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>useMetric</key>
-	<true/>
+	<false/>
 	<key>dataSuffix</key>
 	<string>CO2 emitted</string>
 	<key>userCarEmissionsPerMeter</key>
