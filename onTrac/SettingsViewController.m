@@ -377,7 +377,7 @@
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
     CGFloat defaultHeight = [super tableView:tableView heightForRowAtIndexPath:indexPath];
-    if (indexPath.section == 1 && indexPath.row == 4) {
+    if (indexPath.section == 1 && indexPath.row == ([[self.settings objectForKey:kSettingsKeyUseBike] boolValue] ? 4 : 3)) {
         return MAX(defaultHeight, [kHelpMaxWalkBikeSpeed sizeWithFont:[UIFont systemFontOfSize:11.5f] constrainedToSize:CGSizeMake(self.tableView.frame.size.width, CGFLOAT_MAX) lineBreakMode:NSLineBreakByWordWrapping].height + 20);
     } else return defaultHeight;
 }
