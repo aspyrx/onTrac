@@ -18,6 +18,7 @@
 @end
 
 @implementation SettingsViewController {
+    BOOL useBike;
     BOOL didPopToMainScreen;
 }
 
@@ -53,6 +54,7 @@
     if (didPopToMainScreen) {
         self.settings = [[Utils loadSettings] mutableCopy];
         didPopToMainScreen = false;
+        useBike = [[self.settings objectForKey:kSettingsKeyUseBike] boolValue];
     }
     
     // reload tableview
@@ -71,7 +73,7 @@
         return 2;
     else if (section == 1)
         // Transport mode and cycling speed cells
-        return 3;
+        return (useBike ? 5 : 4);
     else if (section == 2)
         // Displayed data cells
         return 5;
@@ -118,6 +120,12 @@
             NSString *detailText;
             enum transport_mode_t mode = [[self.settings objectForKey:kSettingsKeyTransportMode] intValue];
             switch (mode) {
+                case TransportModeWalk:
+                    detailText = @"Walk";
+                    break;
+                case TransportModeBike:
+                    detailText = @"Bike";
+                    break;
                 case TransportModeCar:
                     detailText = @"Car";
                     break;
@@ -137,10 +145,10 @@
         } else if (indexPath.row == 1) {
             UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
             BOOL useMetric = [[self.settings objectForKey:kSettingsKeyUseMetric] boolValue];
-            cell.textLabel.text = [NSString stringWithFormat:@"Max walk/bike speed (%@)", (useMetric ? @"km/h" : @"mph")];
+            cell.textLabel.text = [NSString stringWithFormat:@"Max walk speed (%@)", (useMetric ? @"km/h" : @"mph")];
             cell.selectionStyle = UITableViewCellSelectionStyleNone;
             UITextField *field = [[UITextField alloc] initWithFrame:CGRectMake(cell.contentView.frame.size.width - ([self respondsToSelector:@selector(topLayoutGuide)] ? 96 : 110), 0, 80, cell.contentView.frame.size.height)];
-            double speed = [[self.settings objectForKey:kSettingsKeyMaxWalkBikeSpeed] doubleValue];
+            double speed = [[self.settings objectForKey:kSettingsKeySpeedMaxWalk] doubleValue];
             field.text = [NSString stringWithFormat:@"%.2f", [Utils speedFromMetersSec:speed units:(useMetric ? kUnitTextKPH : kUnitTextMPH)]];
             field.textColor = [UIColor colorWithRed:0.0f green:0.478f blue:1.0f alpha:1.0f];
             field.adjustsFontSizeToFitWidth = YES;
@@ -148,12 +156,49 @@
             field.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
             field.keyboardType = UIKeyboardTypeDecimalPad;
             field.borderStyle = UITextBorderStyleNone;
-            [field addTarget:self action:@selector(maxWalkBikeSpeedFieldEditingDidBegin:) forControlEvents:UIControlEventEditingDidBegin];
-            [field addTarget:self action:@selector(maxWalkBikeSpeedFieldEditingDidEnd:) forControlEvents:UIControlEventEditingDidEnd];
+            [field addTarget:self action:@selector(speedMaxWalkFieldEditingDidBegin:) forControlEvents:UIControlEventEditingDidBegin];
+            [field addTarget:self action:@selector(speedMaxWalkFieldEditingDidEnd:) forControlEvents:UIControlEventEditingDidEnd];
             
             [cell.contentView addSubview:field];
             return cell;
         } else if (indexPath.row == 2) {
+            // Use Bike cell
+            UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
+            cell.textLabel.text = @"Bike Mode";
+            cell.selectionStyle = UITableViewCellSelectionStyleNone;
+            
+            // set up UISwitch for toggling
+            UISwitch *switchView = [UISwitch new];
+            cell.accessoryView = switchView;
+            
+            // depending on saved value, set switch position
+            if ([[self.settings objectForKey:kSettingsKeyUseBike] boolValue])
+                [switchView setOn:YES animated:NO];
+            else [switchView setOn:NO animated:NO];
+            
+            // add selector method
+            [switchView addTarget:self action:@selector(useBikeSwitchChanged:) forControlEvents:UIControlEventValueChanged];
+            return cell;
+        } else if (useBike && indexPath.row == 3) {
+            UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
+            BOOL useMetric = [[self.settings objectForKey:kSettingsKeyUseMetric] boolValue];
+            cell.textLabel.text = [NSString stringWithFormat:@"Max bike speed (%@)", (useMetric ? @"km/h" : @"mph")];
+            cell.selectionStyle = UITableViewCellSelectionStyleNone;
+            UITextField *field = [[UITextField alloc] initWithFrame:CGRectMake(cell.contentView.frame.size.width - ([self respondsToSelector:@selector(topLayoutGuide)] ? 96 : 110), 0, 80, cell.contentView.frame.size.height)];
+            double speed = [[self.settings objectForKey:kSettingsKeySpeedMaxBike] doubleValue];
+            field.text = [NSString stringWithFormat:@"%.2f", [Utils speedFromMetersSec:speed units:(useMetric ? kUnitTextKPH : kUnitTextMPH)]];
+            field.textColor = [UIColor colorWithRed:0.0f green:0.478f blue:1.0f alpha:1.0f];
+            field.adjustsFontSizeToFitWidth = YES;
+            field.textAlignment = NSTextAlignmentRight;
+            field.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
+            field.keyboardType = UIKeyboardTypeDecimalPad;
+            field.borderStyle = UITextBorderStyleNone;
+            [field addTarget:self action:@selector(speedMaxBikeFieldEditingDidBegin:) forControlEvents:UIControlEventEditingDidBegin];
+            [field addTarget:self action:@selector(speedMaxBikeFieldEditingDidEnd:) forControlEvents:UIControlEventEditingDidEnd];
+            
+            [cell.contentView addSubview:field];
+            return cell;
+        } else if (indexPath.row == (useBike ? 4 : 3)) {
             UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
             cell.selectionStyle = UITableViewCellSelectionStyleNone;
             cell.textLabel.textColor = [UIColor darkGrayColor];
@@ -332,7 +377,7 @@
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
     CGFloat defaultHeight = [super tableView:tableView heightForRowAtIndexPath:indexPath];
-    if (indexPath.section == 1 && indexPath.row == 2) {
+    if (indexPath.section == 1 && indexPath.row == 4) {
         return MAX(defaultHeight, [kHelpMaxWalkBikeSpeed sizeWithFont:[UIFont systemFontOfSize:11.5f] constrainedToSize:CGSizeMake(self.tableView.frame.size.width, CGFLOAT_MAX) lineBreakMode:NSLineBreakByWordWrapping].height + 20);
     } else return defaultHeight;
 }
@@ -355,19 +400,42 @@
     [self.tapView setHidden:YES];
 }
 
-- (void)maxWalkBikeSpeedFieldEditingDidBegin:(id)sender {
+- (void)speedMaxWalkFieldEditingDidBegin:(id)sender {
     self.activeField = sender;
     [self.tapView setHidden:NO];
 }
 
-- (void)maxWalkBikeSpeedFieldEditingDidEnd:(id)sender {
+- (void)speedMaxWalkFieldEditingDidEnd:(id)sender {
     self.activeField = nil;
     UITextField *field = sender;
     double num = [[[NSNumberFormatter new] numberFromString:field.text] doubleValue];
     BOOL useMetric = [[self.settings objectForKey:kSettingsKeyUseMetric] boolValue];
     if (num > 0) {
-        [self.settings setObject:[NSNumber numberWithDouble:(useMetric ? num / 3.6 : num * 0.44704)] forKey:kSettingsKeyMaxWalkBikeSpeed];
-    } else [self.settings setObject:[NSNumber numberWithDouble:8.0] forKey:kSettingsKeyMaxWalkBikeSpeed];
+        [self.settings setObject:[NSNumber numberWithDouble:(useMetric ? num / 3.6 : num * 0.44704)] forKey:kSettingsKeySpeedMaxWalk];
+    } else [self.settings setObject:[NSNumber numberWithDouble:8.0] forKey:kSettingsKeySpeedMaxWalk];
+}
+
+- (void)useBikeSwitchChanged:(id)sender {
+    UISwitch *useBikeControl = sender;
+    useBike = [useBikeControl isOn];
+    [self.settings setObject:[NSNumber numberWithBool:useBike] forKey:kSettingsKeyUseBike];
+    
+    [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:UITableViewRowAnimationFade];
+}
+
+- (void)speedMaxBikeFieldEditingDidBegin:(id)sender {
+    self.activeField = sender;
+    [self.tapView setHidden:NO];
+}
+
+- (void)speedMaxBikeFieldEditingDidEnd:(id)sender {
+    self.activeField = nil;
+    UITextField *field = sender;
+    double num = [[[NSNumberFormatter new] numberFromString:field.text] doubleValue];
+    BOOL useMetric = [[self.settings objectForKey:kSettingsKeyUseMetric] boolValue];
+    if (num > 0) {
+        [self.settings setObject:[NSNumber numberWithDouble:(useMetric ? num / 3.6 : num * 0.44704)] forKey:kSettingsKeySpeedMaxBike];
+    } else [self.settings setObject:[NSNumber numberWithDouble:8.0] forKey:kSettingsKeySpeedMaxBike];
 }
 
 - (void)followLocationSwitchChanged:(id)sender {

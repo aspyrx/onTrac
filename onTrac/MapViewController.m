@@ -75,7 +75,6 @@ static NSUInteger const kAccelerometerOff = 0;
 @implementation MapViewController {
     enum recording_state_t recordingState;
     BOOL isFollowing;
-    BOOL isDriving;
     BOOL shouldUpdateStatsLabels;
     int numStatsUpdatesWithoutLocationUpdate;
     int numStandardDeviationSamplesAboveThreshold;
@@ -88,18 +87,38 @@ static NSUInteger const kAccelerometerOff = 0;
     NSMutableArray *accelMagnitudes;
     NSTimer *statsUpdateTimer;
     
-    NSTimeInterval lastUpdateTime; // seconds
-    NSTimeInterval timeMoving; // seconds
-    NSTimeInterval timeStopped; // seconds
-    NSTimeInterval totalTime; // seconds
-    CGFloat totalDistance; // meters
-    CGFloat averageSpeed; // m/s
-    CGFloat currentSpeed; // m/s
-    double carbonEmissions; // kg
-    double carbonAvoidance; // kg
-    double caloriesBurned; // calories
-    double emissionsPerMeter; // kg CO2 / passenger meter traveled
-    double speedMaxNotDriving; // maximum not driving speed
+    NSTimeInterval lastUpdateTime;  // seconds
+    NSTimeInterval timeMoving;      // seconds
+    NSTimeInterval timeStopped;     // seconds
+    NSTimeInterval timeWalk;        // seconds
+    NSTimeInterval timeBike;        // seconds
+    NSTimeInterval timeCar;         // seconds
+    NSTimeInterval timeBus;         // seconds
+    NSTimeInterval timeTrain;       // seconds
+    NSTimeInterval timeSubway;      // seconds
+    NSTimeInterval totalTime;       // seconds
+    
+    CGFloat distanceWalk;           // meters
+    CGFloat distanceBike;           // meters
+    CGFloat distanceCar;            // meters
+    CGFloat distanceBus;            // meters
+    CGFloat distanceTrain;          // meters
+    CGFloat distanceSubway;         // meters
+    CGFloat totalDistance;          // meters
+    
+    CGFloat averageSpeed;           // m/s
+    CGFloat currentSpeed;           // m/s
+    double carbonEmissions;         // kg
+    double carbonAvoidance;         // kg
+    double caloriesBurned;          // calories
+    double emissionsPerMeter;       // kg CO2 / passenger meter traveled
+    double userCarEmissionsPerMeter;// kg CO2 / passenger meter traveled
+    
+    double speedMaxWalk;            // m/s; maximum walking speed
+    double speedMaxBike;            // m/s; maximum biking speed
+    double speedMaxNotEmitting;     // m/s; maximum not emitting speed
+    enum transport_mode_t emissionsMode;
+    enum transport_mode_t currentMode;
     
     NSString *distanceUnitText;
     NSString *speedUnitText;
@@ -220,11 +239,19 @@ static NSUInteger const kAccelerometerOff = 0;
         isFollowing = false;
     }
     
-    // get fuel efficiency depending on setting
-    emissionsPerMeter = [[settings objectForKey:kSettingsKeyEmissionsPerMeter] floatValue];
+    // get emissions per meter for user car
+    userCarEmissionsPerMeter = [[settings objectForKey:kSettingsKeyUserCarEmissionsPerMeter] doubleValue];
+    
+    // get emissions mode
+    emissionsMode = [[settings objectForKey:kSettingsKeyTransportMode] intValue];
+    emissionsPerMeter = [self emissionsPerMeter];
     
     // get maximum not driving speed
-    speedMaxNotDriving = [[settings objectForKey:kSettingsKeyMaxWalkBikeSpeed] doubleValue];
+    speedMaxWalk = [[settings objectForKey:kSettingsKeySpeedMaxWalk] doubleValue];
+    speedMaxBike = [[settings objectForKey:kSettingsKeySpeedMaxBike] doubleValue];
+    speedMaxNotEmitting = ([[settings objectForKey:kSettingsKeyUseBike] boolValue]
+                           ? MAX(speedMaxWalk, speedMaxBike)
+                           : speedMaxWalk);
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
@@ -255,6 +282,26 @@ static NSUInteger const kAccelerometerOff = 0;
                 CLLocation *oldLocation = recentLocations[kRecentSpeedSamples - 2];
                 // calculate distance
                 totalDistance += distance = [Utils metersBetweenCoordinate:oldLocation.coordinate coordinate:newLocation.coordinate];
+                switch (currentMode) {
+                    case TransportModeWalk:
+                        distanceWalk += distance;
+                        break;
+                    case TransportModeBike:
+                        distanceBike += distance;
+                        break;
+                    case TransportModeCar:
+                        distanceCar += distance;
+                        break;
+                    case TransportModeBus:
+                        distanceBus += distance;
+                        break;
+                    case TransportModeTrain:
+                        distanceTrain += distance;
+                        break;
+                    case TransportModeSubway:
+                        distanceSubway += distance;
+                        break;
+                }
                 
                 // calculate current speed
                 CGFloat runningTotal = 0;
@@ -273,18 +320,18 @@ static NSUInteger const kAccelerometerOff = 0;
             }
             
             // check if speed has passed threshold
-            if (!isDriving && currentSpeed > speedMaxNotDriving) {
+            if (![self isEmitting] && currentSpeed > speedMaxNotEmitting) {
                 numSpeedSamplesAboveWalkBikeThreshold++;
             } else {
                 numSpeedSamplesAboveWalkBikeThreshold = 0;
             }
             
             if (numSpeedSamplesAboveWalkBikeThreshold > kSpeedSamplesAboveWalkBikeThreshold) {
-                isDriving = YES;
+                currentMode = emissionsMode;
             }
             
             // calculate carbon emissions or avoidance and calories burned
-            if (isDriving) {
+            if ([self isEmitting]) {
                 carbonEmissions += distance * emissionsPerMeter;
                 carbonAvoidance += distance * (kEmissionsMassPerMeterCar - emissionsPerMeter);
             } else {
@@ -439,24 +486,21 @@ static NSUInteger const kAccelerometerOff = 0;
     switch (selIndex) {
         case 0:
             mode = TransportModeCar;
-            emissionsPerMeter = [[settings objectForKey:kSettingsKeyUserCarEmissionsPerMeter] doubleValue];
             break;
         case 1:
             mode = TransportModeBus;
-            emissionsPerMeter = kEmissionsMassPerMeterBus;
             break;
         case 2:
             mode = TransportModeTrain;
-            emissionsPerMeter = kEmissionsMassPerMeterTrain;
             break;
         case 3:
             mode = TransportModeSubway;
-            emissionsPerMeter = kEmissionsMassPerMeterSubway;
             break;
     }
     
     [settings setObject:[NSNumber numberWithInt:mode] forKey:kSettingsKeyTransportMode];
-    [settings setObject:[NSNumber numberWithDouble:emissionsPerMeter] forKey:kSettingsKeyEmissionsPerMeter];
+    emissionsMode = mode;
+    emissionsPerMeter = [self emissionsPerMeter];
     
     // create Settings directory if necessary
     NSError *error;
@@ -502,6 +546,26 @@ static NSUInteger const kAccelerometerOff = 0;
 }
 
 #pragma mark - private methods
+
+- (double)emissionsPerMeter {
+    switch (emissionsMode) {
+        case TransportModeWalk:
+            return kEmissionsMassPerMeterWalk;
+        case TransportModeBike:
+            return kEmissionsMassPerMeterBike;
+        case TransportModeCar:
+            return userCarEmissionsPerMeter;
+        case TransportModeBus:
+            return kEmissionsMassPerMeterBus;
+        case TransportModeTrain:
+            return kEmissionsMassPerMeterTrain;
+        case TransportModeSubway:
+            return kEmissionsMassPerMeterSubway;
+    }
+}
+- (BOOL)isEmitting {
+    return !(currentMode == TransportModeWalk || currentMode == TransportModeBike);
+}
 
 - (void)updateSelectedTracks:(NSNotification *)notification {
     // load currently selected track paths
@@ -643,6 +707,28 @@ static NSUInteger const kAccelerometerOff = 0;
     if (currentSpeed < kCurrentSpeedStopThreshold || recordingState < RecordingStateRunning)
         timeStopped += timeSinceLastUpdate;
     else timeMoving += timeSinceLastUpdate;
+    
+    switch (currentMode) {
+        case TransportModeWalk:
+            timeWalk += timeSinceLastUpdate;
+            break;
+        case TransportModeBike:
+            timeBike += timeSinceLastUpdate;
+            break;
+        case TransportModeCar:
+            timeCar += timeSinceLastUpdate;
+            break;
+        case TransportModeBus:
+            timeBus += timeSinceLastUpdate;
+            break;
+        case TransportModeTrain:
+            timeTrain += timeSinceLastUpdate;
+            break;
+        case TransportModeSubway:
+            timeSubway += timeSinceLastUpdate;
+            break;
+    }
+    
     totalTime += timeSinceLastUpdate;
     lastUpdateTime = [NSDate timeIntervalSinceReferenceDate];
     
@@ -685,14 +771,14 @@ static NSUInteger const kAccelerometerOff = 0;
             [accelMagnitudes removeObjectAtIndex:0];
         
         NSUInteger count = [accelMagnitudes count];
-        if (count >= kAccelMagnitudeSamplesWalking && isDriving ) {
+        if (count >= kAccelMagnitudeSamplesWalking && [self isEmitting]) {
             // there are enough samples AND currently driving, take standard deviation
             walkingStdDev = [Utils standardDeviationOf:[accelMagnitudes subarrayWithRange:NSMakeRange(count - kAccelMagnitudeSamplesWalking, kAccelMagnitudeSamplesWalking)]];
             if (walkingStdDev > kStandardDeviationWalkingThreshold) {
                 // standard deviation is above threshold for walking
                 if (++numStandardDeviationSamplesAboveThreshold > kStandardDeviationSamplesAboveWalkingThreshold) {
                     // there are enough samples consecutively above the threshold for walking
-                    isDriving = NO;
+                    currentMode = TransportModeWalk;
                 }
             } else numStandardDeviationSamplesAboveThreshold = 0;
         }
@@ -788,16 +874,27 @@ static NSUInteger const kAccelerometerOff = 0;
     lastUpdateTime = [NSDate timeIntervalSinceReferenceDate];
     recentLocations = [NSMutableArray new];
     numSpeedSamplesAboveWalkBikeThreshold =
+    timeWalk =
+    timeBike =
+    timeCar =
+    timeBus =
+    timeTrain =
+    timeSubway =
     timeMoving =
     timeStopped =
     totalTime =
+    distanceWalk =
+    distanceBike =
+    distanceCar =
+    distanceBus =
+    distanceTrain =
+    distanceSubway =
     totalDistance =
     averageSpeed =
     currentSpeed =
     carbonEmissions =
     carbonAvoidance =
     caloriesBurned = 0;
-    isDriving = NO;
     
     // clear crumbs and crumb view, remove overlay
     [self.mapView removeOverlay:crumbs];
@@ -827,9 +924,6 @@ static NSUInteger const kAccelerometerOff = 0;
 }
 
 - (void)pauseRecording {
-    // no longer driving
-    isDriving = NO;
-    
     // stop updating location
     [self.locationManager stopUpdatingLocation];
     self.mapView.showsUserLocation = NO;
@@ -877,10 +971,24 @@ static NSUInteger const kAccelerometerOff = 0;
     
     // create extensions
     OnTracExtensions *extensions = [OnTracExtensions new];
+    extensions.timeWalk = timeWalk;
+    extensions.timeBike = timeBike;
+    extensions.timeCar = timeCar;
+    extensions.timeBus = timeBus;
+    extensions.timeTrain = timeTrain;
+    extensions.timeSubway = timeSubway;
     extensions.timeMoving = timeMoving;
     extensions.timeStopped = timeStopped;
     extensions.totalTime = totalTime;
+    
+    extensions.distanceWalk = distanceWalk;
+    extensions.distanceBike = distanceBike;
+    extensions.distanceCar = distanceCar;
+    extensions.distanceBus = distanceBus;
+    extensions.distanceTrain = distanceTrain;
+    extensions.distanceSubway = distanceSubway;
     extensions.totalDistance = totalDistance;
+    
     extensions.averageSpeed = averageSpeed;
     extensions.carbonEmissions = carbonEmissions;
     extensions.carbonAvoidance = carbonAvoidance;

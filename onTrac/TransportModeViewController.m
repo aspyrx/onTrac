@@ -17,7 +17,6 @@
 @implementation TransportModeViewController {
     BOOL useMetric;
     enum transport_mode_t mode;
-    double emissionsPerMeter;
     double userCarEmissionsPerMeter;
 }
 
@@ -46,7 +45,6 @@
     NSMutableDictionary *settings = ((SettingsViewController *) [controllers objectAtIndex:[controllers count] - 2]).settings;
     useMetric = [[settings objectForKey:kSettingsKeyUseMetric] boolValue];
     mode = [[settings objectForKey:kSettingsKeyTransportMode] intValue];
-    emissionsPerMeter = [[settings objectForKey:kSettingsKeyEmissionsPerMeter] doubleValue];
     userCarEmissionsPerMeter = [[settings objectForKey:kSettingsKeyUserCarEmissionsPerMeter] doubleValue];
     
     [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationNone];
@@ -108,16 +106,12 @@
     if (indexPath.section == 0) {
         if (indexPath.row == 0) {
             mode = TransportModeCar;
-            emissionsPerMeter = userCarEmissionsPerMeter;
         } else if (indexPath.row == 1 + isCar) {
             mode = TransportModeBus;
-            emissionsPerMeter = kEmissionsMassPerMeterBus;
         } else if (indexPath.row == 2 + isCar) {
             mode = TransportModeTrain;
-            emissionsPerMeter = kEmissionsMassPerMeterTrain;
         } else if (indexPath.row == 3 + isCar) {
             mode = TransportModeSubway;
-            emissionsPerMeter = kEmissionsMassPerMeterSubway;
         }
         
         [tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationFade];
@@ -132,7 +126,6 @@
     NSArray *controllers = self.navigationController.viewControllers;
     SettingsViewController *controller = ((SettingsViewController *) [controllers objectAtIndex:[controllers count] - 2]);
     [controller.settings setObject:[NSNumber numberWithInt:mode] forKey:kSettingsKeyTransportMode];
-    [controller.settings setObject:[NSNumber numberWithDouble:emissionsPerMeter] forKey:kSettingsKeyEmissionsPerMeter];
     [controller.settings setObject:[NSNumber numberWithDouble:userCarEmissionsPerMeter] forKey:kSettingsKeyUserCarEmissionsPerMeter];
     [controller.tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:UITableViewRowAnimationNone];
     [self.navigationController popViewControllerAnimated:YES];
@@ -154,9 +147,8 @@
     UITextField *field = sender;
     double num = [[[NSNumberFormatter new] numberFromString:field.text] doubleValue];
     if (num > 0) {
-        emissionsPerMeter =
         userCarEmissionsPerMeter = (useMetric ? num : 1 / (num / MPG_PER_100KMPL)) * kEmissionsMassPerLiterGas / 100000;
-    } else emissionsPerMeter = userCarEmissionsPerMeter = kEmissionsMassPerMeterCar;
+    } else userCarEmissionsPerMeter = kEmissionsMassPerMeterCar;
 }
 
 @end

@@ -63,7 +63,7 @@
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     // Return the number of sections.
-    return (hasDesc ? 5 : 4);
+    return (hasDesc ? 7 : 6);
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
@@ -80,9 +80,15 @@
     else if (hasDesc && section == 3)
         // description
         return 1;
-    else if ((!hasDesc && section == 3) || section == 4)
+    else if (section == (hasDesc ? 4 : 3))
         // track details
         return 5;
+    else if (section == (hasDesc ? 5 : 4))
+        // time details
+        return 6;
+    else if (section == (hasDesc ? 6 : 5))
+        // distance details
+        return 6;
     else return 0;
 }
 
@@ -96,7 +102,7 @@
         return @"Your footprint was equal to...";
     else if (hasDesc && section == 3)
         return @"Track Description";
-    else if ((!hasDesc && section == 3) || section == 4)
+    else if (section == (hasDesc ? 4 : 3))
         return @"More Details";
     else return nil;
 }
@@ -214,7 +220,7 @@
         cell.textLabel.text = gpx.metadata.desc;
         cell.textLabel.font = descFont;
         return cell;
-    } else if ((!hasDesc && indexPath.section == 3) || indexPath.section == 4) {
+    } else if (indexPath.section == (hasDesc ? 4 : 3)) {
         static NSString *cellIdentifier = @"detailsCell";
         UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
         if (!cell)
@@ -244,7 +250,77 @@
                 cell.textLabel.text = @"Average Speed";
                 return cell;
         }
-    } return nil;
+    } else if (indexPath.section == (hasDesc ? 5 : 4)) {
+        static NSString *cellIdentifier = @"timeDetailsCell";
+        UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
+        if (!cell)
+            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:nil];
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        cell.textLabel.textColor = [UIColor darkGrayColor];
+        cell.detailTextLabel.textColor = [UIColor blackColor];
+        switch (indexPath.row) {
+            case 0:
+                cell.detailTextLabel.text = [Utils timeStringFromSeconds:gpx.metadata.extensions.timeWalk];
+                cell.textLabel.text = @"Time Walking";
+                return cell;
+            case 1:
+                cell.detailTextLabel.text = [Utils timeStringFromSeconds:gpx.metadata.extensions.timeBike];
+                cell.textLabel.text = @"Time Biking";
+                return cell;
+            case 2:
+                cell.detailTextLabel.text = [Utils timeStringFromSeconds:gpx.metadata.extensions.timeCar];
+                cell.textLabel.text = @"Time Driving";
+                return cell;
+            case 3:
+                cell.detailTextLabel.text = [Utils timeStringFromSeconds:gpx.metadata.extensions.timeBus];
+                cell.textLabel.text = @"Time on Bus";
+                return cell;
+            case 4:
+                cell.detailTextLabel.text = [Utils timeStringFromSeconds:gpx.metadata.extensions.timeTrain];
+                cell.textLabel.text = @"Time on Train";
+                return cell;
+            case 5:
+                cell.detailTextLabel.text = [Utils timeStringFromSeconds:gpx.metadata.extensions.timeSubway];
+                cell.textLabel.text = @"Time on Subway";
+                return cell;
+        }
+    } else if (indexPath.section == (hasDesc ? 6 : 5)) {
+        static NSString *cellIdentifier = @"distanceDetailsCell";
+        UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
+        if (!cell)
+            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:nil];
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        cell.textLabel.textColor = [UIColor darkGrayColor];
+        cell.detailTextLabel.textColor = [UIColor blackColor];
+        switch (indexPath.row) {
+            case 0:
+                cell.detailTextLabel.text = [NSString stringWithFormat:@"%.1f%@", [Utils distanceFromMeters:gpx.metadata.extensions.distanceWalk units:distanceUnitText], distanceUnitText];
+                cell.textLabel.text = @"Distance Walking";
+                return cell;
+            case 1:
+                cell.detailTextLabel.text = [NSString stringWithFormat:@"%.1f%@", [Utils distanceFromMeters:gpx.metadata.extensions.distanceBike units:distanceUnitText], distanceUnitText];
+                cell.textLabel.text = @"Distance Biking";
+                return cell;
+            case 2:
+                cell.detailTextLabel.text = [NSString stringWithFormat:@"%.1f%@", [Utils distanceFromMeters:gpx.metadata.extensions.distanceCar units:distanceUnitText], distanceUnitText];
+                cell.textLabel.text = @"Distance Driving";
+                return cell;
+            case 3:
+                cell.detailTextLabel.text = [NSString stringWithFormat:@"%.1f%@", [Utils distanceFromMeters:gpx.metadata.extensions.distanceBus units:distanceUnitText], distanceUnitText];
+                cell.textLabel.text = @"Distance on Bus";
+                return cell;
+            case 4:
+                cell.detailTextLabel.text = [NSString stringWithFormat:@"%.1f%@", [Utils distanceFromMeters:gpx.metadata.extensions.distanceTrain units:distanceUnitText], distanceUnitText];
+                cell.textLabel.text = @"Distance on Train";
+                return cell;
+            case 5:
+                cell.detailTextLabel.text = [NSString stringWithFormat:@"%.1f%@", [Utils distanceFromMeters:gpx.metadata.extensions.distanceSubway units:distanceUnitText], distanceUnitText];
+                cell.textLabel.text = @"Distance on Subway";
+                return cell;
+        }
+    }
+    
+    return nil;
 }
 
 #pragma mark - UITableViewDelegate
@@ -274,7 +350,7 @@
             default:
                 return defaultHeight;
         }
-    } else if (indexPath.section == 3) {
+    } else if (hasDesc && indexPath.section == 3) {
         return MAX(defaultHeight, [gpx.metadata.desc sizeWithFont:descFont constrainedToSize:CGSizeMake(self.tableView.frame.size.width, CGFLOAT_MAX) lineBreakMode:NSLineBreakByWordWrapping].height + 20);
     } else return defaultHeight;
 }

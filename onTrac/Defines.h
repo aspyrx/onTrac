@@ -36,9 +36,10 @@ static NSString *kUserInfoKeyRecordingState = @"recordingState";
 // settings dictionary keys
 static NSString *kSettingsKeyUseMetric = @"useMetric";
 static NSString *kSettingsKeyDataSuffix = @"dataSuffix";
-static NSString *kSettingsKeyEmissionsPerMeter = @"emissionsPerMeter";
 static NSString *kSettingsKeyUserCarEmissionsPerMeter = @"userCarEmissionsPerMeter";
-static NSString *kSettingsKeyMaxWalkBikeSpeed = @"maxWalkBikeSpeed";
+static NSString *kSettingsKeyUseBike = @"useBike";
+static NSString *kSettingsKeySpeedMaxWalk = @"speedMaxWalk";
+static NSString *kSettingsKeySpeedMaxBike = @"speedMaxBike";
 static NSString *kSettingsKeyTransportMode = @"transportMode";
 static NSString *kSettingsKeyMapMode = @"mapMode";
 static NSString *kSettingsKeyFollowLocation = @"followLocation";
@@ -64,6 +65,8 @@ static NSString *kDataSuffixCalories = @"burned";
 
 // transport modes
 enum transport_mode_t {
+    TransportModeWalk,
+    TransportModeBike,
     TransportModeCar,
     TransportModeBus,
     TransportModeTrain,
@@ -92,6 +95,8 @@ static CGFloat const kEmissionsMassPerKWH = 0.5534;
 // kg CO_2 / hour, emissions for powering a home for 1 hour
 static CGFloat const kEmissionsPerHomeHour = 0.54282;
 
+static double const kEmissionsMassPerMeterWalk = 0;
+static double const kEmissionsMassPerMeterBike = 0;
 static double const kEmissionsMassPerMeterCar = 0.0002717653201;
 static double const kEmissionsMassPerMeterBus = 0.0001657655687;
 static double const kEmissionsMassPerMeterTrain = 0.0000893668117;

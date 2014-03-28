@@ -6,14 +6,16 @@
 	<true/>
 	<key>dataSuffix</key>
 	<string>CO2 emitted</string>
-	<key>emissionsPerMeter</key>
-	<real>0.000271765</real>
 	<key>userCarEmissionsPerMeter</key>
 	<real>0.000271765</real>
-	<key>maxWalkBikeSpeed</key>
-	<real>8</real>
+	<key>useBike</key>
+	<true/>
+	<key>speedMaxWalk</key>
+	<real>4.4704</real>
+	<key>speedMaxBike</key>
+	<real>8.940799999999999</real>
 	<key>transportMode</key>
-	<integer>0</integer>
+	<integer>2</integer>
 	<key>mapMode</key>
 	<integer>0</integer>
 	<key>followLocation</key>
