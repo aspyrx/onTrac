@@ -34,6 +34,8 @@
         return (-3.9 + 2.3 * (speed * 3.6 / KILOMETERS_PER_MILE)) * weight * (time / 3600);
     } else if (mode == TransportModeTrain || mode == TransportModeSubway) {
         return 2 * weight * (time / 3600);
+    } else if (mode == TransportModeBike) {
+        return 8 * weight * (time / 3600);
     } else return 0;
 }
 
