@@ -363,7 +363,13 @@ static NSUInteger const kAccelerometerOff = 0;
         MKPolylineView *polylineView = [[MKPolylineView alloc] initWithPolyline:polyline];
         CGFloat num = [[[NSNumberFormatter new] numberFromString:polyline.title] floatValue];
         polylineView.strokeColor = [Utils colorForNumber:num dataSuffix:dataSuffix];
-        polylineView.lineWidth = 8.0;
+        if ([polyline.subtitle isEqualToString:@"dashed"]) {
+            polylineView.lineDashPattern = @[@1, @15];
+            polylineView.lineWidth = 6.0f;
+        } else {
+            polylineView.lineWidth = 8.0f;
+        }
+        
         return polylineView;
     } else return nil;
 }
@@ -531,22 +537,36 @@ static NSUInteger const kAccelerometerOff = 0;
                                  ? metadata.extensions.carbonAvoidance
                                  : metadata.extensions.caloriesBurned)));
             
+            CLLocationCoordinate2D lastSegmentCoord = kCLLocationCoordinate2DInvalid;
             for (GPXTrackSegment *tracksegment in tracksegments) {
                 // get track points
                 NSArray *trackpoints = [tracksegment trackpoints];
                 NSUInteger count = [trackpoints count];
-                CLLocationCoordinate2D coordinates[count];
                 
-                // add each track point's coordinates to the coordinates array
-                for (int i = 0; i < count; i++) {
-                    GPXTrackPoint *trackpoint = trackpoints[i];
-                    coordinates[i] = CLLocationCoordinate2DMake(trackpoint.latitude, trackpoint.longitude);
+                if (count > 0) {
+                    CLLocationCoordinate2D coordinates[count];
+                    
+                    // add each track point's coordinates to the coordinates array
+                    for (int i = 0; i < count; i++) {
+                        GPXTrackPoint *trackpoint = trackpoints[i];
+                        coordinates[i] = CLLocationCoordinate2DMake(trackpoint.latitude, trackpoint.longitude);
+                    }
+                    
+                    if (CLLocationCoordinate2DIsValid(lastSegmentCoord)) {
+                        CLLocationCoordinate2D dashedCoords[2] = {coordinates[0], lastSegmentCoord};
+                        MKPolyline *dashedLine = [MKPolyline polylineWithCoordinates:dashedCoords count:2];
+                        dashedLine.title = [NSString stringWithFormat:@"%f", num];
+                        dashedLine.subtitle = @"dashed";
+                        [self.mapView addOverlay:dashedLine];
+                    }
+                    
+                    lastSegmentCoord = coordinates[count - 1];
+                    
+                    // create polyline, add to map view
+                    MKPolyline *trackLine = [MKPolyline polylineWithCoordinates:coordinates count:count];
+                    trackLine.title = [NSString stringWithFormat:@"%f", num];
+                    [self.mapView addOverlay:trackLine];
                 }
-                
-                // create polyline, add to map view
-                MKPolyline *trackLine = [MKPolyline polylineWithCoordinates:coordinates count:count];
-                trackLine.title = [NSString stringWithFormat:@"%f", num];
-                [self.mapView addOverlay:trackLine];
             }
             
             // get the first coordinate in the track
