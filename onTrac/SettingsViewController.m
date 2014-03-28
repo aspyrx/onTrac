@@ -64,7 +64,7 @@
 #pragma mark - UITableViewDataSource
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return 6;
+    return 7;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
@@ -75,15 +75,18 @@
         // Transport mode and cycling speed cells
         return (useBike ? 5 : 4);
     else if (section == 2)
+        // Weight cell
+        return 1;
+    else if (section == 3)
         // Displayed data cells
         return 5;
-    else if (section == 3)
+    else if (section == 4)
         // Map mode cells
         return 3;
-    else if (section == 4)
+    else if (section == 5)
         // Follow location cell
         return 1;
-    else if (section == 5)
+    else if (section == 6)
         // About cell
         return 2;
     else return 0;
@@ -92,9 +95,9 @@
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
     if (section == 0)
         return @"Units";
-    else if (section == 2)
-        return @"Displayed Data";
     else if (section == 3)
+        return @"Displayed Data";
+    else if (section == 4)
         return @"Map Mode";
     else return nil;
 }
@@ -209,6 +212,30 @@
             return cell;
         }
     } else if (indexPath.section == 2) {
+        // Weight cell
+        if (indexPath.row == 0) {
+            UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
+            BOOL useMetric = [[self.settings objectForKey:kSettingsKeyUseMetric] boolValue];
+            cell.textLabel.text = [NSString stringWithFormat:@"Weight (%@)", (useMetric ? @"kg" : @"lbs")];
+            cell.selectionStyle = UITableViewCellSelectionStyleNone;
+            UITextField *field = [[UITextField alloc] initWithFrame:CGRectMake(cell.contentView.frame.size.width - ([self respondsToSelector:@selector(topLayoutGuide)] ? 96 : 110), 0, 80, cell.contentView.frame.size.height)];
+            double weight = [[self.settings objectForKey:kSettingsKeyWeight] doubleValue];
+            field.text = [NSString stringWithFormat:@"%.2f", [Utils massFromKilograms:weight units:(useMetric ? kUnitTextKG : kUnitTextLBS)]];
+            field.textColor = [UIColor colorWithRed:0.0f green:0.478f blue:1.0f alpha:1.0f];
+            field.adjustsFontSizeToFitWidth = YES;
+            field.textAlignment = NSTextAlignmentRight;
+            field.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
+            field.keyboardType = UIKeyboardTypeDecimalPad;
+            field.borderStyle = UITextBorderStyleNone;
+            field.secureTextEntry = YES;
+            [field addTarget:self action:@selector(weightFieldEditingDidBegin:) forControlEvents:UIControlEventEditingDidBegin];
+            [field addTarget:self action:@selector(weightFieldEditingDidEnd:) forControlEvents:UIControlEventEditingDidEnd];
+            
+            [cell.contentView addSubview:field];
+            
+            return cell;
+        }
+    } else if (indexPath.section == 3) {
         // Displayed Data cells
         NSString *dataSuffix = [self.settings objectForKey:kSettingsKeyDataSuffix];
         UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
@@ -229,7 +256,7 @@
             cell.accessoryType = ([dataSuffix isEqualToString:kDataSuffixCalories] ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone);
         }
         return cell;
-    } else if (indexPath.section == 3) {
+    } else if (indexPath.section == 4) {
         // Map Mode cells
         MKMapType mapMode = [[self.settings objectForKey:kSettingsKeyMapMode] unsignedIntegerValue];
         UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
@@ -244,7 +271,7 @@
             cell.accessoryType = (mapMode == 2 ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone);
         }
         return cell;
-    } else if (indexPath.section == 4) {
+    } else if (indexPath.section == 5) {
         if (indexPath.row == 0) {
             // Follow Location cell
             UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
@@ -264,7 +291,7 @@
             [switchView addTarget:self action:@selector(followLocationSwitchChanged:) forControlEvents:UIControlEventValueChanged];
             return cell;
         }
-    } else if (indexPath.section == 5) {
+    } else if (indexPath.section == 6) {
         if (indexPath.row == 0) {
             // About cell
             UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
@@ -303,7 +330,7 @@
             TransportModeViewController *viewController = [[TransportModeViewController alloc] initWithStyle:UITableViewStyleGrouped];
             [self.navigationController pushViewController:viewController animated:YES];
         }
-    } else if (indexPath.section == 2) {
+    } else if (indexPath.section == 3) {
         NSString *value = [self.settings objectForKey:kSettingsKeyDataSuffix];
         NSUInteger oldRow = ([value isEqualToString:kDataSuffixAvoidancePercent]
                              ? 0
@@ -327,7 +354,7 @@
             [[tableView cellForRowAtIndexPath:indexPath] setAccessoryType:UITableViewCellAccessoryCheckmark];
             [[tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:oldRow inSection:2]] setAccessoryType:UITableViewCellAccessoryNone];
         }
-    } else if (indexPath.section == 3) {
+    } else if (indexPath.section == 4) {
         enum MKMapType value = [[self.settings objectForKey:kSettingsKeyMapMode] intValue];
         NSUInteger oldRow;
         switch (value) {
@@ -357,7 +384,7 @@
             [[tableView cellForRowAtIndexPath:indexPath] setAccessoryType:UITableViewCellAccessoryCheckmark];
             [[tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:oldRow inSection:3]] setAccessoryType:UITableViewCellAccessoryNone];
         }
-    } else if (indexPath.section == 5) {
+    } else if (indexPath.section == 6) {
         if (indexPath.row == 0) {
             // alloc and init about view controller
             AboutViewController *aboutViewController = [[AboutViewController alloc] init];
@@ -412,7 +439,7 @@
     BOOL useMetric = [[self.settings objectForKey:kSettingsKeyUseMetric] boolValue];
     if (num > 0) {
         [self.settings setObject:[NSNumber numberWithDouble:(useMetric ? num / 3.6 : num * 0.44704)] forKey:kSettingsKeySpeedMaxWalk];
-    } else [self.settings setObject:[NSNumber numberWithDouble:8.0] forKey:kSettingsKeySpeedMaxWalk];
+    } else [self.settings setObject:[NSNumber numberWithDouble:8.9408] forKey:kSettingsKeySpeedMaxWalk];
 }
 
 - (void)useBikeSwitchChanged:(id)sender {
@@ -435,7 +462,22 @@
     BOOL useMetric = [[self.settings objectForKey:kSettingsKeyUseMetric] boolValue];
     if (num > 0) {
         [self.settings setObject:[NSNumber numberWithDouble:(useMetric ? num / 3.6 : num * 0.44704)] forKey:kSettingsKeySpeedMaxBike];
-    } else [self.settings setObject:[NSNumber numberWithDouble:8.0] forKey:kSettingsKeySpeedMaxBike];
+    } else [self.settings setObject:[NSNumber numberWithDouble:8.9408] forKey:kSettingsKeySpeedMaxBike];
+}
+
+- (void)weightFieldEditingDidBegin:(id)sender {
+    self.activeField = sender;
+    [self.tapView setHidden:NO];
+}
+
+- (void)weightFieldEditingDidEnd:(id)sender {
+    self.activeField = nil;
+    UITextField *field = sender;
+    double num = [[[NSNumberFormatter new] numberFromString:field.text] doubleValue];
+    BOOL useMetric = [[self.settings objectForKey:kSettingsKeyUseMetric] boolValue];
+    if (num > 0) {
+        [self.settings setObject:[NSNumber numberWithDouble:(useMetric ? num : num * POUNDS_PER_KILOGRAM)] forKey:kSettingsKeyWeight];
+    } else [self.settings setObject:[NSNumber numberWithDouble:65] forKey:kSettingsKeyWeight];
 }
 
 - (void)followLocationSwitchChanged:(id)sender {

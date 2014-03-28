@@ -16,6 +16,8 @@
 	<real>8.940799999999999</real>
 	<key>transportMode</key>
 	<integer>2</integer>
+	<key>weight</key>
+	<integer>65</integer>
 	<key>mapMode</key>
 	<integer>0</integer>
 	<key>followLocation</key>

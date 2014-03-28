@@ -41,6 +41,7 @@ static NSString *kSettingsKeyUseBike = @"useBike";
 static NSString *kSettingsKeySpeedMaxWalk = @"speedMaxWalk";
 static NSString *kSettingsKeySpeedMaxBike = @"speedMaxBike";
 static NSString *kSettingsKeyTransportMode = @"transportMode";
+static NSString *kSettingsKeyWeight = @"weight";
 static NSString *kSettingsKeyMapMode = @"mapMode";
 static NSString *kSettingsKeyFollowLocation = @"followLocation";
 
