@@ -28,7 +28,7 @@ static CGFloat const kMinDistance = 1.0;
 // number of recent speed samples to average to calculate current speed (must be >= 2)
 static NSUInteger const kRecentSpeedSamples = 5;
 // seconds, maximum time between location updates until its speed calculation is no longer averaged
-static NSTimeInterval const kSpeedSampleTimeout = 3.0;
+static NSTimeInterval const kSpeedSampleTimeout = 5.0;
 // number of speeds above threshold required to change mode to driving
 static NSUInteger const kSpeedSamplesAboveWalkBikeThreshold = 1;
 // number of stats updates without location updates until current speed is assumed to be 0
@@ -311,7 +311,7 @@ static NSUInteger const kAccelerometerOff = 0;
                 }
                 
                 // calculate current speed
-                if ([self isEmitting]) {
+                if ([self isEmitting] || newLocation.timestamp.timeIntervalSinceReferenceDate - oldLocation.timestamp.timeIntervalSinceReferenceDate > kSpeedSampleTimeout) {
                     CGFloat runningTotal = 0;
                     int numSamples = 0;
                     for (int i = kRecentSpeedSamples - 1; i > 0; i--) {
