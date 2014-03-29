@@ -352,7 +352,7 @@
                                                ? kDataSuffixGas
                                                : kDataSuffixCalories)))) forKey:kSettingsKeyDataSuffix];
             [[tableView cellForRowAtIndexPath:indexPath] setAccessoryType:UITableViewCellAccessoryCheckmark];
-            [[tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:oldRow inSection:2]] setAccessoryType:UITableViewCellAccessoryNone];
+            [[tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:oldRow inSection:3]] setAccessoryType:UITableViewCellAccessoryNone];
         }
     } else if (indexPath.section == 4) {
         enum MKMapType value = [[self.settings objectForKey:kSettingsKeyMapMode] intValue];
@@ -382,7 +382,7 @@
             }
             [self.settings setObject:[NSNumber numberWithInt:value] forKey:kSettingsKeyMapMode];
             [[tableView cellForRowAtIndexPath:indexPath] setAccessoryType:UITableViewCellAccessoryCheckmark];
-            [[tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:oldRow inSection:3]] setAccessoryType:UITableViewCellAccessoryNone];
+            [[tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:oldRow inSection:4]] setAccessoryType:UITableViewCellAccessoryNone];
         }
     } else if (indexPath.section == 6) {
         if (indexPath.row == 0) {

@@ -33,6 +33,8 @@ static NSTimeInterval const kSpeedSampleTimeout = 3.0;
 static NSUInteger const kSpeedSamplesAboveWalkBikeThreshold = 1;
 // number of stats updates without location updates until current speed is assumed to be 0
 static NSUInteger const kStatsUpdatesUntilCurrentSpeedReset = 5;
+// number of stats updates without location updates until mode is assumed to be subway
+static NSUInteger const kStatsUpdatesUntilSubwayMode = 300;
 // number of stats updates without location update until recording stopped
 // static NSUInteger const kStatsUpdatesUntilRecordingStop = 300;
 
@@ -75,6 +77,7 @@ static NSUInteger const kAccelerometerOff = 0;
 @implementation MapViewController {
     enum recording_state_t recordingState;
     BOOL isFollowing;
+    BOOL useBike;
     BOOL shouldUpdateStatsLabels;
     int numStatsUpdatesWithoutLocationUpdate;
     int numStandardDeviationSamplesAboveThreshold;
@@ -252,7 +255,8 @@ static NSUInteger const kAccelerometerOff = 0;
     // get maximum not driving speed
     speedMaxWalk = [[settings objectForKey:kSettingsKeySpeedMaxWalk] doubleValue];
     speedMaxBike = [[settings objectForKey:kSettingsKeySpeedMaxBike] doubleValue];
-    speedMaxNotEmitting = ([[settings objectForKey:kSettingsKeyUseBike] boolValue]
+    useBike = [[settings objectForKey:kSettingsKeyUseBike] boolValue];
+    speedMaxNotEmitting = (useBike
                            ? MAX(speedMaxWalk, speedMaxBike)
                            : speedMaxWalk);
 }
@@ -307,26 +311,28 @@ static NSUInteger const kAccelerometerOff = 0;
                 }
                 
                 // calculate current speed
-                CGFloat runningTotal = 0;
-                int numSamples = 0;
-                for (int i = kRecentSpeedSamples - 1; i > 0; i--) {
-                    CLLocation *loc0 = recentLocations[i - 1];
-                    CLLocation *loc1 = recentLocations[i];
-                    if (loc1.timestamp.timeIntervalSinceReferenceDate - loc0.timestamp.timeIntervalSinceReferenceDate < kSpeedSampleTimeout) {
-                        runningTotal += [Utils speedBetweenLocation:loc0 location:loc1];
-                        numSamples++;
-                    } else break;
-                }
-                
-                currentSpeed = runningTotal / numSamples;
-                if (!isfinite(currentSpeed)) currentSpeed = 0;
+                if ([self isEmitting]) {
+                    CGFloat runningTotal = 0;
+                    int numSamples = 0;
+                    for (int i = kRecentSpeedSamples - 1; i > 0; i--) {
+                        CLLocation *loc0 = recentLocations[i - 1];
+                        CLLocation *loc1 = recentLocations[i];
+                        if (loc1.timestamp.timeIntervalSinceReferenceDate - loc0.timestamp.timeIntervalSinceReferenceDate < kSpeedSampleTimeout) {
+                            runningTotal += [Utils speedBetweenLocation:loc0 location:loc1];
+                            numSamples++;
+                        } else break;
+                    }
+                    
+                    currentSpeed = runningTotal / numSamples;
+                    if (!isfinite(currentSpeed)) currentSpeed = 0;
+                } else currentSpeed = newLocation.speed;
                 
                 // calculate calories burned
                 caloriesBurned += [Utils caloriesBurnedForMode:currentMode time:newLocation.timestamp.timeIntervalSinceReferenceDate - oldLocation.timestamp.timeIntervalSinceReferenceDate speed:currentSpeed weight:weight];
             }
             
             // check if speed has passed threshold
-            if (currentSpeed > speedMaxWalk && currentSpeed < speedMaxBike) {
+            if (useBike && currentSpeed > speedMaxWalk && currentSpeed < speedMaxBike) {
                 currentMode = TransportModeBike;
             }
             
@@ -711,6 +717,9 @@ static NSUInteger const kAccelerometerOff = 0;
     if (++numStatsUpdatesWithoutLocationUpdate >= kStatsUpdatesUntilCurrentSpeedReset)
         currentSpeed = 0.0f;
     
+    if (emissionsMode == TransportModeSubway && ![self isEmitting] && numStatsUpdatesWithoutLocationUpdate >= kStatsUpdatesUntilSubwayMode)
+        currentMode = TransportModeSubway;
+    
     // calculate times
     NSTimeInterval timeSinceLastUpdate = [NSDate timeIntervalSinceReferenceDate] - lastUpdateTime;
     if (currentSpeed < kCurrentSpeedStopThreshold || recordingState < RecordingStateRunning)
@@ -926,6 +935,8 @@ static NSUInteger const kAccelerometerOff = 0;
     carbonAvoidance =
     caloriesBurned = 0;
     
+    currentMode = TransportModeWalk;
+    
     // clear crumbs and crumb view, remove overlay
     [self.mapView removeOverlay:crumbs];
     crumbs = nil;
@@ -954,6 +965,8 @@ static NSUInteger const kAccelerometerOff = 0;
 }
 
 - (void)pauseRecording {
+    currentMode = TransportModeWalk;
+    
     // stop updating location
     [self.locationManager stopUpdatingLocation];
     self.mapView.showsUserLocation = NO;
