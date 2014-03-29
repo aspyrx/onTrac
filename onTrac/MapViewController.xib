@@ -103,7 +103,7 @@
                                 <segment title="Car"/>
                                 <segment title="Bus"/>
                                 <segment title="Train"/>
-                                <segment title="Subway"/>
+                                <segment title="Subway" width="85"/>
                             </segments>
                             <connections>
                                 <action selector="transportModeControlChanged:" destination="-1" eventType="valueChanged" id="njJ-xc-nkO"/>
