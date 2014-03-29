@@ -25,6 +25,7 @@
     UIFont *nameFont;
     UIFont *descFont;
     BOOL hasDesc;
+    BOOL showHelp;
     CGFloat emissions;
     CGFloat avoidance;
 }
@@ -33,6 +34,8 @@
     self = [super initWithStyle:UITableViewStyleGrouped];
     if (self) {
         self.title = @"Track Details";
+        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Help" style:UIBarButtonItemStyleBordered target:self action:@selector(helpButtonPressed:)];
+        
         self.filePath = filePath;
         gpx = [Utils rootWithMetadataAtPath:self.filePath];
         NSDictionary *settings = [Utils loadSettings];
@@ -55,6 +58,8 @@
         
         emissions = gpx.metadata.extensions.carbonEmissions;
         avoidance = gpx.metadata.extensions.carbonAvoidance;
+        
+        showHelp = false;
     }
     return self;
 }
@@ -73,7 +78,7 @@
         return 1;
     else if (section == 1)
         // footprint data
-        return 10;
+        return (showHelp ? 10 : 5);
     else if (section == 2)
         // equivalences
         return 2;
@@ -117,31 +122,25 @@
         cell.textLabel.numberOfLines = 0;
         return cell;
     } else if (indexPath.section == 1) {
-        if (indexPath.row % 2 == 0) {
+        if (!showHelp || indexPath.row % 2 == 0) {
             UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue2 reuseIdentifier:@"dataDisplayCell"];
             cell.selectionStyle = UITableViewCellSelectionStyleNone;
             cell.textLabel.textColor = [UIColor darkGrayColor];
-            switch (indexPath.row) {
-                case 0:
+            if (indexPath.row == 0) {
                     cell.textLabel.text = @"Ratio";
                     cell.detailTextLabel.attributedText = [Utils attributedStringFromNumber:(emissions / (gpx.metadata.extensions.totalDistance * kEmissionsMassPerMeterCar)) * 100 baseFontSize:18.0f dataSuffix:kDataSuffixAvoidancePercent unitText:kUnitTextPercent];
-                    break;
-                case 2:
+            } else if (indexPath.row == (showHelp ? 2 : 1)) {
                     cell.textLabel.text = @"Emissions";
                     cell.detailTextLabel.attributedText = [Utils attributedStringFromNumber:emissions baseFontSize:18.0f dataSuffix:kDataSuffixCO2Emitted unitText:massUnitText];
-                    break;
-                case 4:
+            } else if (indexPath.row == (showHelp ? 4 : 2)) {
                     cell.textLabel.text = @"Avoidance";
                     cell.detailTextLabel.attributedText = [Utils attributedStringFromNumber:avoidance baseFontSize:18.0f dataSuffix:kDataSuffixCO2Avoided unitText:massUnitText];
-                    break;
-                case 6:
+            } else if (indexPath.row == (showHelp ? 6 : 3)) {
                     cell.textLabel.text = @"Gasoline";
                     cell.detailTextLabel.attributedText = [Utils attributedStringFromNumber:emissions baseFontSize:18.0f dataSuffix:kDataSuffixGas unitText:volumeUnitText];
-                    break;
-                case 8:
+            } else if (indexPath.row == (showHelp ? 8 : 4)) {
                     cell.textLabel.text = @"Calories";
                     cell.detailTextLabel.attributedText = [Utils attributedStringFromNumber:gpx.metadata.extensions.caloriesBurned baseFontSize:18.0f dataSuffix:kDataSuffixCalories unitText:kUnitTextCalorie];
-                    break;
             }
             return cell;
         } else {
@@ -334,7 +333,7 @@
     CGFloat defaultHeight = [super tableView:tableView heightForRowAtIndexPath:indexPath];
     if (indexPath.section == 0 && indexPath.row == 0) {
         return MAX(defaultHeight, [gpx.metadata.name sizeWithFont:nameFont constrainedToSize:CGSizeMake(self.tableView.frame.size.width - 120, CGFLOAT_MAX) lineBreakMode:NSLineBreakByWordWrapping].height);
-    } else if (indexPath.section == 1 && indexPath.row % 2 == 1) {
+    } else if (showHelp && indexPath.section == 1 && indexPath.row % 2 == 1) {
         UIFont *font = [UIFont systemFontOfSize:11.5f];
         switch (indexPath.row) {
             case 1:
@@ -353,6 +352,13 @@
     } else if (hasDesc && indexPath.section == 3) {
         return MAX(defaultHeight, [gpx.metadata.desc sizeWithFont:descFont constrainedToSize:CGSizeMake(self.tableView.frame.size.width, CGFLOAT_MAX) lineBreakMode:NSLineBreakByWordWrapping].height + 20);
     } else return defaultHeight;
+}
+
+#pragma mark - interface methods
+
+- (void)helpButtonPressed:(id)sender {
+    showHelp = !showHelp;
+    [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:UITableViewRowAnimationFade];
 }
 
 @end
