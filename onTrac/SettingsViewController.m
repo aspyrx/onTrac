@@ -415,7 +415,7 @@
     if (buttonIndex == alertView.firstOtherButtonIndex) {
         [Utils deleteSettings];
         self.settings = [[Utils loadSettings] mutableCopy];
-        [self.tableView reloadSections:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, 5)] withRowAnimation:UITableViewRowAnimationNone];
+        [self.tableView reloadSections:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, 6)] withRowAnimation:UITableViewRowAnimationNone];
     }
 }
 

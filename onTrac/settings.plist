@@ -9,7 +9,7 @@
 	<key>userCarEmissionsPerMeter</key>
 	<real>0.000271765</real>
 	<key>useBike</key>
-	<true/>
+	<false/>
 	<key>speedMaxWalk</key>
 	<real>4.4704</real>
 	<key>speedMaxBike</key>
