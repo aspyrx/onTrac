@@ -12,32 +12,29 @@
 #import <CoreMotion/CoreMotion.h>
 
 @class TracksViewController;
-@class XBCurlView;
 
 @interface MapViewController : UIViewController <CLLocationManagerDelegate, MKMapViewDelegate>
 
 @property (weak, nonatomic) IBOutlet UIView *backView;
 @property (weak, nonatomic) IBOutlet UIView *frontView;
-@property (weak, nonatomic) IBOutlet UIView *tapCurlView;
-@property (weak, nonatomic) IBOutlet UIView *tapUncurlView;
 @property (weak, nonatomic) IBOutlet UILabel *totalTimeLabel;
 @property (weak, nonatomic) IBOutlet UILabel *totalDistanceLabel;
 @property (weak, nonatomic) IBOutlet UILabel *averageSpeedLabel;
 @property (weak, nonatomic) IBOutlet UILabel *currentSpeedLabel;
 @property (weak, nonatomic) IBOutlet UILabel *detectedModeLabel;
-@property (weak, nonatomic) IBOutlet UILabel *displayedDataLabel;
 @property (weak, nonatomic) IBOutlet UISegmentedControl *transportModeControl;
 @property (weak, nonatomic) IBOutlet MKMapView *mapView;
-@property (weak, nonatomic) IBOutlet UIImageView *curlImageView;
+@property (weak, nonatomic) IBOutlet UIToolbar *statisticsToolbar;
+@property (strong, nonatomic) IBOutlet UIBarButtonItem *statisticsDisplayButton;
+@property (strong, nonatomic) IBOutlet UIBarButtonItem *statisticsCloseButton;
 @property (strong, nonatomic) CLLocationManager *locationManager;
 @property (strong, nonatomic) CMMotionManager *motionManager;
-@property (strong, nonatomic) XBCurlView *curlView;
 @property (strong, nonatomic) TracksViewController *tracksViewController;
 @property (strong, nonatomic) UINavigationController *settingsNavigationController;
 
-- (IBAction)displayedDataLabelTapped:(id)sender;
 - (IBAction)transportModeControlChanged:(id)sender;
-- (IBAction)tapCurlViewTapped:(id)sender;
-- (IBAction)tapUncurlViewTapped:(id)sender;
+- (IBAction)statisticsLabelTapped:(id)sender;
+- (IBAction)showStatistics:(id)sender;
+- (IBAction)hideStatistics:(id)sender;
 
 @end

@@ -10,7 +10,6 @@
 #import "Utils.h"
 #import "Defines.h"
 #import "GPX.h"
-#import "XBCurlView.h"
 #import "CrumbPath.h"
 #import "CrumbPathView.h"
 #import "TrackAnnotation.h"
@@ -19,8 +18,8 @@
 #import "TracksViewController.h"
 #import "TrackDetailViewController.h"
 
-// seconds, length of page curl animation
-static CGFloat const kCurlAnimationDuration = 0.5;
+// seconds, length of statistics display animation
+static CGFloat const kAnimationDuration = 0.3;
 
 // meters, min distance between location updates
 static CGFloat const kMinDistance = 1.0;
@@ -76,6 +75,7 @@ static NSUInteger const kAccelerometerOff = 0;
 
 @implementation MapViewController {
     enum recording_state_t recordingState;
+    BOOL statisticsShown;
     BOOL isFollowing;
     BOOL useBike;
     BOOL shouldUpdateStatsLabels;
@@ -142,6 +142,8 @@ static NSUInteger const kAccelerometerOff = 0;
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
+        statisticsShown = false;
+        
         // set navbar items
         self.title = @"onTrac";
         self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Settings" style:UIBarButtonItemStyleBordered target:self action:@selector(optionsButtonPressed:)];
@@ -173,9 +175,10 @@ static NSUInteger const kAccelerometerOff = 0;
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    // alloc and init curl view
-    self.curlView = [[XBCurlView alloc] initWithFrame:self.view.frame];
-    self.curlView.userInteractionEnabled = NO;
+    // remove statistics close button
+    NSMutableArray *barItems = [self.statisticsToolbar.items mutableCopy];
+    [barItems removeObject:self.statisticsCloseButton];
+    [self.statisticsToolbar setItems:barItems];
     
     // set navigation controller properties
     [self.navigationController.navigationBar setBarStyle:UIBarStyleBlackTranslucent];
@@ -263,6 +266,8 @@ static NSUInteger const kAccelerometerOff = 0;
 
 - (void)viewDidDisappear:(BOOL)animated {
     [super viewDidDisappear:animated];
+    
+    [self hideStatistics:nil];
     
     // stop updating stats labels
     shouldUpdateStatsLabels = NO;
@@ -457,43 +462,6 @@ static NSUInteger const kAccelerometerOff = 0;
 
 #pragma mark - interface methods
 
-- (IBAction)displayedDataLabelTapped:(id)sender {
-    BOOL useMetric = [[settings objectForKey:kSettingsKeyUseMetric] boolValue];
-    if ([dataSuffix isEqualToString:kDataSuffixAvoidancePercent]) {
-        dataSuffix = kDataSuffixCO2Emitted;
-        dataUnitText = (useMetric ? kUnitTextKG : kUnitTextLBS);
-    } else if ([dataSuffix isEqualToString:kDataSuffixCO2Emitted]) {
-        dataSuffix = kDataSuffixCO2Avoided;
-        dataUnitText = (useMetric ? kUnitTextKG : kUnitTextLBS);
-    } else if ([dataSuffix isEqualToString:kDataSuffixCO2Avoided]) {
-        dataSuffix = kDataSuffixGas;
-        dataUnitText = (useMetric ? kUnitTextLiter : kUnitTextGallon);
-    } else if ([dataSuffix isEqualToString:kDataSuffixGas]) {
-        dataSuffix = kDataSuffixCalories;
-        dataUnitText = kUnitTextCalorie;
-    } else if ([dataSuffix isEqualToString:kDataSuffixCalories]) {
-        dataSuffix = kDataSuffixAvoidancePercent;
-        dataUnitText = kUnitTextPercent;
-    }
-    
-    [settings setObject:dataSuffix forKey:kSettingsKeyDataSuffix];
-    [self updateStatsLabels];
-    
-    // create Settings directory if necessary
-    NSError *error;
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSString *settingsDirectory = [NSHomeDirectory() stringByAppendingPathComponent:kSettingsDirectory];
-    if (![fileManager fileExistsAtPath:settingsDirectory]) {
-        [fileManager createDirectoryAtPath:settingsDirectory withIntermediateDirectories:YES attributes:nil error:&error];
-        if (error)
-            NSLog(@"Error creating Settings directory: %@", error);
-    }
-    
-    // save settings to plist file, dismiss options view
-    [settings writeToFile:[settingsDirectory stringByAppendingPathComponent:kSettingsFileName] atomically:NO];
-    settings = [[Utils loadSettings] mutableCopy];
-}
-
 - (IBAction)transportModeControlChanged:(id)sender {
     NSInteger selIndex = [(UISegmentedControl *)sender selectedSegmentIndex];
     enum transport_mode_t mode;
@@ -532,20 +500,102 @@ static NSUInteger const kAccelerometerOff = 0;
     settings = [[Utils loadSettings] mutableCopy];
 }
 
-- (IBAction)tapCurlViewTapped:(id)sender {
-    // tap curl view was touched, curl view
-    self.tapCurlView.hidden = YES;
-    self.curlView.opaque = NO;
-    self.curlView.pageOpaque = YES;
-    //    [self.curlView curlView:self.frontView cylinderPosition:CGPointMake(self.frontView.frame.size.width * 0.91, self.frontView.frame.size.height * 0.94) cylinderAngle:11 * M_PI / 16 cylinderRadius:15.0 animatedWithDuration:kCurlAnimationDuration];
-    [self.curlView curlView:self.frontView cylinderPosition:CGPointMake(self.frontView.frame.size.width * 0.5, self.frontView.frame.size.height * 0.12) cylinderAngle:15 * M_PI / 16 cylinderRadius:110.0 animatedWithDuration:kCurlAnimationDuration];
+- (IBAction)statisticsLabelTapped:(id)sender {
+    if (!statisticsShown) {
+        [self showStatistics:sender];
+    } else {
+        BOOL useMetric = [[settings objectForKey:kSettingsKeyUseMetric] boolValue];
+        if ([dataSuffix isEqualToString:kDataSuffixAvoidancePercent]) {
+            dataSuffix = kDataSuffixCO2Emitted;
+            dataUnitText = (useMetric ? kUnitTextKG : kUnitTextLBS);
+        } else if ([dataSuffix isEqualToString:kDataSuffixCO2Emitted]) {
+            dataSuffix = kDataSuffixCO2Avoided;
+            dataUnitText = (useMetric ? kUnitTextKG : kUnitTextLBS);
+        } else if ([dataSuffix isEqualToString:kDataSuffixCO2Avoided]) {
+            dataSuffix = kDataSuffixGas;
+            dataUnitText = (useMetric ? kUnitTextLiter : kUnitTextGallon);
+        } else if ([dataSuffix isEqualToString:kDataSuffixGas]) {
+            dataSuffix = kDataSuffixCalories;
+            dataUnitText = kUnitTextCalorie;
+        } else if ([dataSuffix isEqualToString:kDataSuffixCalories]) {
+            dataSuffix = kDataSuffixAvoidancePercent;
+            dataUnitText = kUnitTextPercent;
+        }
+        
+        [settings setObject:dataSuffix forKey:kSettingsKeyDataSuffix];
+        [self updateStatsLabels];
+        
+        // create Settings directory if necessary
+        NSError *error;
+        NSFileManager *fileManager = [NSFileManager defaultManager];
+        NSString *settingsDirectory = [NSHomeDirectory() stringByAppendingPathComponent:kSettingsDirectory];
+        if (![fileManager fileExistsAtPath:settingsDirectory]) {
+            [fileManager createDirectoryAtPath:settingsDirectory withIntermediateDirectories:YES attributes:nil error:&error];
+            if (error)
+                NSLog(@"Error creating Settings directory: %@", error);
+        }
+        
+        // save settings to plist file, dismiss options view
+        [settings writeToFile:[settingsDirectory stringByAppendingPathComponent:kSettingsFileName] atomically:NO];
+        settings = [[Utils loadSettings] mutableCopy];
+    }
 }
 
-- (IBAction)tapUncurlViewTapped:(id)sender {
-    // tap uncurl view was touched, uncurl view
-    self.tapCurlView.hidden = NO;
-    [self.curlView uncurlAnimatedWithDuration:kCurlAnimationDuration];
+- (IBAction)showStatistics:(id)sender {
+    CGRect backFrame = self.backView.frame;
+    
+    backFrame.origin.y = self.view.frame.size.height - backFrame.size.height;
+    
+    NSMutableArray *barItems = [self.statisticsToolbar.items mutableCopy];
+    [barItems addObject:self.statisticsCloseButton];
+    [self.statisticsToolbar setItems:barItems animated:YES];
+    
+    [UIView beginAnimations:@"showStatistics" context:nil];
+    [UIView setAnimationDuration:kAnimationDuration];
+    
+    [self.backView setFrame:backFrame];
+    
+    [UIView commitAnimations];
+    
+    statisticsShown = true;
 }
+
+- (IBAction)hideStatistics:(id)sender {
+    CGRect backFrame = self.backView.frame;
+    backFrame.origin.y = self.frontView.frame.size.height;
+    
+    NSMutableArray *barItems = [self.statisticsToolbar.items mutableCopy];
+    [barItems removeObject:self.statisticsCloseButton];
+    [self.statisticsToolbar setItems:barItems animated:YES];
+    
+    [UIView beginAnimations:@"hideStatistics" context:nil];
+    [UIView setAnimationDuration:kAnimationDuration];
+    
+    [self.backView setFrame:backFrame];
+    
+    [UIView commitAnimations];
+    
+    statisticsShown = false;
+}
+
+/*
+ - (IBAction)tapCurlViewTapped:(id)sender {
+ // tap curl view was touched, curl view
+ self.tapCurlView.hidden = YES;
+ self.curlView.opaque = NO;
+ self.curlView.pageOpaque = YES;
+ //    [self.curlView curlView:self.frontView cylinderPosition:CGPointMake(self.frontView.frame.size.width * 0.91, self.frontView.frame.size.height * 0.94) cylinderAngle:11 * M_PI / 16 cylinderRadius:15.0 animatedWithDuration:kCurlAnimationDuration];
+ [self.curlView curlView:self.frontView cylinderPosition:CGPointMake(self.frontView.frame.size.width * 0.5, self.frontView.frame.size.height * 0.12) cylinderAngle:15 * M_PI / 16 cylinderRadius:110.0 animatedWithDuration:kCurlAnimationDuration];
+ }
+ */
+
+/*
+ - (IBAction)tapUncurlViewTapped:(id)sender {
+ // tap uncurl view was touched, uncurl view
+ self.tapCurlView.hidden = NO;
+ [self.curlView uncurlAnimatedWithDuration:kCurlAnimationDuration];
+ }
+ */
 
 - (void)optionsButtonPressed:(id)sender {
     // present options view controller modally
@@ -764,7 +814,7 @@ static NSUInteger const kAccelerometerOff = 0;
     self.totalDistanceLabel.text = [NSString stringWithFormat:@"%.2f%@", [Utils distanceFromMeters:totalDistance units:distanceUnitText], distanceUnitText];
     self.averageSpeedLabel.text = [NSString stringWithFormat:@"%.2f%@", [Utils speedFromMetersSec:averageSpeed units:speedUnitText], speedUnitText];
     self.currentSpeedLabel.text = [NSString stringWithFormat:@"%.2f%@", [Utils speedFromMetersSec:currentSpeed units:speedUnitText], speedUnitText];
-    self.displayedDataLabel.attributedText = [Utils attributedStringFromNumber:([dataSuffix isEqualToString:kDataSuffixAvoidancePercent]
+    self.statisticsDisplayButton.title = [[Utils attributedStringFromNumber:([dataSuffix isEqualToString:kDataSuffixAvoidancePercent]
                                                                                 ? (carbonEmissions / (totalDistance * kEmissionsMassPerMeterCar)) * 100
                                                                                 :([dataSuffix isEqualToString:kDataSuffixCO2Emitted]
                                                                                   || [dataSuffix isEqualToString:kDataSuffixGas]
@@ -774,7 +824,7 @@ static NSUInteger const kAccelerometerOff = 0;
                                                                                      : caloriesBurned)))
                                                                   baseFontSize:23.0f
                                                                     dataSuffix:dataSuffix
-                                                                      unitText:dataUnitText];
+                                                                      unitText:dataUnitText] string];
     
     switch (currentMode) {
         case TransportModeWalk:

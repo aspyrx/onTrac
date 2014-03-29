@@ -18,22 +18,6 @@
 		4D0EF9AD181CC5AE00B4EC73 /* onTracAppIcon57@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4D0EF9A7181CC5AE00B4EC73 /* onTracAppIcon57@2x.png */; };
 		4D0EF9AE181CC5AE00B4EC73 /* onTracAppIcon60@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4D0EF9A8181CC5AE00B4EC73 /* onTracAppIcon60@2x.png */; };
 		4D0EF9B2181CC88400B4EC73 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4D0EF9B1181CC88400B4EC73 /* Images.xcassets */; };
-		4D1158CE176663CE00A1FAF4 /* CGPointAdditions.c in Sources */ = {isa = PBXBuildFile; fileRef = 4D1158B6176663CE00A1FAF4 /* CGPointAdditions.c */; };
-		4D1158CF176663CE00A1FAF4 /* BackFragmentShader.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 4D1158B9176663CE00A1FAF4 /* BackFragmentShader.glsl */; };
-		4D1158D0176663CE00A1FAF4 /* BackPageGradient.png in Resources */ = {isa = PBXBuildFile; fileRef = 4D1158BA176663CE00A1FAF4 /* BackPageGradient.png */; };
-		4D1158D1176663CE00A1FAF4 /* BackVertexShader.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 4D1158BB176663CE00A1FAF4 /* BackVertexShader.glsl */; };
-		4D1158D2176663CE00A1FAF4 /* FrontFragmentShader.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 4D1158BC176663CE00A1FAF4 /* FrontFragmentShader.glsl */; };
-		4D1158D3176663CE00A1FAF4 /* FrontVertexShader.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 4D1158BD176663CE00A1FAF4 /* FrontVertexShader.glsl */; };
-		4D1158D4176663CE00A1FAF4 /* NextPageFragmentShader.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 4D1158BE176663CE00A1FAF4 /* NextPageFragmentShader.glsl */; };
-		4D1158D5176663CE00A1FAF4 /* NextPageNoTextureFragmentShader.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 4D1158BF176663CE00A1FAF4 /* NextPageNoTextureFragmentShader.glsl */; };
-		4D1158D6176663CE00A1FAF4 /* NextPageNoTextureVertexShader.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 4D1158C0176663CE00A1FAF4 /* NextPageNoTextureVertexShader.glsl */; };
-		4D1158D7176663CE00A1FAF4 /* NextPageVertexShader.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 4D1158C1176663CE00A1FAF4 /* NextPageVertexShader.glsl */; };
-		4D1158D8176663CE00A1FAF4 /* XBAnimation.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D1158C3176663CE00A1FAF4 /* XBAnimation.m */; };
-		4D1158D9176663CE00A1FAF4 /* XBAnimationManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D1158C5176663CE00A1FAF4 /* XBAnimationManager.m */; };
-		4D1158DA176663CE00A1FAF4 /* XBCurlView.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D1158C7176663CE00A1FAF4 /* XBCurlView.m */; };
-		4D1158DB176663CE00A1FAF4 /* XBPageCurlView.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D1158C9176663CE00A1FAF4 /* XBPageCurlView.m */; };
-		4D1158DC176663CE00A1FAF4 /* XBPageDragView.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D1158CB176663CE00A1FAF4 /* XBPageDragView.m */; };
-		4D1158DD176663CE00A1FAF4 /* XBSnappingPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D1158CD176663CE00A1FAF4 /* XBSnappingPoint.m */; };
 		4D1158DF1766648E00A1FAF4 /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D1158DE1766648E00A1FAF4 /* MapKit.framework */; };
 		4D1158E11766649400A1FAF4 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D1158E01766649400A1FAF4 /* QuartzCore.framework */; };
 		4D1158E3176664AA00A1FAF4 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D1158E2176664AA00A1FAF4 /* OpenGLES.framework */; };
@@ -102,29 +86,6 @@
 		4D0EF9A7181CC5AE00B4EC73 /* onTracAppIcon57@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "onTracAppIcon57@2x.png"; sourceTree = "<group>"; };
 		4D0EF9A8181CC5AE00B4EC73 /* onTracAppIcon60@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "onTracAppIcon60@2x.png"; sourceTree = "<group>"; };
 		4D0EF9B1181CC88400B4EC73 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
-		4D1158B6176663CE00A1FAF4 /* CGPointAdditions.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = CGPointAdditions.c; sourceTree = "<group>"; };
-		4D1158B7176663CE00A1FAF4 /* CGPointAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGPointAdditions.h; sourceTree = "<group>"; };
-		4D1158B9176663CE00A1FAF4 /* BackFragmentShader.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = BackFragmentShader.glsl; sourceTree = "<group>"; };
-		4D1158BA176663CE00A1FAF4 /* BackPageGradient.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = BackPageGradient.png; sourceTree = "<group>"; };
-		4D1158BB176663CE00A1FAF4 /* BackVertexShader.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = BackVertexShader.glsl; sourceTree = "<group>"; };
-		4D1158BC176663CE00A1FAF4 /* FrontFragmentShader.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = FrontFragmentShader.glsl; sourceTree = "<group>"; };
-		4D1158BD176663CE00A1FAF4 /* FrontVertexShader.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = FrontVertexShader.glsl; sourceTree = "<group>"; };
-		4D1158BE176663CE00A1FAF4 /* NextPageFragmentShader.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = NextPageFragmentShader.glsl; sourceTree = "<group>"; };
-		4D1158BF176663CE00A1FAF4 /* NextPageNoTextureFragmentShader.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = NextPageNoTextureFragmentShader.glsl; sourceTree = "<group>"; };
-		4D1158C0176663CE00A1FAF4 /* NextPageNoTextureVertexShader.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = NextPageNoTextureVertexShader.glsl; sourceTree = "<group>"; };
-		4D1158C1176663CE00A1FAF4 /* NextPageVertexShader.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = NextPageVertexShader.glsl; sourceTree = "<group>"; };
-		4D1158C2176663CE00A1FAF4 /* XBAnimation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XBAnimation.h; sourceTree = "<group>"; };
-		4D1158C3176663CE00A1FAF4 /* XBAnimation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XBAnimation.m; sourceTree = "<group>"; };
-		4D1158C4176663CE00A1FAF4 /* XBAnimationManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XBAnimationManager.h; sourceTree = "<group>"; };
-		4D1158C5176663CE00A1FAF4 /* XBAnimationManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XBAnimationManager.m; sourceTree = "<group>"; };
-		4D1158C6176663CE00A1FAF4 /* XBCurlView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XBCurlView.h; sourceTree = "<group>"; };
-		4D1158C7176663CE00A1FAF4 /* XBCurlView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XBCurlView.m; sourceTree = "<group>"; };
-		4D1158C8176663CE00A1FAF4 /* XBPageCurlView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XBPageCurlView.h; sourceTree = "<group>"; };
-		4D1158C9176663CE00A1FAF4 /* XBPageCurlView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XBPageCurlView.m; sourceTree = "<group>"; };
-		4D1158CA176663CE00A1FAF4 /* XBPageDragView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XBPageDragView.h; sourceTree = "<group>"; };
-		4D1158CB176663CE00A1FAF4 /* XBPageDragView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XBPageDragView.m; sourceTree = "<group>"; };
-		4D1158CC176663CE00A1FAF4 /* XBSnappingPoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XBSnappingPoint.h; sourceTree = "<group>"; };
-		4D1158CD176663CE00A1FAF4 /* XBSnappingPoint.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XBSnappingPoint.m; sourceTree = "<group>"; };
 		4D1158DE1766648E00A1FAF4 /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = System/Library/Frameworks/MapKit.framework; sourceTree = SDKROOT; };
 		4D1158E01766649400A1FAF4 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		4D1158E2176664AA00A1FAF4 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
@@ -319,50 +280,10 @@
 			path = icons;
 			sourceTree = "<group>";
 		};
-		4D1158B5176663CE00A1FAF4 /* XBPageCurl */ = {
-			isa = PBXGroup;
-			children = (
-				4D1158B8176663CE00A1FAF4 /* Resources */,
-				4D1158B6176663CE00A1FAF4 /* CGPointAdditions.c */,
-				4D1158B7176663CE00A1FAF4 /* CGPointAdditions.h */,
-				4D1158C2176663CE00A1FAF4 /* XBAnimation.h */,
-				4D1158C3176663CE00A1FAF4 /* XBAnimation.m */,
-				4D1158C4176663CE00A1FAF4 /* XBAnimationManager.h */,
-				4D1158C5176663CE00A1FAF4 /* XBAnimationManager.m */,
-				4D1158C6176663CE00A1FAF4 /* XBCurlView.h */,
-				4D1158C7176663CE00A1FAF4 /* XBCurlView.m */,
-				4D1158C8176663CE00A1FAF4 /* XBPageCurlView.h */,
-				4D1158C9176663CE00A1FAF4 /* XBPageCurlView.m */,
-				4D1158CA176663CE00A1FAF4 /* XBPageDragView.h */,
-				4D1158CB176663CE00A1FAF4 /* XBPageDragView.m */,
-				4D1158CC176663CE00A1FAF4 /* XBSnappingPoint.h */,
-				4D1158CD176663CE00A1FAF4 /* XBSnappingPoint.m */,
-			);
-			name = XBPageCurl;
-			path = onTrac/XBPageCurl;
-			sourceTree = "<group>";
-		};
-		4D1158B8176663CE00A1FAF4 /* Resources */ = {
-			isa = PBXGroup;
-			children = (
-				4D1158B9176663CE00A1FAF4 /* BackFragmentShader.glsl */,
-				4D1158BA176663CE00A1FAF4 /* BackPageGradient.png */,
-				4D1158BB176663CE00A1FAF4 /* BackVertexShader.glsl */,
-				4D1158BC176663CE00A1FAF4 /* FrontFragmentShader.glsl */,
-				4D1158BD176663CE00A1FAF4 /* FrontVertexShader.glsl */,
-				4D1158BE176663CE00A1FAF4 /* NextPageFragmentShader.glsl */,
-				4D1158BF176663CE00A1FAF4 /* NextPageNoTextureFragmentShader.glsl */,
-				4D1158C0176663CE00A1FAF4 /* NextPageNoTextureVertexShader.glsl */,
-				4D1158C1176663CE00A1FAF4 /* NextPageVertexShader.glsl */,
-			);
-			path = Resources;
-			sourceTree = "<group>";
-		};
 		4D8C212017663232007DA212 = {
 			isa = PBXGroup;
 			children = (
 				4D9EA29C178F2C6000CD5CD9 /* GPX */,
-				4D1158B5176663CE00A1FAF4 /* XBPageCurl */,
 				4D8C213217663232007DA212 /* onTrac */,
 				4D8C212B17663232007DA212 /* Frameworks */,
 				4D8C212A17663232007DA212 /* Products */,
@@ -540,28 +461,19 @@
 			buildActionMask = 2147483647;
 			files = (
 				4D8C213717663232007DA212 /* InfoPlist.strings in Resources */,
-				4D1158CF176663CE00A1FAF4 /* BackFragmentShader.glsl in Resources */,
-				4D1158D0176663CE00A1FAF4 /* BackPageGradient.png in Resources */,
 				4D0EF99E181CC17800B4EC73 /* Default.png in Resources */,
 				4DA29547180B329A003CC51D /* SaveViewController.xib in Resources */,
 				4D0EF9A0181CC17800B4EC73 /* Default-568h@2x.png in Resources */,
-				4D1158D1176663CE00A1FAF4 /* BackVertexShader.glsl in Resources */,
 				4D33C1DF1847B7F5003E28A4 /* slashEyeIcon.png in Resources */,
 				4D0EF9A9181CC5AE00B4EC73 /* onTracAppIcon29.png in Resources */,
 				4D0EF9B2181CC88400B4EC73 /* Images.xcassets in Resources */,
 				4D0EF9AA181CC5AE00B4EC73 /* onTracAppIcon57.png in Resources */,
 				4D0EF9AD181CC5AE00B4EC73 /* onTracAppIcon57@2x.png in Resources */,
-				4D1158D2176663CE00A1FAF4 /* FrontFragmentShader.glsl in Resources */,
-				4D1158D3176663CE00A1FAF4 /* FrontVertexShader.glsl in Resources */,
 				4D0EF9AB181CC5AE00B4EC73 /* onTracAppIcon29@2x.png in Resources */,
-				4D1158D4176663CE00A1FAF4 /* NextPageFragmentShader.glsl in Resources */,
 				4DF91331181B556A007D7EEF /* onTracSchema.xsd in Resources */,
-				4D1158D5176663CE00A1FAF4 /* NextPageNoTextureFragmentShader.glsl in Resources */,
-				4D1158D6176663CE00A1FAF4 /* NextPageNoTextureVertexShader.glsl in Resources */,
 				4DEF03C9184A782D00DFE515 /* PageCurl.png in Resources */,
 				4D0EF9AE181CC5AE00B4EC73 /* onTracAppIcon60@2x.png in Resources */,
 				4D0EF9A2181CC1DD00B4EC73 /* Default@2x.png in Resources */,
-				4D1158D7176663CE00A1FAF4 /* NextPageVertexShader.glsl in Resources */,
 				4D33C1DE1847B7F5003E28A4 /* eyeIcon.png in Resources */,
 				4D950F52180B1DB1002CEB2F /* MapViewController.xib in Resources */,
 				4D86D87D176797C40080FED2 /* settings.plist in Resources */,
@@ -580,14 +492,7 @@
 				4D8C213917663232007DA212 /* main.m in Sources */,
 				4D8C213D17663232007DA212 /* AppDelegate.m in Sources */,
 				4D8C215117663A88007DA212 /* MapViewController.m in Sources */,
-				4D1158CE176663CE00A1FAF4 /* CGPointAdditions.c in Sources */,
-				4D1158D8176663CE00A1FAF4 /* XBAnimation.m in Sources */,
-				4D1158D9176663CE00A1FAF4 /* XBAnimationManager.m in Sources */,
-				4D1158DA176663CE00A1FAF4 /* XBCurlView.m in Sources */,
-				4D1158DB176663CE00A1FAF4 /* XBPageCurlView.m in Sources */,
-				4D1158DC176663CE00A1FAF4 /* XBPageDragView.m in Sources */,
 				4D0525F8181C23B6002D4BA1 /* TrackAnnotation.m in Sources */,
-				4D1158DD176663CE00A1FAF4 /* XBSnappingPoint.m in Sources */,
 				4D1158E71766D80E00A1FAF4 /* SettingsViewController.m in Sources */,
 				4D1158EC1766D82500A1FAF4 /* SaveViewController.m in Sources */,
 				4DA08CD4187284DE0052538A /* TransportModeViewController.m in Sources */,
