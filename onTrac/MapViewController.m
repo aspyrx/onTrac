@@ -33,7 +33,7 @@ static NSUInteger const kSpeedSamplesAboveWalkBikeThreshold = 1;
 // number of stats updates without location updates until current speed is assumed to be 0
 static NSUInteger const kStatsUpdatesUntilCurrentSpeedReset = 5;
 // number of stats updates without location updates until mode is assumed to be subway
-static NSUInteger const kStatsUpdatesUntilSubwayMode = 300;
+static NSUInteger const kStatsUpdatesUntilSubwayMode = 180;
 // number of stats updates without location update until recording stopped
 // static NSUInteger const kStatsUpdatesUntilRecordingStop = 300;
 
@@ -284,79 +284,12 @@ static NSUInteger const kAccelerometerOff = 0;
                 currentGPXTrackSegment = [currentGPXTrack newTrackSegment];
             }
         } else {
-            CGFloat distance = 0;
+            // add latest location to recent locations
             [recentLocations addObject:newLocation];
             if ([recentLocations count] >= kRecentSpeedSamples) {
                 while ([recentLocations count] > kRecentSpeedSamples) {
                     [recentLocations removeObjectAtIndex:0];
                 }
-                
-                CLLocation *oldLocation = recentLocations[kRecentSpeedSamples - 2];
-                // calculate distance
-                totalDistance += distance = [Utils metersBetweenCoordinate:oldLocation.coordinate coordinate:newLocation.coordinate];
-                switch (currentMode) {
-                    case TransportModeWalk:
-                        distanceWalk += distance;
-                        break;
-                    case TransportModeBike:
-                        distanceBike += distance;
-                        break;
-                    case TransportModeCar:
-                        distanceCar += distance;
-                        break;
-                    case TransportModeBus:
-                        distanceBus += distance;
-                        break;
-                    case TransportModeTrain:
-                        distanceTrain += distance;
-                        break;
-                    case TransportModeSubway:
-                        distanceSubway += distance;
-                        break;
-                }
-                
-                // calculate current speed
-                if ([self isEmitting] || newLocation.timestamp.timeIntervalSinceReferenceDate - oldLocation.timestamp.timeIntervalSinceReferenceDate > kSpeedSampleTimeout) {
-                    CGFloat runningTotal = 0;
-                    int numSamples = 0;
-                    for (int i = kRecentSpeedSamples - 1; i > 0; i--) {
-                        CLLocation *loc0 = recentLocations[i - 1];
-                        CLLocation *loc1 = recentLocations[i];
-                        if (loc1.timestamp.timeIntervalSinceReferenceDate - loc0.timestamp.timeIntervalSinceReferenceDate < kSpeedSampleTimeout) {
-                            runningTotal += [Utils speedBetweenLocation:loc0 location:loc1];
-                            numSamples++;
-                        } else break;
-                    }
-                    
-                    currentSpeed = runningTotal / numSamples;
-                    if (!isfinite(currentSpeed)) currentSpeed = 0;
-                } else currentSpeed = newLocation.speed;
-                
-                // calculate calories burned
-                caloriesBurned += [Utils caloriesBurnedForMode:currentMode time:newLocation.timestamp.timeIntervalSinceReferenceDate - oldLocation.timestamp.timeIntervalSinceReferenceDate speed:currentSpeed weight:weight];
-            }
-            
-            // check if speed has passed threshold
-            if (useBike && currentSpeed > speedMaxWalk && currentSpeed < speedMaxBike) {
-                currentMode = TransportModeBike;
-            }
-            
-            if (![self isEmitting] && currentSpeed > speedMaxNotEmitting) {
-                numSpeedSamplesAboveWalkBikeThreshold++;
-            } else {
-                numSpeedSamplesAboveWalkBikeThreshold = 0;
-            }
-            
-            if (numSpeedSamplesAboveWalkBikeThreshold > kSpeedSamplesAboveWalkBikeThreshold) {
-                currentMode = emissionsMode;
-            }
-            
-            // calculate carbon emissions or avoidance and calories burned
-            if ([self isEmitting]) {
-                carbonEmissions += distance * emissionsPerMeter;
-                carbonAvoidance += distance * (kEmissionsMassPerMeterCar - emissionsPerMeter);
-            } else {
-                carbonAvoidance += distance * kEmissionsMassPerMeterCar;
             }
             
             // record location information in GPX format
@@ -628,6 +561,7 @@ static NSUInteger const kAccelerometerOff = 0;
             return kEmissionsMassPerMeterSubway;
     }
 }
+
 - (BOOL)isEmitting {
     return !(currentMode == TransportModeWalk || currentMode == TransportModeBike);
 }
@@ -763,12 +697,94 @@ static NSUInteger const kAccelerometerOff = 0;
 #pragma mark stats
 
 - (void)updateStats {
-    // set current speed to 0 if threshold passed
-    if (++numStatsUpdatesWithoutLocationUpdate >= kStatsUpdatesUntilCurrentSpeedReset)
-        currentSpeed = 0.0f;
+    // if there has been a location update since the last stats update:
+    if (numStatsUpdatesWithoutLocationUpdate < 1 && [recentLocations count] >= kRecentSpeedSamples) {
+        // get old and new location
+        CLLocation *oldLocation = recentLocations[kRecentSpeedSamples - 2];
+        CLLocation *newLocation = [recentLocations lastObject];
+        
+        // calculate current speed
+        if ([self isEmitting] || newLocation.timestamp.timeIntervalSinceReferenceDate - oldLocation.timestamp.timeIntervalSinceReferenceDate > kSpeedSampleTimeout) {
+            CGFloat runningTotal = 0;
+            int numSamples = 0;
+            for (int i = kRecentSpeedSamples - 1; i > 0; i--) {
+                CLLocation *loc0 = recentLocations[i - 1];
+                CLLocation *loc1 = recentLocations[i];
+                if (loc1.timestamp.timeIntervalSinceReferenceDate - loc0.timestamp.timeIntervalSinceReferenceDate < kSpeedSampleTimeout) {
+                    runningTotal += [Utils speedBetweenLocation:loc0 location:loc1];
+                    numSamples++;
+                } else break;
+            }
+            
+            currentSpeed = runningTotal / numSamples;
+        } else currentSpeed = newLocation.speed;
+        if (!isfinite(currentSpeed) || currentSpeed < 0) currentSpeed = 0;
+        
+        // update mode
+        // check if speed has passed biking threshold
+        if (useBike && currentSpeed > speedMaxWalk && currentSpeed < speedMaxBike) {
+            currentMode = TransportModeBike;
+        }
+        
+        // check if speed has passed emissions threshold
+        if (currentSpeed > speedMaxNotEmitting) {
+            numSpeedSamplesAboveWalkBikeThreshold++;
+        } else {
+            numSpeedSamplesAboveWalkBikeThreshold = 0;
+        }
+        
+        // check if there are enough samples to be considered emitting
+        if (numSpeedSamplesAboveWalkBikeThreshold > kSpeedSamplesAboveWalkBikeThreshold) {
+            currentMode = emissionsMode;
+        }
+        
+        // calculate distance
+        double distance = [Utils metersBetweenCoordinate:oldLocation.coordinate coordinate:newLocation.coordinate];
+        
+        // update distance
+        switch (currentMode) {
+            case TransportModeWalk:
+                distanceWalk += distance;
+                break;
+            case TransportModeBike:
+                distanceBike += distance;
+                break;
+            case TransportModeCar:
+                distanceCar += distance;
+                break;
+            case TransportModeBus:
+                distanceBus += distance;
+                break;
+            case TransportModeTrain:
+                distanceTrain += distance;
+                break;
+            case TransportModeSubway:
+                distanceSubway += distance;
+                break;
+        }
+        totalDistance += distance;
+        
+        // calculate calories burned
+        caloriesBurned += [Utils caloriesBurnedForMode:currentMode time:newLocation.timestamp.timeIntervalSinceReferenceDate - oldLocation.timestamp.timeIntervalSinceReferenceDate speed:currentSpeed weight:weight];
+        
+        // calculate carbon emissions or avoidance and calories burned
+        if ([self isEmitting]) {
+            carbonEmissions += distance * emissionsPerMeter;
+            carbonAvoidance += distance * (kEmissionsMassPerMeterCar - emissionsPerMeter);
+        } else {
+            carbonAvoidance += distance * kEmissionsMassPerMeterCar;
+        }
+    } else if (numStatsUpdatesWithoutLocationUpdate >= kStatsUpdatesUntilCurrentSpeedReset) {
+        // too many stats updates without location updates, speed is assumed to be 0
+        currentSpeed = 0;
+    }
     
-    if (emissionsMode == TransportModeSubway && ![self isEmitting] && numStatsUpdatesWithoutLocationUpdate >= kStatsUpdatesUntilSubwayMode)
+    if (emissionsMode == TransportModeSubway
+        && numStatsUpdatesWithoutLocationUpdate >= kStatsUpdatesUntilSubwayMode) {
+        // otherwise set to subway if too many stats updates without location updates
+        // (signal assumed to be lost, therefore underground)
         currentMode = TransportModeSubway;
+    }
     
     // calculate times
     NSTimeInterval timeSinceLastUpdate = [NSDate timeIntervalSinceReferenceDate] - lastUpdateTime;
@@ -776,6 +792,7 @@ static NSUInteger const kAccelerometerOff = 0;
         timeStopped += timeSinceLastUpdate;
     else timeMoving += timeSinceLastUpdate;
     
+    // update times
     switch (currentMode) {
         case TransportModeWalk:
             timeWalk += timeSinceLastUpdate;
@@ -796,13 +813,15 @@ static NSUInteger const kAccelerometerOff = 0;
             timeSubway += timeSinceLastUpdate;
             break;
     }
-    
     totalTime += timeSinceLastUpdate;
+    
     lastUpdateTime = [NSDate timeIntervalSinceReferenceDate];
     
     // calculate average speed
     averageSpeed = totalDistance / ((CGFloat) totalTime);
     if (!isfinite(averageSpeed)) averageSpeed = 0;
+    
+    numStatsUpdatesWithoutLocationUpdate++;
     
     if (shouldUpdateStatsLabels)
         [self updateStatsLabels];
@@ -815,16 +834,16 @@ static NSUInteger const kAccelerometerOff = 0;
     self.averageSpeedLabel.text = [NSString stringWithFormat:@"%.2f%@", [Utils speedFromMetersSec:averageSpeed units:speedUnitText], speedUnitText];
     self.currentSpeedLabel.text = [NSString stringWithFormat:@"%.2f%@", [Utils speedFromMetersSec:currentSpeed units:speedUnitText], speedUnitText];
     self.statisticsDisplayButton.title = [[Utils attributedStringFromNumber:([dataSuffix isEqualToString:kDataSuffixAvoidancePercent]
-                                                                                ? (carbonEmissions / (totalDistance * kEmissionsMassPerMeterCar)) * 100
-                                                                                :([dataSuffix isEqualToString:kDataSuffixCO2Emitted]
-                                                                                  || [dataSuffix isEqualToString:kDataSuffixGas]
-                                                                                  ? carbonEmissions
-                                                                                  : ([dataSuffix isEqualToString:kDataSuffixCO2Avoided]
-                                                                                     ? carbonAvoidance
-                                                                                     : caloriesBurned)))
-                                                                  baseFontSize:23.0f
-                                                                    dataSuffix:dataSuffix
-                                                                      unitText:dataUnitText] string];
+                                                                             ? (carbonEmissions / (totalDistance * kEmissionsMassPerMeterCar)) * 100
+                                                                             :([dataSuffix isEqualToString:kDataSuffixCO2Emitted]
+                                                                               || [dataSuffix isEqualToString:kDataSuffixGas]
+                                                                               ? carbonEmissions
+                                                                               : ([dataSuffix isEqualToString:kDataSuffixCO2Avoided]
+                                                                                  ? carbonAvoidance
+                                                                                  : caloriesBurned)))
+                                                               baseFontSize:23.0f
+                                                                 dataSuffix:dataSuffix
+                                                                   unitText:dataUnitText] string];
     
     switch (currentMode) {
         case TransportModeWalk:
@@ -860,71 +879,24 @@ static NSUInteger const kAccelerometerOff = 0;
             [accelMagnitudes removeObjectAtIndex:0];
         
         NSUInteger count = [accelMagnitudes count];
-        if (count >= kAccelMagnitudeSamplesWalking && [self isEmitting]) {
+        if (count >= kAccelMagnitudeSamplesWalking
+            && [self isEmitting]
+            && currentSpeed < speedMaxNotEmitting
+            && numStatsUpdatesWithoutLocationUpdate < kStatsUpdatesUntilCurrentSpeedReset) {
             // there are enough samples AND currently driving, take standard deviation
             walkingStdDev = [Utils standardDeviationOf:[accelMagnitudes subarrayWithRange:NSMakeRange(count - kAccelMagnitudeSamplesWalking, kAccelMagnitudeSamplesWalking)]];
             if (walkingStdDev > kStandardDeviationWalkingThreshold) {
                 // standard deviation is above threshold for walking
                 if (++numStandardDeviationSamplesAboveThreshold > kStandardDeviationSamplesAboveWalkingThreshold) {
                     // there are enough samples consecutively above the threshold for walking
-                    currentMode = TransportModeWalk;
+                    currentMode = (currentSpeed < speedMaxWalk
+                                   ? TransportModeWalk
+                                   : TransportModeBike);
                 }
             } else numStandardDeviationSamplesAboveThreshold = 0;
         }
     }
 }
-
-/* battery saving feature
- - (void)outputAccelerationData:(CMAcceleration)acceleration {
- // add current acceleration magnitude to array
- [accelMagnitudes addObject:[NSNumber numberWithDouble:sqrt((acceleration.x * acceleration.x) + (acceleration.y * acceleration.y) + (acceleration.z * acceleration.z))]];
- if (recordingState < RecordingStateRunning) {
- // currently stopped, check if array has too many objects and remove if necessary
- while ([accelMagnitudes count] > kAccelMagnitudeSamplesStopped)
- [accelMagnitudes removeObjectAtIndex:0];
- 
- if ([accelMagnitudes count] >= kAccelMagnitudeSamplesStopped) {
- // there are enough magnitude of acceleration samples, take standard deviation
- accelMagStdDev = [Utils standardDeviationOf:accelMagnitudes];
- if (accelMagStdDev > kStandardDeviationStartThreshold) {
- if (++numStandardDeviationSamplesAboveThreshold > kStandardDeviationSamplesAboveStartThreshold) {
- // there are enough samples consecutively above the threshold, start recording
- numStandardDeviationSamplesAboveThreshold = 0;
- [self resumeRecording];
- NSLog(@"GPS turned on due to movement");
- }
- } else numStandardDeviationSamplesAboveThreshold = 0;
- }
- } else {
- // currently moving, check if array has too many objects and remove if necessary
- while ([accelMagnitudes count] > kAccelMagnitudeSamplesMoving)
- [accelMagnitudes removeObjectAtIndex:0];
- 
- NSUInteger count = [accelMagnitudes count];
- if (count >= kAccelMagnitudeSamplesWalking && isDriving ) {
- // there are enough samples AND currently driving, take standard deviation
- walkingStdDev = [Utils standardDeviationOf:[accelMagnitudes subarrayWithRange:NSMakeRange(count - kAccelMagnitudeSamplesWalking, kAccelMagnitudeSamplesWalking)]];
- if (walkingStdDev > kStandardDeviationWalkingThreshold) {
- // standard deviation is above threshold for walking
- if (++numStandardDeviationSamplesAboveThreshold > kStandardDeviationSamplesAboveWalkingThreshold) {
- // there are enough samples consecutively above the threshold for walking
- isDriving = NO;
- }
- } else numStandardDeviationSamplesAboveThreshold = 0;
- }
- 
- if (count >= kAccelMagnitudeSamplesMoving && currentSpeed < kCurrentSpeedStopThreshold && numStatsUpdatesWithoutLocationUpdate > kStatsUpdatesUntilRecordingStop) {
- // there are enough samples AND speed is below threshold, take standard deviation
- accelMagStdDev = [Utils standardDeviationOf:accelMagnitudes];
- if (accelMagStdDev < kStandardDeviationStopThreshold) {
- // standard deviation and speed fell below the thresholds, stop recording
- [self pauseRecording];
- NSLog(@"GPS turned off due to inactivity");
- }
- }
- }
- }
- */
 
 - (void)setAccelerometerStatus:(int)status {
     [self.motionManager stopAccelerometerUpdates];
@@ -962,6 +934,7 @@ static NSUInteger const kAccelerometerOff = 0;
     currentGPXBounds = nil;
     lastUpdateTime = [NSDate timeIntervalSinceReferenceDate];
     recentLocations = [NSMutableArray new];
+    numStatsUpdatesWithoutLocationUpdate =
     numSpeedSamplesAboveWalkBikeThreshold =
     timeWalk =
     timeBike =
