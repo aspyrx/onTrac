@@ -476,7 +476,7 @@
     double num = [[[NSNumberFormatter new] numberFromString:field.text] doubleValue];
     BOOL useMetric = [[self.settings objectForKey:kSettingsKeyUseMetric] boolValue];
     if (num > 0) {
-        [self.settings setObject:[NSNumber numberWithDouble:(useMetric ? num : num * POUNDS_PER_KILOGRAM)] forKey:kSettingsKeyWeight];
+        [self.settings setObject:[NSNumber numberWithDouble:(useMetric ? num : num / POUNDS_PER_KILOGRAM)] forKey:kSettingsKeyWeight];
     } else [self.settings setObject:[NSNumber numberWithDouble:65] forKey:kSettingsKeyWeight];
 }
 
