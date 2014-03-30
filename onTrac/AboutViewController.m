@@ -33,8 +33,10 @@
     UITextView *textView = [UITextView new];
     
     // set text view properties
+    NSString *version = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
+    NSString *build = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"];
     NSError *error;
-    textView.text = [NSString stringWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"about" ofType:@"txt"] encoding:NSUTF8StringEncoding error:&error];
+    textView.text = [NSString stringWithFormat:@"onTrac v%@, build %@\n%@", version, build, [NSString stringWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"about" ofType:@"txt"] encoding:NSUTF8StringEncoding error:&error]];
     if (error) NSLog(@"Error loading about.txt: %@", error);
     textView.font = [UIFont systemFontOfSize:14.0f];
     textView.textColor = [UIColor darkTextColor];
