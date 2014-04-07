@@ -82,13 +82,12 @@
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    if (section == 0)
-        if (recordingState > RecordingStateOff) return 2;
-        else return 1;
-        else if (section == 1)
-            // section 1 has as many rows as there are track files
-            return [gpxFilePaths count];
-        else return 0;
+    if (section == 0) {
+        return 1;
+    } else if (section == 1) {
+        // section 1 has as many rows as there are track files
+        return [gpxFilePaths count];
+    } else return 0;
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
@@ -112,7 +111,7 @@
                 recordCell.accessoryType = UITableViewCellAccessoryNone;
             }
             return recordCell;
-        } else if (indexPath.row == 1) {
+        } /* else if (indexPath.row == 1) {
             UITableViewCell *pauseCell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
             if (recordingState == RecordingStateRunning) {
                 // recording running, label for pausing
@@ -124,7 +123,7 @@
                 pauseCell.selectionStyle = UITableViewCellSelectionStyleBlue;
             }
             return pauseCell;
-        }
+        } */
     } else if (indexPath.section == 1) {
         static NSString *cellIdentifier = @"TrackCell";
         UITableViewCell *trackCell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
@@ -204,14 +203,14 @@
                 // pop back to map view controller
                 [self popController:nil];
             }
-        } else if (indexPath.row == 1) {
+        } /* else if (indexPath.row == 1) {
             if (recordingState == RecordingStateRunning)
                 [self postSetRecordingStatusNotification:RecordingStatePaused];
             else if (recordingState == RecordingStatePaused)
                 [self postSetRecordingStatusNotification:RecordingStateRunning];
             // pop back to map view controller
             [self popController:nil];
-        }
+        } */
     } else if (indexPath.section == 1) {
         // save selected tracks
         [self saveSelectedTracks];
