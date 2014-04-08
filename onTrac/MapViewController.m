@@ -722,7 +722,7 @@ static NSUInteger const kAccelerometerOff = 0;
         
         // update mode
         // check if speed has passed biking threshold
-        if (useBike && currentSpeed > speedMaxWalk && currentSpeed < speedMaxBike) {
+        if (useBike && currentSpeed < speedMaxBike) {
             currentMode = TransportModeBike;
         }
         
