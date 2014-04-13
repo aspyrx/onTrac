@@ -621,8 +621,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
-				CODE_SIGN_IDENTITY = "iPhone Developer: Stanley Zhang (8SR48ZT7ZK)";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Stanley Zhang (8SR48ZT7ZK)";
+				CODE_SIGN_IDENTITY = "iPhone Distribution: Stanley Zhang (G397S55G7M)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution: Stanley Zhang (G397S55G7M)";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)\"",
@@ -634,7 +634,7 @@
 				INFOPLIST_FILE = "onTrac/onTrac-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 6.1;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "80A58D85-B629-42C5-B589-F60AD4FCBFA8";
+				PROVISIONING_PROFILE = "0DDDB313-14B1-4031-9598-1F5E944CF986";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -644,8 +644,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
-				CODE_SIGN_IDENTITY = "iPhone Developer: Stanley Zhang (8SR48ZT7ZK)";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Stanley Zhang (8SR48ZT7ZK)";
+				CODE_SIGN_IDENTITY = "iPhone Distribution: Stanley Zhang (G397S55G7M)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution: Stanley Zhang (G397S55G7M)";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)\"",
@@ -657,7 +657,7 @@
 				INFOPLIST_FILE = "onTrac/onTrac-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 6.1;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "80A58D85-B629-42C5-B589-F60AD4FCBFA8";
+				PROVISIONING_PROFILE = "0DDDB313-14B1-4031-9598-1F5E944CF986";
 				STRIP_INSTALLED_PRODUCT = YES;
 				WRAPPER_EXTENSION = app;
 			};
