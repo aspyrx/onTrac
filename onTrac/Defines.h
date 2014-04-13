@@ -33,7 +33,11 @@ static NSString *kUserInfoKeyTrackName = @"trackName";
 static NSString *kUserInfoKeyTrackDescription = @"trackDescription";
 static NSString *kUserInfoKeyRecordingState = @"recordingState";
 
+// required settings version
+static NSString *kSettingsVersion = @"1.0.5";
+
 // settings dictionary keys
+static NSString *kSettingsKeySettingsVersion = @"settingsVersion";
 static NSString *kSettingsKeyUseMetric = @"useMetric";
 static NSString *kSettingsKeyDataSuffix = @"dataSuffix";
 static NSString *kSettingsKeyUserCarEmissionsPerMeter = @"userCarEmissionsPerMeter";

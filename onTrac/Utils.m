@@ -112,8 +112,8 @@
     // load settings
     NSString *settingsPath = [[NSHomeDirectory() stringByAppendingPathComponent:kSettingsDirectory] stringByAppendingPathComponent:kSettingsFileName];
     NSDictionary *settings = [NSDictionary dictionaryWithContentsOfFile:settingsPath];
-    if (!settings) {
-        // use defaults if there was an error (e.g. settings file not created yet)
+    if (!settings || ![[settings objectForKey:kSettingsKeySettingsVersion] isEqualToString:kSettingsVersion]) {
+        // use defaults if there was an error (e.g. settings file not created yet or incorrect settings version)
         settings = [NSDictionary dictionaryWithContentsOfFile:[[NSBundle mainBundle] pathForResource:kSettingsFileName ofType:nil]];
         
         // create settings file
