@@ -19,10 +19,12 @@
 #import "TrackDetailViewController.h"
 
 // seconds, length of statistics display animation
-static CGFloat const kAnimationDuration = 0.3;
+static NSTimeInterval const kAnimationDuration = 0.3;
 
-// meters, min distance between location updates
-static CGFloat const kMinDistance = 1.0;
+// meters, max distance for deferred updates
+static CLLocationDistance const kDeferredMaxDistance = 1000;
+// seconds, max time for deferred updates
+static NSTimeInterval const kDeferredMaxTime = 1800;
 
 // number of recent speed samples to average to calculate current speed (must be >= 2)
 static NSUInteger const kRecentSpeedSamples = 5;
@@ -59,7 +61,7 @@ static CGFloat const kStandardDeviationWalkingThreshold = 0.25;
 // number of samples which must remain above this threshold to be considered walking
 static NSUInteger const kStandardDeviationSamplesAboveWalkingThreshold = 40;
 // m/s, threshold below which the speed must fall to stop recording
-static CGFloat const kCurrentSpeedStopThreshold = 0.05;
+static CLLocationSpeed const kCurrentSpeedStopThreshold = 0.05;
 
 // seconds, stats update interval
 static NSTimeInterval const kStatsUpdateInterval = 1.0;
@@ -79,6 +81,7 @@ static NSUInteger const kAccelerometerOff = 0;
     BOOL isFollowing;
     BOOL useBike;
     BOOL shouldUpdateStatsLabels;
+    BOOL deferringUpdates;
     int numStatsUpdatesWithoutLocationUpdate;
     int numStandardDeviationSamplesAboveThreshold;
     int numSpeedSamplesAboveWalkBikeThreshold;
@@ -90,27 +93,27 @@ static NSUInteger const kAccelerometerOff = 0;
     NSMutableArray *accelMagnitudes;
     NSTimer *statsUpdateTimer;
     
-    NSTimeInterval lastUpdateTime;  // seconds
-    NSTimeInterval timeMoving;      // seconds
-    NSTimeInterval timeStopped;     // seconds
-    NSTimeInterval timeWalk;        // seconds
-    NSTimeInterval timeBike;        // seconds
-    NSTimeInterval timeCar;         // seconds
-    NSTimeInterval timeBus;         // seconds
-    NSTimeInterval timeTrain;       // seconds
-    NSTimeInterval timeSubway;      // seconds
-    NSTimeInterval totalTime;       // seconds
+    NSTimeInterval lastUpdateTime;
+    NSTimeInterval timeMoving;
+    NSTimeInterval timeStopped;
+    NSTimeInterval timeWalk;
+    NSTimeInterval timeBike;
+    NSTimeInterval timeCar;
+    NSTimeInterval timeBus;
+    NSTimeInterval timeTrain;
+    NSTimeInterval timeSubway;
+    NSTimeInterval totalTime;
     
-    CGFloat distanceWalk;           // meters
-    CGFloat distanceBike;           // meters
-    CGFloat distanceCar;            // meters
-    CGFloat distanceBus;            // meters
-    CGFloat distanceTrain;          // meters
-    CGFloat distanceSubway;         // meters
-    CGFloat totalDistance;          // meters
+    CLLocationDistance distanceWalk;
+    CLLocationDistance distanceBike;
+    CLLocationDistance distanceCar;
+    CLLocationDistance distanceBus;
+    CLLocationDistance distanceTrain;
+    CLLocationDistance distanceSubway;
+    CLLocationDistance totalDistance;
     
-    CGFloat averageSpeed;           // m/s
-    CGFloat currentSpeed;           // m/s
+    CLLocationSpeed averageSpeed;
+    CLLocationSpeed currentSpeed;
     double carbonEmissions;         // kg
     double carbonAvoidance;         // kg
     double caloriesBurned;          // calories
@@ -152,8 +155,9 @@ static NSUInteger const kAccelerometerOff = 0;
         // alloc and init location manager
         self.locationManager = [CLLocationManager new];
         self.locationManager.delegate = self;
-        self.locationManager.distanceFilter = kMinDistance;
+        self.locationManager.distanceFilter = kCLDistanceFilterNone;
         self.locationManager.desiredAccuracy = kCLLocationAccuracyBest;
+        self.locationManager.pausesLocationUpdatesAutomatically = YES;
         
         // alloc and init motion manager
         self.motionManager = [CMMotionManager new];
@@ -340,6 +344,20 @@ static NSUInteger const kAccelerometerOff = 0;
             // successful location update, reset counter
             numStatsUpdatesWithoutLocationUpdate = 0;
         }
+    }
+    
+    if (!deferringUpdates) {
+        [self.locationManager allowDeferredLocationUpdatesUntilTraveled:kDeferredMaxDistance timeout:kDeferredMaxTime];
+        
+        deferringUpdates = YES;
+    }
+}
+
+- (void)locationManager:(CLLocationManager *)manager didFinishDeferredUpdatesWithError:(NSError *)error {
+    if (error) {
+        NSLog(@"Finished deferring updates with error: %@", error);
+    } else {
+        deferringUpdates = NO;
     }
 }
 
@@ -722,7 +740,7 @@ static NSUInteger const kAccelerometerOff = 0;
         
         // update mode
         // check if speed has passed biking threshold
-        if (useBike && currentSpeed > speedMaxWalk && currentSpeed < speedMaxBike) {
+        if (useBike && currentSpeed < speedMaxBike) {
             currentMode = TransportModeBike;
         }
         
@@ -776,6 +794,15 @@ static NSUInteger const kAccelerometerOff = 0;
         } else {
             carbonAvoidance += distance * kEmissionsMassPerMeterCar;
         }
+        
+        if (currentMode == TransportModeWalk || currentMode == TransportModeBike) {
+            self.locationManager.activityType = CLActivityTypeFitness;
+        } else if (currentMode == TransportModeCar) {
+            self.locationManager.activityType = CLActivityTypeAutomotiveNavigation;
+        } else {
+            self.locationManager.activityType = CLActivityTypeOtherNavigation;
+        }
+        
     } else if (numStatsUpdatesWithoutLocationUpdate >= kStatsUpdatesUntilCurrentSpeedReset) {
         // too many stats updates without location updates, speed is assumed to be 0
         currentSpeed = 0;
