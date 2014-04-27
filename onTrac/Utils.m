@@ -34,7 +34,9 @@
     } else if (speed >= 1.1176 && mode == TransportModeWalk) {
         met = -3.9 + 2.3 * (speed * 3.6 / KILOMETERS_PER_MILE);
     } else if (mode == TransportModeBike) {
-        if (speed < 4.47) {
+        if (speed < 0.5) {
+            met = 1.0;
+        } else if (speed < 4.47) {
             met = 4.0;
         } else if (speed > 8.941) {
             met = 16.0;
