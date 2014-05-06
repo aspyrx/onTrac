@@ -759,7 +759,7 @@ static NSUInteger const kAccelerometerOff = 0;
         // calculate distance
         double distance = [Utils metersBetweenCoordinate:oldLocation.coordinate coordinate:newLocation.coordinate];
         
-        if (isfinite(distance)) distance = 0;
+        if (!isfinite(distance)) distance = 0;
         
         // update distance
         switch (currentMode) {
