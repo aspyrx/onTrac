@@ -220,7 +220,7 @@
     for (NSString *file in files) {
         NSData *fileData = [fm contentsAtPath:file];
         if (fileData != nil) {
-            ZipWriteStream *stream = [zipFile writeFileInZipWithName:file compressionLevel:ZipCompressionLevelBest];
+            ZipWriteStream *stream = [zipFile writeFileInZipWithName:[file lastPathComponent] compressionLevel:ZipCompressionLevelBest];
             [stream writeData:fileData];
             [stream finishedWriting];
         }

@@ -14,5 +14,6 @@
 @property (strong, nonatomic) UIView *tapView;
 @property (strong, nonatomic) UITapGestureRecognizer *tapRecognizer;
 @property (strong, nonatomic) UITextField *activeField;
+@property (strong, nonatomic) UIActivityIndicatorView *uploadIndicator;
 
 @end

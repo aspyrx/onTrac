@@ -40,6 +40,9 @@
         [self.tapView addGestureRecognizer:self.tapRecognizer];
         [self.view addSubview:self.tapView];
         [self.tapView setHidden:YES];
+        
+        // init activity indicator
+        self.uploadIndicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
     }
     return self;
 }
@@ -294,7 +297,7 @@
             UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
             cell.textLabel.text = @"Upload Tracks";
             cell.selectionStyle = UITableViewCellSelectionStyleBlue;
-            cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+            cell.accessoryView = self.uploadIndicator;
             return cell;
         }
     }
@@ -414,7 +417,18 @@
         }
     } else if ([alertView.title isEqualToString:@"Upload Tracks"]) {
         if (buttonIndex == alertView.firstOtherButtonIndex) {
-            NSLog(@"%@", ([self uploadAllTracks] ? @"Successfully uploaded." : @"Uploading failed."));
+            NSOperationQueue *queue = [[NSOperationQueue alloc] init];
+            [queue addOperationWithBlock:^(void) {
+                [[NSOperationQueue mainQueue] addOperationWithBlock:^(void) {
+                    [self.uploadIndicator startAnimating];
+                }];
+                
+                [self uploadAllTracks];
+                
+                [[NSOperationQueue mainQueue] addOperationWithBlock:^(void) {
+                    [self.uploadIndicator stopAnimating];
+                }];
+            }];
         }
     }
 }
@@ -515,25 +529,25 @@
         gpxFiles[i] = [tracksDirectory stringByAppendingPathComponent:gpxFiles[i]];
     }
     
-    NSString *uploadFile = [[tracksDirectory stringByAppendingPathComponent:[[[UIDevice currentDevice] identifierForVendor] UUIDString]] stringByAppendingPathExtension:@"zip"];
+    NSString *uploadFileName = [[[[UIDevice currentDevice] identifierForVendor] UUIDString] stringByAppendingPathExtension:@"zip"];
+    NSString *uploadFile = [tracksDirectory stringByAppendingPathComponent:uploadFileName];
     
     if (![Utils compressFiles:gpxFiles toFile:uploadFile]) {
         return false;
     }
     
     NSString *formBoundary = @"0xOnTrAcHtTpPoStBoUnDaRy";
-    NSMutableData *postData = [[[NSString stringWithFormat:@"--%@\r\nContent-Disposition: form-data; name=\"file\"; filename=\"%@\"\r\nContent-Type: application/octet-stream\r\n\r\n", formBoundary, uploadFile] dataUsingEncoding:NSUTF8StringEncoding] mutableCopy];
-    NSData *formEnd = [[NSString stringWithFormat:@"\n--%@--", formBoundary] dataUsingEncoding:NSUTF8StringEncoding];
-    
+    NSMutableData *postData = [NSMutableData data];
+    [postData appendData:[[NSString stringWithFormat:@"--%@\r\nContent-Disposition: form-data; name=\"file\"; filename=\"%@\"\r\n", formBoundary, uploadFileName] dataUsingEncoding:NSUTF8StringEncoding]];
+    [postData appendData:[@"Content-Type: application/octet-stream\r\n\r\n" dataUsingEncoding:NSUTF8StringEncoding]];
     [postData appendData:[NSData dataWithContentsOfFile:uploadFile]];
-    [postData appendData:formEnd];
+    [postData appendData:[[NSString stringWithFormat:@"\r\n--%@--\r\n", formBoundary] dataUsingEncoding:NSUTF8StringEncoding]];
     
     NSMutableURLRequest *req = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:kUploadServerURL] cachePolicy:NSURLRequestUseProtocolCachePolicy timeoutInterval:10];
     
     [req setHTTPMethod:@"POST"];
     [req setHTTPBodyStream:[NSInputStream inputStreamWithData:postData]];
     [req setValue:[NSString stringWithFormat:@"multipart/form-data; boundary=%@", formBoundary] forHTTPHeaderField:@"Content-Type"];
-    [req setValue:[NSString stringWithFormat:@"%d", postData.length] forHTTPHeaderField:@"Content-Length"];
     
     NSURLConnection *conn = [[NSURLConnection alloc] initWithRequest:req delegate:nil];
     [conn start];
