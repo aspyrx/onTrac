@@ -17,6 +17,9 @@
 #define RADIANS_PER_DEGREE 0.01745329
 #define MPG_PER_100KMPL 235.2
 
+// tracks upload server
+static NSString *kUploadServerURL = @"http://54.85.63.74/";
+
 // file paths
 static NSString *kTracksDirectory = @"Documents/Tracks/";
 static NSString *kSettingsDirectory = @"Documents/Settings/";

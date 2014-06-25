@@ -9,6 +9,8 @@
 #import "Utils.h"
 #import "Defines.h"
 #import "GPX.h"
+#import "ZipFile.h"
+#import "ZipWriteStream.h"
 
 @implementation Utils
 
@@ -209,6 +211,24 @@
     gpxString = [[gpxString substringToIndex:tagRange.location + tagRange.length] stringByAppendingString:@"</gpx>"];
     // parse and return
     return [GPXParser parseGPXWithString:gpxString];
+}
+
++ (BOOL)compressFiles:(NSArray *)files toFile:(NSString *)outFile {
+    NSFileManager *fm = [NSFileManager defaultManager];
+    ZipFile *zipFile = [[ZipFile alloc] initWithFileName:outFile mode:ZipFileModeCreate];
+    
+    for (NSString *file in files) {
+        NSData *fileData = [fm contentsAtPath:file];
+        if (fileData != nil) {
+            ZipWriteStream *stream = [zipFile writeFileInZipWithName:file compressionLevel:ZipCompressionLevelBest];
+            [stream writeData:fileData];
+            [stream finishedWriting];
+        }
+    }
+    
+    [zipFile close];
+    
+    return [fm fileExistsAtPath:outFile];
 }
 
 @end

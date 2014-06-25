@@ -29,5 +29,6 @@ enum transport_mode_t;
 + (NSAttributedString *)attributedStringFromNumber:(CGFloat)num baseFontSize:(CGFloat)size dataSuffix:(NSString *)dataSuffix unitText:(NSString *)unitText;
 + (UIColor *)colorForNumber:(CGFloat)num dataSuffix:(NSString *)dataSuffix;
 + (GPXRoot *)rootWithMetadataAtPath:(NSString *)path;
++ (BOOL)compressFiles:(NSArray *)files toFile:(NSString *)outFile;
 
 @end

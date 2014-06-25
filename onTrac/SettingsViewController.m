@@ -88,7 +88,7 @@
         return 1;
     else if (section == 6)
         // About cell
-        return 2;
+        return 3;
     else return 0;
 }
 
@@ -289,6 +289,13 @@
             cell.selectionStyle = UITableViewCellSelectionStyleBlue;
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
             return cell;
+        } else if (indexPath.row == 2) {
+            // Upload Tracks cell
+            UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
+            cell.textLabel.text = @"Upload Tracks";
+            cell.selectionStyle = UITableViewCellSelectionStyleBlue;
+            cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+            return cell;
         }
     }
     return nil;
@@ -378,6 +385,10 @@
             // show alert confirmation
             UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Reset Settings" message:@"Are you sure you want to reset all settings to their default value?" delegate:self cancelButtonTitle:@"No" otherButtonTitles:@"Yes", nil];
             [alertView show];
+        } else if (indexPath.row == 2) {
+            // show upload confirmation
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Upload Tracks" message:@"Are you sure you want to upload your tracks to the study? It will not contain any personally identifiable information. This might take a few minutes - please do NOT close the app!" delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:@"Upload", nil];
+            [alertView show];
         }
     }
     
@@ -395,10 +406,16 @@
 #pragma mark - UIAlertViewDelegate
 
 - (void)alertView:(UIAlertView *)alertView willDismissWithButtonIndex:(NSInteger)buttonIndex {
-    if (buttonIndex == alertView.firstOtherButtonIndex) {
-        [Utils deleteSettings];
-        self.settings = [[Utils loadSettings] mutableCopy];
-        [self.tableView reloadSections:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, 6)] withRowAnimation:UITableViewRowAnimationNone];
+    if ([alertView.title isEqualToString:@"Reset Settings"]) {
+        if (buttonIndex == alertView.firstOtherButtonIndex) {
+            [Utils deleteSettings];
+            self.settings = [[Utils loadSettings] mutableCopy];
+            [self.tableView reloadSections:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, 6)] withRowAnimation:UITableViewRowAnimationNone];
+        }
+    } else if ([alertView.title isEqualToString:@"Upload Tracks"]) {
+        if (buttonIndex == alertView.firstOtherButtonIndex) {
+            NSLog(@"%@", ([self uploadAllTracks] ? @"Successfully uploaded." : @"Uploading failed."));
+        }
     }
 }
 
@@ -477,6 +494,51 @@
     [self dismissViewControllerAnimated:YES completion:nil];
     
     didPopToMainScreen = true;
+}
+
+#pragma mark - private methods
+
+- (BOOL)uploadAllTracks {
+    NSFileManager *fm = [NSFileManager defaultManager];
+    
+    NSString *tracksDirectory = [NSHomeDirectory() stringByAppendingPathComponent:kTracksDirectory];
+    if (![fm fileExistsAtPath:tracksDirectory]) {
+        return false;
+    }
+    
+    NSError *error;
+    NSMutableArray *gpxFiles = [[[fm contentsOfDirectoryAtPath:tracksDirectory error:&error] filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"self ENDSWITH '.gpx'"]] mutableCopy];
+    if (error)
+        NSLog(@"Error getting contents of Tracks directory: %@", error);
+    
+    for (int i = 0; i < [gpxFiles count]; i++) {
+        gpxFiles[i] = [tracksDirectory stringByAppendingPathComponent:gpxFiles[i]];
+    }
+    
+    NSString *uploadFile = [[tracksDirectory stringByAppendingPathComponent:[[[UIDevice currentDevice] identifierForVendor] UUIDString]] stringByAppendingPathExtension:@"zip"];
+    
+    if (![Utils compressFiles:gpxFiles toFile:uploadFile]) {
+        return false;
+    }
+    
+    NSString *formBoundary = @"0xOnTrAcHtTpPoStBoUnDaRy";
+    NSMutableData *postData = [[[NSString stringWithFormat:@"--%@\r\nContent-Disposition: form-data; name=\"file\"; filename=\"%@\"\r\nContent-Type: application/octet-stream\r\n\r\n", formBoundary, uploadFile] dataUsingEncoding:NSUTF8StringEncoding] mutableCopy];
+    NSData *formEnd = [[NSString stringWithFormat:@"\n--%@--", formBoundary] dataUsingEncoding:NSUTF8StringEncoding];
+    
+    [postData appendData:[NSData dataWithContentsOfFile:uploadFile]];
+    [postData appendData:formEnd];
+    
+    NSMutableURLRequest *req = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:kUploadServerURL] cachePolicy:NSURLRequestUseProtocolCachePolicy timeoutInterval:10];
+    
+    [req setHTTPMethod:@"POST"];
+    [req setHTTPBodyStream:[NSInputStream inputStreamWithData:postData]];
+    [req setValue:[NSString stringWithFormat:@"multipart/form-data; boundary=%@", formBoundary] forHTTPHeaderField:@"Content-Type"];
+    [req setValue:[NSString stringWithFormat:@"%d", postData.length] forHTTPHeaderField:@"Content-Length"];
+    
+    NSURLConnection *conn = [[NSURLConnection alloc] initWithRequest:req delegate:nil];
+    [conn start];
+    
+    return true;
 }
 
 @end
