@@ -52,7 +52,7 @@
     // load saved GPX file paths
     NSError *error;
     NSFileManager *fileManager = [NSFileManager defaultManager];
-    gpxFilePaths = [NSMutableArray arrayWithArray:[[fileManager contentsOfDirectoryAtPath:[NSHomeDirectory() stringByAppendingPathComponent:kTracksDirectory] error:&error] filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"self ENDSWITH '.gpx'"]]];
+    gpxFilePaths = [NSMutableArray arrayWithArray:[[[[fileManager contentsOfDirectoryAtPath:[NSHomeDirectory() stringByAppendingPathComponent:kTracksDirectory] error:&error] filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"self ENDSWITH '.gpx'"]] reverseObjectEnumerator] allObjects]];
     for (int i = 0; i < [gpxFilePaths count]; i++) {
         gpxFilePaths[i] = [[NSHomeDirectory() stringByAppendingPathComponent:kTracksDirectory] stringByAppendingPathComponent:gpxFilePaths[i]];
     }
