@@ -9,7 +9,10 @@
 #import "AppDelegate.h"
 #import "MapViewController.h"
 
-@implementation AppDelegate
+@implementation AppDelegate {
+    CLLocationManager *locationManager;
+    CMMotionManager *motionManager;
+}
 
 #pragma mark - UIApplicationDelegate		
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
@@ -23,6 +26,22 @@
     [self.window makeKeyAndVisible];
     
     return YES;
+}
+
+- (CLLocationManager *)sharedLocationManager {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        locationManager = [CLLocationManager new];
+    });
+    return locationManager;
+}
+
+- (CMMotionManager *)sharedMotionManager {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        motionManager = [CMMotionManager new];
+    });
+    return motionManager;
 }
 
 /*

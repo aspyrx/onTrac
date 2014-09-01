@@ -27,8 +27,6 @@
 @property (weak, nonatomic) IBOutlet UIToolbar *statisticsToolbar;
 @property (strong, nonatomic) IBOutlet UIBarButtonItem *statisticsDisplayButton;
 @property (strong, nonatomic) IBOutlet UIBarButtonItem *statisticsCloseButton;
-@property (strong, nonatomic) CLLocationManager *locationManager;
-@property (strong, nonatomic) CMMotionManager *motionManager;
 @property (strong, nonatomic) TracksViewController *tracksViewController;
 @property (strong, nonatomic) UINavigationController *settingsNavigationController;
 

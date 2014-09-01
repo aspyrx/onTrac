@@ -7,6 +7,7 @@
 //
 
 #import "MapViewController.h"
+#import "AppDelegate.h"
 #import "Utils.h"
 #import "Defines.h"
 #import "GPX.h"
@@ -152,15 +153,13 @@ static NSUInteger const kAccelerometerOff = 0;
         self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Settings" style:UIBarButtonItemStyleBordered target:self action:@selector(optionsButtonPressed:)];
         self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Tracks" style:UIBarButtonItemStyleBordered target:self action:@selector(tracksButtonPressed:)];
         
-        // alloc and init location manager
-        self.locationManager = [CLLocationManager new];
-        self.locationManager.delegate = self;
-        self.locationManager.distanceFilter = kCLDistanceFilterNone;
-        self.locationManager.desiredAccuracy = kCLLocationAccuracyBest;
-        self.locationManager.pausesLocationUpdatesAutomatically = YES;
-        
-        // alloc and init motion manager
-        self.motionManager = [CMMotionManager new];
+        // configure location manager
+        CLLocationManager *locationManager = [(AppDelegate *)[[UIApplication sharedApplication] delegate] sharedLocationManager];
+        locationManager.delegate = self;
+        locationManager.distanceFilter = kCLDistanceFilterNone;
+        locationManager.desiredAccuracy = kCLLocationAccuracyBest;
+        locationManager.pausesLocationUpdatesAutomatically = YES;
+        locationManager.activityType = CLActivityTypeOther;
         
         // alloc and init view controllers
         self.tracksViewController = [[TracksViewController alloc] initWithStyle:UITableViewStylePlain];
@@ -347,7 +346,7 @@ static NSUInteger const kAccelerometerOff = 0;
     }
     
     if (!deferringUpdates) {
-        [self.locationManager allowDeferredLocationUpdatesUntilTraveled:kDeferredMaxDistance timeout:kDeferredMaxTime];
+        [[(AppDelegate *)[[UIApplication sharedApplication] delegate] sharedLocationManager]allowDeferredLocationUpdatesUntilTraveled:kDeferredMaxDistance timeout:kDeferredMaxTime];
         
         deferringUpdates = YES;
     }
@@ -794,15 +793,6 @@ static NSUInteger const kAccelerometerOff = 0;
         } else {
             carbonAvoidance += distance * kEmissionsMassPerMeterCar;
         }
-        
-        if (currentMode == TransportModeWalk || currentMode == TransportModeBike) {
-            self.locationManager.activityType = CLActivityTypeFitness;
-        } else if (currentMode == TransportModeCar) {
-            self.locationManager.activityType = CLActivityTypeAutomotiveNavigation;
-        } else {
-            self.locationManager.activityType = CLActivityTypeOtherNavigation;
-        }
-        
     } else if (numStatsUpdatesWithoutLocationUpdate >= kStatsUpdatesUntilCurrentSpeedReset) {
         // too many stats updates without location updates, speed is assumed to be 0
         currentSpeed = 0;
@@ -928,14 +918,15 @@ static NSUInteger const kAccelerometerOff = 0;
 }
 
 - (void)setAccelerometerStatus:(int)status {
-    [self.motionManager stopAccelerometerUpdates];
+    CMMotionManager *motionManager = [(AppDelegate *)[[UIApplication sharedApplication] delegate] sharedMotionManager];
+    [motionManager stopAccelerometerUpdates];
     numStandardDeviationSamplesAboveThreshold = 0;
     if (status == kAccelerometerOff) return;
-    self.motionManager.accelerometerUpdateInterval = (status == kAccelerometerStopped
+    motionManager.accelerometerUpdateInterval = (status == kAccelerometerStopped
                                                       ? kAccelerometerUpdateIntervalStopped
                                                       : kAccelerometerUpdateIntervalMoving);
     accelMagnitudes = [[NSMutableArray alloc] initWithCapacity:kAccelMagnitudeSamplesStopped];
-    [self.motionManager startAccelerometerUpdatesToQueue:[NSOperationQueue currentQueue] withHandler:^(CMAccelerometerData *accelerometerData, NSError *error) {
+    [motionManager startAccelerometerUpdatesToQueue:[NSOperationQueue currentQueue] withHandler:^(CMAccelerometerData *accelerometerData, NSError *error) {
         [self outputAccelerationData:accelerometerData.acceleration];
         if (error) NSLog(@"Error: %@", error);
     }];
@@ -1004,7 +995,7 @@ static NSUInteger const kAccelerometerOff = 0;
 
 - (void)resumeRecording {
     // start updating location
-    [self.locationManager startUpdatingLocation];
+    [[(AppDelegate *)[[UIApplication sharedApplication] delegate] sharedLocationManager] startUpdatingLocation];
     self.mapView.showsUserLocation = YES;
     
     // start updating accelerometer at "moving" frequency
@@ -1020,7 +1011,7 @@ static NSUInteger const kAccelerometerOff = 0;
     currentMode = TransportModeWalk;
     
     // stop updating location
-    [self.locationManager stopUpdatingLocation];
+    [[(AppDelegate *)[[UIApplication sharedApplication] delegate] sharedLocationManager] stopUpdatingLocation];
     self.mapView.showsUserLocation = NO;
     
     // start updating accelerometer at "stopped" frequency
@@ -1037,7 +1028,7 @@ static NSUInteger const kAccelerometerOff = 0;
     [statsUpdateTimer invalidate];
     
     // stop updating location
-    [self.locationManager stopUpdatingLocation];
+    [[(AppDelegate *)[[UIApplication sharedApplication] delegate] sharedLocationManager] stopUpdatingLocation];
     self.mapView.showsUserLocation = NO;
     
     // stop updating accelerometer
